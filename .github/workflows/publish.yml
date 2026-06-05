@@ -1,0 +1,59 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest pytest-asyncio
+      - run: python -m pytest packages/ -v --tb=short
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for trusted publishing
+    strategy:
+      matrix:
+        package:
+          - pyagent-patterns
+          - pyagent-router
+          - pyagent-compress
+          - pyagent-trace
+          - pyagent-all
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build
+      - name: Set version from tag
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          sed -i "s/version = \"0.1.0\"/version = \"${VERSION}\"/" packages/${{ matrix.package }}/pyproject.toml
+      - run: python -m build
+        working-directory: packages/${{ matrix.package }}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/${{ matrix.package }}/dist/
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
