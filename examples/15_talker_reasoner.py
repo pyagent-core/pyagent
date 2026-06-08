@@ -20,11 +20,14 @@ async def main():
     # Hard question → talker says "I'm not sure", escalates to reasoner
     pattern2 = TalkerReasoner(
         talker=Agent("talker", MockLLM(responses=["I'm not sure about quantum field theory..."])),
-        reasoner=Agent("reasoner", MockLLM(responses=["Quantum field theory unifies QM and SR..."])),
+        reasoner=Agent(
+            "reasoner", MockLLM(responses=["Quantum field theory unifies QM and SR..."])
+        ),
     )
     result2 = await pattern2.run("Explain quantum field theory")
     print(f"\nHard Q: {result2.output}")
     print(f"System: {result2.metadata['system']}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

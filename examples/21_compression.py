@@ -30,14 +30,23 @@ def main():
     # Agent pruning
     pruner = AgentPruner(min_contribution=0.3)
     messages = [
-        Message(role=Role.ASSISTANT, content="Unique analysis of market trends and data", name="analyst"),
-        Message(role=Role.ASSISTANT, content="Unique analysis of market trends and data", name="copycat"),
-        Message(role=Role.ASSISTANT, content="Different risk assessment with new data points", name="risk"),
+        Message(
+            role=Role.ASSISTANT, content="Unique analysis of market trends and data", name="analyst"
+        ),
+        Message(
+            role=Role.ASSISTANT, content="Unique analysis of market trends and data", name="copycat"
+        ),
+        Message(
+            role=Role.ASSISTANT,
+            content="Different risk assessment with new data points",
+            name="risk",
+        ),
     ]
     scores = pruner.score_agents(messages, "analyze market trends")
     to_prune = pruner.should_prune(scores)
     print(f"Agent scores: {[(s.agent_name, f'{s.score:.2f}') for s in scores]}")
     print(f"Should prune: {to_prune}")
+
 
 if __name__ == "__main__":
     main()

@@ -14,10 +14,22 @@ async def main():
         max_rounds=1,
     )
     # Pattern 2: Voting for more thorough answer
-    voting = Voting(voters=[
-        Agent("a", MockLLM(responses=["A detailed comprehensive analysis with sufficient length to pass"])),
-        Agent("b", MockLLM(responses=["A detailed comprehensive analysis with sufficient length to pass"])),
-    ])
+    voting = Voting(
+        voters=[
+            Agent(
+                "a",
+                MockLLM(
+                    responses=["A detailed comprehensive analysis with sufficient length to pass"]
+                ),
+            ),
+            Agent(
+                "b",
+                MockLLM(
+                    responses=["A detailed comprehensive analysis with sufficient length to pass"]
+                ),
+            ),
+        ]
+    )
 
     composite = CompositePattern(
         patterns=[reflection, voting],
@@ -27,6 +39,7 @@ async def main():
     print(f"Output: {result.output}")
     print(f"Escalation level: {result.metadata['escalation_level']}")
     print(f"Patterns tried: {result.metadata['total_patterns_tried']}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

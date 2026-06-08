@@ -19,16 +19,22 @@ async def main():
         return HumanDecision(approved=True)
 
     pattern = HumanInTheLoop(
-        agent=Agent("writer", MockLLM(responses=[
-            "Investment thesis: AAPL is a strong buy.",
-            "Revised: AAPL is a strong buy. Key risks: valuation premium, China exposure.",
-        ])),
+        agent=Agent(
+            "writer",
+            MockLLM(
+                responses=[
+                    "Investment thesis: AAPL is a strong buy.",
+                    "Revised: AAPL is a strong buy. Key risks: valuation premium, China exposure.",
+                ]
+            ),
+        ),
         review_fn=review_fn,
         max_revisions=3,
     )
     result = await pattern.run("Write an investment thesis for AAPL")
     print(f"Output: {result.output}")
     print(f"Approved: {result.metadata['approved']}, Revisions: {result.metadata['revisions']}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

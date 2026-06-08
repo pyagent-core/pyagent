@@ -107,22 +107,26 @@ class PatternBenchmark:
                     r = await self.run_task(pattern_name, task)
                     results.append(r)
                 except Exception as e:
-                    results.append(BenchmarkResult(
-                        pattern_name=pattern_name,
-                        task=task.name,
-                        output=f"ERROR: {e}",
-                        duration_seconds=0.0,
-                        token_estimate=0,
-                        cost_estimate_usd=0.0,
-                        metadata={"error": str(e)},
-                    ))
+                    results.append(
+                        BenchmarkResult(
+                            pattern_name=pattern_name,
+                            task=task.name,
+                            output=f"ERROR: {e}",
+                            duration_seconds=0.0,
+                            token_estimate=0,
+                            cost_estimate_usd=0.0,
+                            metadata={"error": str(e)},
+                        )
+                    )
         return results
 
     @staticmethod
     def print_report(results: list[BenchmarkResult]) -> None:
         """Print a formatted benchmark report."""
         print("\n" + "=" * 90)
-        print(f"{'Pattern':<25} {'Task':<20} {'Latency':>10} {'Tokens':>8} {'Cost':>10} {'Quality':>8}")
+        print(
+            f"{'Pattern':<25} {'Task':<20} {'Latency':>10} {'Tokens':>8} {'Cost':>10} {'Quality':>8}"
+        )
         print("-" * 90)
         for r in results:
             q = f"{r.quality_score:.0%}" if r.quality_score is not None else "N/A"
@@ -135,7 +139,9 @@ class PatternBenchmark:
 
         # Aggregated by pattern
         patterns = sorted(set(r.pattern_name for r in results))
-        print(f"\n{'Pattern':<25} {'Avg Latency':>12} {'Avg Tokens':>12} {'Avg Cost':>12} {'Avg Quality':>12}")
+        print(
+            f"\n{'Pattern':<25} {'Avg Latency':>12} {'Avg Tokens':>12} {'Avg Cost':>12} {'Avg Quality':>12}"
+        )
         print("-" * 75)
         for p in patterns:
             pr = [r for r in results if r.pattern_name == p]
@@ -143,11 +149,12 @@ class PatternBenchmark:
             avg_tok = sum(r.token_estimate for r in pr) / len(pr)
             avg_cost = sum(r.cost_estimate_usd for r in pr) / len(pr)
             quality_results = [r for r in pr if r.quality_score is not None]
-            avg_q = sum(r.quality_score for r in quality_results) / len(quality_results) if quality_results else 0
-            print(
-                f"{p:<25} {avg_lat:>11.3f}s {avg_tok:>12.0f} "
-                f"${avg_cost:>11.6f} {avg_q:>11.0%}"
+            avg_q = (
+                sum(r.quality_score for r in quality_results) / len(quality_results)
+                if quality_results
+                else 0
             )
+            print(f"{p:<25} {avg_lat:>11.3f}s {avg_tok:>12.0f} ${avg_cost:>11.6f} {avg_q:>11.0%}")
         print()
 
     @staticmethod
@@ -164,7 +171,8 @@ class PatternBenchmark:
                 "avg_cost_usd": sum(r.cost_estimate_usd for r in pr) / len(pr),
                 "avg_quality": (
                     sum(r.quality_score for r in quality_results) / len(quality_results)
-                    if quality_results else 0.0
+                    if quality_results
+                    else 0.0
                 ),
             }
         return out

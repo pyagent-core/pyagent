@@ -24,5 +24,6 @@ def main():
         print(f"  → Alternatives: {rec.alternatives}")
         print()
 
+
 if __name__ == "__main__":
     main()

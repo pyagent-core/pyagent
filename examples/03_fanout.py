@@ -19,5 +19,6 @@ async def main():
     print(f"Output: {result.output}")
     print(f"Parallel agents: {result.metadata['parallel_agents']}")
 
+
 if __name__ == "__main__":
     asyncio.run(main())

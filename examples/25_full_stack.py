@@ -28,7 +28,9 @@ async def main():
     supervisor = Supervisor(
         classifier=Agent("classifier", MockLLM(responses=["billing"])),
         routes={
-            "billing": Agent("billing", MockLLM(responses=["Refund of $50 processed for order #123."])),
+            "billing": Agent(
+                "billing", MockLLM(responses=["Refund of $50 processed for order #123."])
+            ),
             "tech": Agent("tech", MockLLM(responses=["Try restarting your device."])),
         },
     )
@@ -45,8 +47,12 @@ async def main():
 
     # 6. Cost tracking
     tracker = CostTracker()
-    tracker.record("supervisor", "classifier", selection.model, 50, 20, selection.cost_estimate.total_cost)
-    tracker.record("supervisor", "billing", selection.model, 100, 50, selection.cost_estimate.total_cost * 2)
+    tracker.record(
+        "supervisor", "classifier", selection.model, 50, 20, selection.cost_estimate.total_cost
+    )
+    tracker.record(
+        "supervisor", "billing", selection.model, 100, 50, selection.cost_estimate.total_cost * 2
+    )
     print(f"5. Cost: ${tracker.total_cost:.6f}")
     print(f"   By agent: {tracker.by_agent()}")
 
@@ -54,7 +60,10 @@ async def main():
     budget = TokenBudget(workflow_limit=10_000)
     budget.consume("classifier", 70)
     budget.consume("billing", 150)
-    print(f"6. Budget: {budget.remaining()} tokens remaining ({budget.workflow_utilization:.1%} used)")
+    print(
+        f"6. Budget: {budget.remaining()} tokens remaining ({budget.workflow_utilization:.1%} used)"
+    )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -10,7 +10,9 @@ async def main():
     supervisor = Supervisor(
         classifier=Agent("classifier", MockLLM(responses=["billing"])),
         routes={
-            "billing": Agent("billing", MockLLM(responses=["Your refund of $50 has been processed."])),
+            "billing": Agent(
+                "billing", MockLLM(responses=["Your refund of $50 has been processed."])
+            ),
             "tech": Agent("tech", MockLLM(responses=["Please restart your device."])),
         },
     )
@@ -18,6 +20,7 @@ async def main():
     print(f"Output: {result.output}")
     print(f"Route: {result.metadata['route_key']}")
     print(f"Duration: {result.duration_seconds:.3f}s")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

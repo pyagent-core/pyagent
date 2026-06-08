@@ -36,5 +36,6 @@ async def main():
     cb._on_success()
     print(f"After success: {cb.state.value}")
 
+
 if __name__ == "__main__":
     asyncio.run(main())

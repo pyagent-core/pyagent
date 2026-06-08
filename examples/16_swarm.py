@@ -17,5 +17,6 @@ async def main():
     print(f"Agents: {result.metadata['agents']}, Rounds: {result.metadata['rounds']}")
     print(f"Output (first 200 chars): {result.output[:200]}...")
 
+
 if __name__ == "__main__":
     asyncio.run(main())

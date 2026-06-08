@@ -18,5 +18,6 @@ async def main():
     print(f"Decision: {result.metadata['winner']}")
     print(f"Tally: {result.metadata['tally']}")
 
+
 if __name__ == "__main__":
     asyncio.run(main())
