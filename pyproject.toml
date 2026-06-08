@@ -15,6 +15,13 @@ members = [
     "packages/pyagent-all",
 ]
 
+[tool.uv.sources]
+pyagent-patterns = { workspace = true }
+pyagent-compress = { workspace = true }
+pyagent-router   = { workspace = true }
+pyagent-trace    = { workspace = true }
+pyagent-all      = { workspace = true }
+
 [tool.ruff]
 target-version = "py311"
 line-length = 100
