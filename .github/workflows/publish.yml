@@ -1,0 +1,85 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"          # e.g. v0.1.0
+  workflow_dispatch:  # allow manual trigger
+
+jobs:
+  # ── Step 1: build all packages ──────────────────────────────────────────────
+  build:
+    name: Build packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Build pyagent-patterns
+        run: uv build --package pyagent-patterns --out-dir dist/pyagent-patterns
+
+      - name: Build pyagent-compress
+        run: uv build --package pyagent-compress --out-dir dist/pyagent-compress
+
+      - name: Build pyagent-router
+        run: uv build --package pyagent-router --out-dir dist/pyagent-router
+
+      - name: Build pyagent-trace
+        run: uv build --package pyagent-trace --out-dir dist/pyagent-trace
+
+      - name: Build pyagent-all
+        run: uv build --package pyagent-all --out-dir dist/pyagent-all
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  # ── Step 2: publish in dependency order ─────────────────────────────────────
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi          # matches the Trusted Publisher environment name on PyPI
+
+    permissions:
+      id-token: write          # required for OIDC Trusted Publishers
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # Publish base package first (others depend on it)
+      - name: Publish pyagent-patterns
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-patterns/
+
+      - name: Publish pyagent-compress
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-compress/
+
+      - name: Publish pyagent-router
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-router/
+
+      - name: Publish pyagent-trace
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-trace/
+
+      # Meta-package last (depends on all of the above)
+      - name: Publish pyagent-all
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-all/

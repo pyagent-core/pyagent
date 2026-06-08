@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install workspace
+        run: uv sync --all-packages --all-extras
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Type check
+        run: uv run mypy packages/pyagent-patterns/src packages/pyagent-compress/src packages/pyagent-router/src packages/pyagent-trace/src
+
+      - name: Test (pyagent-patterns)
+        run: uv run pytest packages/pyagent-patterns/tests -v
+
+      - name: Test (pyagent-compress)
+        run: uv run pytest packages/pyagent-compress/tests -v
+
+      - name: Test (pyagent-router)
+        run: uv run pytest packages/pyagent-router/tests -v
+
+      - name: Test (pyagent-trace)
+        run: uv run pytest packages/pyagent-trace/tests -v
