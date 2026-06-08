@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyagent-all"
-version = "0.1.0"
+version = "0.2.0"
 description = "Meta-package: installs all PyAgent packages (patterns, router, compress, trace)"
 readme = "README.md"
 requires-python = ">=3.11"
