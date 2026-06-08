@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import FanOutFanIn
 
+
 async def main():
     fanout = FanOutFanIn(
         agents=[
@@ -17,6 +18,7 @@ async def main():
     result = await fanout.run("Analyze AAPL stock")
     print(f"Output: {result.output}")
     print(f"Parallel agents: {result.metadata['parallel_agents']}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

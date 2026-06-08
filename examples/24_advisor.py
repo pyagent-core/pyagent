@@ -1,6 +1,7 @@
 """Example: Pattern Advisor — auto-select the best pattern."""
 
-from pyagent_patterns.advisor import PatternAdvisor, Constraints, Quality, Latency
+from pyagent_patterns.advisor import Constraints, Latency, PatternAdvisor, Quality
+
 
 def main():
     advisor = PatternAdvisor()
@@ -22,6 +23,7 @@ def main():
         print(f"  → Est. calls: {rec.estimated_calls}, Cost: {rec.estimated_cost_range}")
         print(f"  → Alternatives: {rec.alternatives}")
         print()
+
 
 if __name__ == "__main__":
     main()

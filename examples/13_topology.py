@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.structural import Topology, TopologyType
 
+
 async def main():
     llm = MockLLM(responses=["Step A done", "Step B done", "Step C done"])
 
@@ -25,6 +26,7 @@ async def main():
     )
     result = await star.run("Analyze with star topology")
     print(f"Star output: {result.output}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
