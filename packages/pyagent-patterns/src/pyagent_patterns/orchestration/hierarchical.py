@@ -75,9 +75,7 @@ class Hierarchical(Pattern):
             worker_summary = "\n".join(
                 f"- {team.workers[i].name}: {r.content}" for i, r in enumerate(worker_results)
             )
-            lead_msg = Message.user(
-                f"Synthesize your team's work:\n{worker_summary}"
-            )
+            lead_msg = Message.user(f"Synthesize your team's work:\n{worker_summary}")
             lead_result = await team.lead.run([lead_msg])
             team_msgs.append(lead_result)
             return lead_result.content, team_msgs

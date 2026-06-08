@@ -10,9 +10,10 @@ import json
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pyagent_patterns.base import Message, Role
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Message
 
 
 @dataclass
@@ -44,14 +45,16 @@ class Recorder:
     def start(self, pattern_type: str) -> None:
         """Mark the start of a pattern execution."""
         self._start_time = time.time()
-        self._entries.append(RecordEntry(
-            timestamp=self._start_time,
-            event_type="pattern_start",
-            agent_name="",
-            messages_in=[],
-            response="",
-            metadata={"pattern_type": pattern_type},
-        ))
+        self._entries.append(
+            RecordEntry(
+                timestamp=self._start_time,
+                event_type="pattern_start",
+                agent_name="",
+                messages_in=[],
+                response="",
+                metadata={"pattern_type": pattern_type},
+            )
+        )
 
     def record_llm_call(
         self,
@@ -61,28 +64,31 @@ class Recorder:
         metadata: dict[str, Any] | None = None,
     ) -> None:
         """Record an LLM call and its response."""
-        self._entries.append(RecordEntry(
-            timestamp=time.time(),
-            event_type="llm_call",
-            agent_name=agent_name,
-            messages_in=[
-                {"role": m.role.value, "content": m.content, "name": m.name}
-                for m in messages
-            ],
-            response=response,
-            metadata=metadata or {},
-        ))
+        self._entries.append(
+            RecordEntry(
+                timestamp=time.time(),
+                event_type="llm_call",
+                agent_name=agent_name,
+                messages_in=[
+                    {"role": m.role.value, "content": m.content, "name": m.name} for m in messages
+                ],
+                response=response,
+                metadata=metadata or {},
+            )
+        )
 
     def end(self, result_output: str) -> None:
         """Mark the end of a pattern execution."""
-        self._entries.append(RecordEntry(
-            timestamp=time.time(),
-            event_type="pattern_end",
-            agent_name="",
-            messages_in=[],
-            response=result_output,
-            metadata={"duration_seconds": time.time() - self._start_time},
-        ))
+        self._entries.append(
+            RecordEntry(
+                timestamp=time.time(),
+                event_type="pattern_end",
+                agent_name="",
+                messages_in=[],
+                response=result_output,
+                metadata={"duration_seconds": time.time() - self._start_time},
+            )
+        )
 
     def save(self, path: str | Path) -> None:
         """Save recorded entries to a JSONL file."""

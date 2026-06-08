@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import (
     FanOutFanIn,
@@ -39,11 +38,13 @@ async def test_supervisor_routes_correctly():
 async def test_pipeline_sequential_stages():
     stage_llm = MockLLM(responses=["extracted text", "summarized text", "translated text"])
 
-    pipeline = Pipeline(stages=[
-        Agent("extract", stage_llm),
-        Agent("summarize", stage_llm),
-        Agent("translate", stage_llm),
-    ])
+    pipeline = Pipeline(
+        stages=[
+            Agent("extract", stage_llm),
+            Agent("summarize", stage_llm),
+            Agent("translate", stage_llm),
+        ]
+    )
 
     result = await pipeline.run("Process this document")
     assert result.metadata["stages"] == 3
@@ -90,10 +91,12 @@ async def test_hierarchical_delegation():
 
 @pytest.mark.asyncio
 async def test_orchestrator_workers_dynamic():
-    orch_llm = MockLLM(responses=[
-        '{"assignments": [{"worker": "researcher", "subtask": "Find data"}]}',
-        "Synthesized: research complete",
-    ])
+    orch_llm = MockLLM(
+        responses=[
+            '{"assignments": [{"worker": "researcher", "subtask": "Find data"}]}',
+            "Synthesized: research complete",
+        ]
+    )
     worker_llm = MockLLM(responses=["Data found on topic X"])
 
     orch = OrchestratorWorkers(

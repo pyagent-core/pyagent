@@ -6,8 +6,8 @@ from pyagent_patterns.registry import get_pattern_class, list_patterns, register
 
 __all__ = [
     "Agent",
-    "Context",
     "CompositePattern",
+    "Context",
     "Message",
     "MockLLM",
     "Pattern",

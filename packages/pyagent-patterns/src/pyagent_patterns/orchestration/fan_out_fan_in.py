@@ -10,9 +10,12 @@ Wall-clock latency: max(agent latencies) + aggregator
 from __future__ import annotations
 
 import asyncio
-from typing import AsyncIterator
+from typing import TYPE_CHECKING
 
 from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 
 class FanOutFanIn(Pattern):
@@ -43,8 +46,7 @@ class FanOutFanIn(Pattern):
 
         # Fan-in: aggregate results
         combined = "\n\n".join(
-            f"--- {self._agents[i].name} ---\n{r.content}"
-            for i, r in enumerate(parallel_results)
+            f"--- {self._agents[i].name} ---\n{r.content}" for i, r in enumerate(parallel_results)
         )
         agg_prompt = Message.user(
             f"Combine the following analyses into a unified response:\n\n{combined}"

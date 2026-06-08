@@ -3,7 +3,7 @@
 The generator produces output, the evaluator scores it against predefined criteria.
 If the score is below threshold, the generator revises based on evaluator feedback.
 
-LLM calls: 2 per round (generate + evaluate) × rounds
+LLM calls: 2 per round (generate + evaluate) x rounds
 """
 
 from __future__ import annotations
@@ -44,6 +44,7 @@ class EvaluatorOptimizer(Pattern):
         messages: list[Message] = []
         current_output = ""
         scores: list[int] = []
+        eval_text = ""
 
         criteria_text = "\n".join(f"- {c}" for c in self._criteria)
 
@@ -70,10 +71,11 @@ class EvaluatorOptimizer(Pattern):
             )
             eval_result = await self._evaluator.run([eval_prompt])
             messages.append(eval_result)
+
             eval_text = eval_result.content
 
             # Parse score
-            score = self._parse_score(eval_result.content)
+            score = self._parse_score(eval_text)
             scores.append(score)
 
             if score >= self._pass_threshold:

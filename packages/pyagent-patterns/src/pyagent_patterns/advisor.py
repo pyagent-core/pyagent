@@ -13,17 +13,17 @@ Decision factors:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 
-class Quality(str, Enum):
+class Quality(StrEnum):
     DRAFT = "draft"
     STANDARD = "standard"
     HIGH = "high"
     CRITICAL = "critical"
 
 
-class Latency(str, Enum):
+class Latency(StrEnum):
     REALTIME = "realtime"  # < 2s
     INTERACTIVE = "interactive"  # < 10s
     BATCH = "batch"  # minutes OK
@@ -68,15 +68,18 @@ class PatternAdvisor:
         # Decision tree based on Augment 2026 "Five Decision Rules"
 
         # Rule 1: Simple single-step tasks → Pipeline or single agent
-        if not c.multi_step and c.quality in (Quality.DRAFT, Quality.STANDARD):
-            if c.latency == Latency.REALTIME:
-                return Recommendation(
-                    pattern="pipeline",
-                    reason="Simple task with real-time latency → minimal sequential processing",
-                    estimated_calls=1,
-                    estimated_cost_range="$0.001-0.003",
-                    alternatives=["talker_reasoner"],
-                )
+        if (
+            not c.multi_step
+            and c.quality in (Quality.DRAFT, Quality.STANDARD)
+            and c.latency == Latency.REALTIME
+        ):
+            return Recommendation(
+                pattern="pipeline",
+                reason="Simple task with real-time latency → minimal sequential processing",
+                estimated_calls=1,
+                estimated_cost_range="$0.001-0.003",
+                alternatives=["talker_reasoner"],
+            )
 
         # Rule 2: Cost-sensitive → Route to cheapest viable model
         if c.max_cost_usd < 0.01:
@@ -101,7 +104,9 @@ class PatternAdvisor:
         # Rule 4: High quality → Reflection, Debate, or Evaluator
         if c.quality in (Quality.HIGH, Quality.CRITICAL):
             # Check for adversarial/debate keywords
-            if any(w in task_lower for w in ["compare", "pros and cons", "debate", "argue", "versus"]):
+            if any(
+                w in task_lower for w in ["compare", "pros and cons", "debate", "argue", "versus"]
+            ):
                 return Recommendation(
                     pattern="debate",
                     reason="High quality + adversarial task → structured debate with judge",
@@ -129,7 +134,9 @@ class PatternAdvisor:
             )
 
         # Rule 5: Multi-step/complex → Supervisor, Hierarchical, or Pipeline
-        if c.multi_step or any(w in task_lower for w in ["steps", "process", "workflow", "pipeline"]):
+        if c.multi_step or any(
+            w in task_lower for w in ["steps", "process", "workflow", "pipeline"]
+        ):
             if any(w in task_lower for w in ["team", "delegate", "manage", "coordinate"]):
                 return Recommendation(
                     pattern="hierarchical",

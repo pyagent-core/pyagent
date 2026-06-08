@@ -8,7 +8,7 @@ LLM calls: 1 agent + optional revision calls
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
 

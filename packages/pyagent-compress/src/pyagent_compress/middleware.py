@@ -6,9 +6,14 @@ before being passed to the next agent, reducing inter-agent token transfer.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pyagent_patterns.base import Agent, Message
-from pyagent_compress.budget import TokenBudget
+
 from pyagent_compress.compressor import MessageCompressor
+
+if TYPE_CHECKING:
+    from pyagent_compress.budget import TokenBudget
 
 
 class CompressedAgent(Agent):
@@ -43,11 +48,13 @@ class CompressedAgent(Agent):
 
         # Compress the output
         compressed = self._compressor.compress(result.content)
-        self.compression_log.append({
-            "original_tokens": compressed.original_tokens,
-            "compressed_tokens": compressed.compressed_tokens,
-            "savings_pct": compressed.savings_pct,
-        })
+        self.compression_log.append(
+            {
+                "original_tokens": compressed.original_tokens,
+                "compressed_tokens": compressed.compressed_tokens,
+                "savings_pct": compressed.savings_pct,
+            }
+        )
 
         # Track budget if available
         if self._budget:

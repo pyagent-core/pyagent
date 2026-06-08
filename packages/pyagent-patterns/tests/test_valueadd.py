@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_patterns.advisor import Constraints, Latency, PatternAdvisor, Quality
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.guardrails import ContentGuard, GuardrailChain, LengthGuard, PIIGuard
 from pyagent_patterns.orchestration import Pipeline
 from pyagent_patterns.recovery import BoundedExecution, CircuitBreaker, CircuitState
 
-
 # --- Recovery Tests ---
+
 
 @pytest.mark.asyncio
 async def test_bounded_execution_success():
@@ -50,6 +49,7 @@ def test_circuit_breaker_resets():
     cb._on_failure()
     assert cb.state == CircuitState.OPEN
     import time
+
     time.sleep(0.02)
     assert cb.state == CircuitState.HALF_OPEN
     cb._on_success()
@@ -57,6 +57,7 @@ def test_circuit_breaker_resets():
 
 
 # --- Guardrail Tests ---
+
 
 def test_length_guard_pass():
     guard = LengthGuard(max_chars=100)
@@ -98,16 +99,19 @@ def test_content_guard_deny_words():
 
 
 def test_guardrail_chain():
-    chain = GuardrailChain([
-        LengthGuard(max_chars=1000),
-        PIIGuard(redact=True),
-    ])
+    chain = GuardrailChain(
+        [
+            LengthGuard(max_chars=1000),
+            PIIGuard(redact=True),
+        ]
+    )
     result = chain.check("Email: test@test.com. This is fine otherwise.")
     assert result.passed is True
     assert "REDACTED" in result.sanitized_content
 
 
 # --- Advisor Tests ---
+
 
 def test_advisor_simple_task():
     advisor = PatternAdvisor()

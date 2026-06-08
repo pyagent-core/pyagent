@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_router.estimator import CostEstimator
 from pyagent_router.middleware import RouterMiddleware
@@ -76,6 +75,7 @@ async def test_router_middleware():
     routed = middleware.wrap(agent)
 
     from pyagent_patterns.base import Message
+
     result = await routed.run([Message.user("What is 1+1?")])
     assert result.metadata.get("routed_model") is not None
     assert len(routed.routing_log) == 1

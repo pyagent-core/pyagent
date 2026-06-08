@@ -5,4 +5,4 @@ from pyagent_patterns.structural.layered import Layered
 from pyagent_patterns.structural.role_based import RoleBased
 from pyagent_patterns.structural.topology import Topology, TopologyType
 
-__all__ = ["RoleBased", "Layered", "Topology", "TopologyType", "Blackboard"]
+__all__ = ["Blackboard", "Layered", "RoleBased", "Topology", "TopologyType"]

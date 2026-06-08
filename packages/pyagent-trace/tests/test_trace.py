@@ -7,14 +7,13 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from pyagent_patterns.base import Message, Role
 from pyagent_trace.attributes import PyAgentAttributes
 from pyagent_trace.cost import CostTracker
 from pyagent_trace.recorder import Recorder
 
-
 # --- PyAgentAttributes ---
+
 
 def test_attributes_pattern_keys():
     assert PyAgentAttributes.PATTERN_TYPE == "pyagent.pattern.type"
@@ -42,6 +41,7 @@ def test_attributes_exec_keys():
 
 
 # --- CostTracker ---
+
 
 def test_cost_tracker_empty():
     tracker = CostTracker()
@@ -105,6 +105,7 @@ def test_cost_tracker_summary():
 
 
 # --- Recorder ---
+
 
 def test_recorder_start_end():
     rec = Recorder()

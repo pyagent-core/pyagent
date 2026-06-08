@@ -42,16 +42,39 @@ class DifficultyScore:
 
 # Keywords indicating higher complexity
 _COMPLEX_KEYWORDS = {
-    "analyze", "compare", "contrast", "evaluate", "synthesize",
-    "design", "architect", "optimize", "debug", "prove",
-    "multi-step", "trade-off", "implications", "comprehensive",
-    "algorithm", "mathematical", "formal", "derivation",
+    "analyze",
+    "compare",
+    "contrast",
+    "evaluate",
+    "synthesize",
+    "design",
+    "architect",
+    "optimize",
+    "debug",
+    "prove",
+    "multi-step",
+    "trade-off",
+    "implications",
+    "comprehensive",
+    "algorithm",
+    "mathematical",
+    "formal",
+    "derivation",
 }
 
 _SIMPLE_KEYWORDS = {
-    "what is", "define", "list", "name", "when was",
-    "who is", "how many", "yes or no", "true or false",
-    "translate", "convert", "summarize",
+    "what is",
+    "define",
+    "list",
+    "name",
+    "when was",
+    "who is",
+    "how many",
+    "yes or no",
+    "true or false",
+    "translate",
+    "convert",
+    "summarize",
 }
 
 
@@ -95,10 +118,12 @@ class DifficultyScorer:
         signals["multi_part"] = min(max(multi_part, 0) / 5, 1.0)
 
         # Signal 4: Code/math indicators
-        code_indicators = sum(1 for marker in ["```", "def ", "class ", "function", "import"]
-                              if marker in task)
-        math_indicators = sum(1 for marker in ["∑", "∫", "equation", "formula", "proof"]
-                              if marker in task_lower)
+        code_indicators = sum(
+            1 for marker in ["```", "def ", "class ", "function", "import"] if marker in task
+        )
+        math_indicators = sum(
+            1 for marker in ["∑", "∫", "equation", "formula", "proof"] if marker in task_lower
+        )
         signals["technical"] = min((code_indicators + math_indicators) / 3, 1.0)
 
         # Custom signals
@@ -111,7 +136,9 @@ class DifficultyScorer:
 
         # Add custom signals with equal weight
         if self._custom_signals:
-            custom_avg = sum(signals.get(k, 0) for k in self._custom_signals) / len(self._custom_signals)
+            custom_avg = sum(signals.get(k, 0) for k in self._custom_signals) / len(
+                self._custom_signals
+            )
             weighted_sum = weighted_sum * 0.7 + custom_avg * 0.3
 
         raw_score = max(1, min(10, int(weighted_sum * 10) + 1))

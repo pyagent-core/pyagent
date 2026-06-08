@@ -7,13 +7,13 @@ cheapest model that meets quality requirements.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 from pyagent_router.estimator import CostEstimate, CostEstimator
 from pyagent_router.scorer import DifficultyScore, DifficultyScorer
 
 
-class Capability(str, Enum):
+class Capability(StrEnum):
     """Model capabilities for filtering."""
 
     CODE = "code"
@@ -46,10 +46,26 @@ class ModelSpec:
 DEFAULT_MODEL_SPECS: list[ModelSpec] = [
     ModelSpec("gpt-4.1-nano", 1, 3, {Capability.GENERAL}, 1_000_000),
     ModelSpec("gpt-4o-mini", 1, 5, {Capability.GENERAL, Capability.CODE}, 128_000),
-    ModelSpec("gpt-4.1-mini", 1, 6, {Capability.GENERAL, Capability.CODE, Capability.REASONING}, 1_000_000),
-    ModelSpec("gpt-4o", 3, 8, {Capability.GENERAL, Capability.CODE, Capability.CREATIVE, Capability.VISION}, 128_000),
-    ModelSpec("gpt-4.1", 4, 9, {Capability.GENERAL, Capability.CODE, Capability.REASONING}, 1_000_000),
-    ModelSpec("claude-sonnet-4", 5, 10, {Capability.GENERAL, Capability.CODE, Capability.REASONING, Capability.CREATIVE}, 200_000),
+    ModelSpec(
+        "gpt-4.1-mini", 1, 6, {Capability.GENERAL, Capability.CODE, Capability.REASONING}, 1_000_000
+    ),
+    ModelSpec(
+        "gpt-4o",
+        3,
+        8,
+        {Capability.GENERAL, Capability.CODE, Capability.CREATIVE, Capability.VISION},
+        128_000,
+    ),
+    ModelSpec(
+        "gpt-4.1", 4, 9, {Capability.GENERAL, Capability.CODE, Capability.REASONING}, 1_000_000
+    ),
+    ModelSpec(
+        "claude-sonnet-4",
+        5,
+        10,
+        {Capability.GENERAL, Capability.CODE, Capability.REASONING, Capability.CREATIVE},
+        200_000,
+    ),
     ModelSpec("o3-mini", 6, 10, {Capability.REASONING, Capability.MATH, Capability.CODE}, 200_000),
     ModelSpec("o3", 8, 10, {Capability.REASONING, Capability.MATH, Capability.CODE}, 200_000),
 ]
@@ -115,9 +131,10 @@ class ModelSelector:
         # Filter specs by difficulty range and capability
         candidates: list[ModelSpec] = []
         for spec in self._specs:
-            if spec.min_difficulty <= difficulty.score <= spec.max_difficulty:
-                if required_capability is None or required_capability in spec.capabilities:
-                    candidates.append(spec)
+            if spec.min_difficulty <= difficulty.score <= spec.max_difficulty and (
+                required_capability is None or required_capability in spec.capabilities
+            ):
+                candidates.append(spec)
 
         if not candidates:
             # Fallback to the most capable model

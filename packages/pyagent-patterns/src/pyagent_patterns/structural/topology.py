@@ -11,12 +11,12 @@ flow, overhead, and result quality.
 from __future__ import annotations
 
 import asyncio
-from enum import Enum
+from enum import StrEnum
 
 from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
 
 
-class TopologyType(str, Enum):
+class TopologyType(StrEnum):
     CHAIN = "chain"
     STAR = "star"
     MESH = "mesh"
@@ -82,12 +82,10 @@ class Topology(Pattern):
         messages.extend(spoke_results)
 
         # Hub synthesizes
-        summary = "\n".join(
-            f"- {spokes[i].name}: {r.content}" for i, r in enumerate(spoke_results)
+        summary = "\n".join(f"- {spokes[i].name}: {r.content}" for i, r in enumerate(spoke_results))
+        hub_result = await hub.run(
+            [Message.user(f"Synthesize these inputs:\n{summary}\n\nOriginal task: {ctx.task}")]
         )
-        hub_result = await hub.run([Message.user(
-            f"Synthesize these inputs:\n{summary}\n\nOriginal task: {ctx.task}"
-        )])
         messages.append(hub_result)
 
         return Result(output=hub_result.content, messages=messages, metadata={"topology": "star"})
@@ -100,7 +98,7 @@ class Topology(Pattern):
         # Initial round
         tasks = [a.run([Message.user(ctx.task)]) for a in self._agents]
         initial = await asyncio.gather(*tasks)
-        for agent, result in zip(self._agents, initial):
+        for agent, result in zip(self._agents, initial, strict=False):
             outputs[agent.name] = result.content
             messages.append(result)
 
@@ -112,12 +110,18 @@ class Topology(Pattern):
                     for name, content in outputs.items()
                     if name != agent.name
                 )
-                result = await agent.run([Message.user(
-                    f"Task: {ctx.task}\n\nPeer outputs:\n{peer_outputs}\n\nProvide your updated response."
-                )])
+                result = await agent.run(
+                    [
+                        Message.user(
+                            f"Task: {ctx.task}\n\nPeer outputs:\n{peer_outputs}\n\nProvide your updated response."
+                        )
+                    ]
+                )
                 outputs[agent.name] = result.content
                 messages.append(result)
 
         # Final output is concatenation of all agent outputs
         final = "\n\n".join(f"[{name}]: {content}" for name, content in outputs.items())
-        return Result(output=final, messages=messages, metadata={"topology": "mesh", "rounds": self._rounds})
+        return Result(
+            output=final, messages=messages, metadata={"topology": "mesh", "rounds": self._rounds}
+        )

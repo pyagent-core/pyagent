@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.structural import Blackboard, Layered, RoleBased, Topology, TopologyType
 from pyagent_patterns.structural.blackboard import BlackboardAgent
@@ -29,11 +28,13 @@ async def test_role_based_shared_context():
 async def test_layered_multi_layer():
     llm = MockLLM(responses=["Raw data", "Analysis result", "Final synthesis"])
 
-    pattern = Layered(layers=[
-        Layer(name="gather", agents=[Agent("gatherer", llm)]),
-        Layer(name="analyze", agents=[Agent("analyst", llm)]),
-        Layer(name="synthesize", agents=[Agent("synthesizer", llm)]),
-    ])
+    pattern = Layered(
+        layers=[
+            Layer(name="gather", agents=[Agent("gatherer", llm)]),
+            Layer(name="analyze", agents=[Agent("analyst", llm)]),
+            Layer(name="synthesize", agents=[Agent("synthesizer", llm)]),
+        ]
+    )
     result = await pattern.run("Analyze the market")
     assert result.metadata["layer_count"] == 3
     assert result.output == "Final synthesis"

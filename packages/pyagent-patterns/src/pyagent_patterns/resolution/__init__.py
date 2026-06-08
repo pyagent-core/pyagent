@@ -6,4 +6,4 @@ from pyagent_patterns.resolution.evaluator_optimizer import EvaluatorOptimizer
 from pyagent_patterns.resolution.self_reflection import SelfReflection
 from pyagent_patterns.resolution.voting import Voting
 
-__all__ = ["SelfReflection", "CrossReflection", "Debate", "Voting", "EvaluatorOptimizer"]
+__all__ = ["CrossReflection", "Debate", "EvaluatorOptimizer", "SelfReflection", "Voting"]

@@ -8,10 +8,9 @@ EscalationChain is a pre-built composite: Reflection → Debate → Voting → H
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from pyagent_patterns.base import Context, Pattern, Result
-
 
 # Quality check: returns True if the result is acceptable
 QualityCheckFn = Callable[[Result], bool]
@@ -68,11 +67,13 @@ class CompositePattern(Pattern):
 
             result = await pattern._execute(child_ctx)
             all_messages.extend(result.messages)
-            escalation_log.append({
-                "pattern": pattern.pattern_type,
-                "output_length": len(result.output),
-                "metadata": result.metadata,
-            })
+            escalation_log.append(
+                {
+                    "pattern": pattern.pattern_type,
+                    "output_length": len(result.output),
+                    "metadata": result.metadata,
+                }
+            )
 
             if self._quality_check(result):
                 return Result(

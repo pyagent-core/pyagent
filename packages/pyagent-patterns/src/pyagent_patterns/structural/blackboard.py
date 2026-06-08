@@ -3,7 +3,7 @@
 Agents don't communicate directly — they read from and write to a shared
 blackboard. Each agent specializes in reading certain keys and writing others.
 
-LLM calls: N agents × rounds
+LLM calls: N agents x rounds
 """
 
 from __future__ import annotations
@@ -103,7 +103,7 @@ class Blackboard(Pattern):
         for key, value in self._initial_state.items():
             board.write(key, value, "system")
 
-        for round_num in range(1, self._rounds + 1):
+        for _round_num in range(1, self._rounds + 1):
             for ba in self._agents:
                 # Build prompt from readable keys
                 readable = {k: board.read(k) for k in ba.reads if board.read(k) is not None}

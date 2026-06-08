@@ -4,15 +4,15 @@ The agent iteratively reasons about the task, takes an action (e.g., tool call),
 observes the result, then reasons again. Continues until the task is solved
 or max steps reached.
 
-LLM calls: 1 per step × max_steps
+LLM calls: 1 per step x max_steps
 """
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
-
 
 # Tool function type: (action_input: str) -> str
 ToolFn = Callable[[str], str]

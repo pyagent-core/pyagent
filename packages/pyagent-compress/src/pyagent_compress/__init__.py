@@ -6,10 +6,10 @@ from pyagent_compress.middleware import CompressMiddleware
 from pyagent_compress.pruner import AgentPruner, InteractionPruner
 
 __all__ = [
-    "MessageCompressor",
     "AgentPruner",
-    "InteractionPruner",
-    "TokenBudget",
     "CompressMiddleware",
+    "InteractionPruner",
+    "MessageCompressor",
+    "TokenBudget",
 ]
 __version__ = "0.1.0"

@@ -3,7 +3,7 @@
 The agent generates an initial output, critiques it for errors,
 then produces a revised output. Repeats until max rounds or confidence met.
 
-LLM calls: 2 per round × 1-N rounds = 2-2N
+LLM calls: 2 per round x 1-N rounds = 2-2N
 """
 
 from __future__ import annotations
@@ -40,6 +40,7 @@ class SelfReflection(Pattern):
     async def _execute(self, ctx: Context) -> Result:
         messages: list[Message] = []
         current_output = ""
+        critique_text = ""
 
         for round_num in range(1, self._max_rounds + 1):
             # Generate (or refine)
@@ -64,9 +65,10 @@ class SelfReflection(Pattern):
             )
             critique_result = await self._critic.run([critique_prompt])
             messages.append(critique_result)
+
             critique_text = critique_result.content
 
-            if self._stop_phrase in critique_result.content:
+            if self._stop_phrase in critique_text:
                 break
 
         return Result(

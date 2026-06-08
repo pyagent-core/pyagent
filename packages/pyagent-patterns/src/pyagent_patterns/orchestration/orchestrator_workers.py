@@ -38,7 +38,7 @@ class OrchestratorWorkers(Pattern):
         plan_prompt = Message.user(
             f"You have these workers available: {', '.join(worker_names)}.\n"
             f"Plan how to accomplish this task by assigning subtasks to workers.\n"
-            f"Respond as JSON: {{\"assignments\": [{{\"worker\": \"name\", \"subtask\": \"description\"}}]}}\n\n"
+            f'Respond as JSON: {{"assignments": [{{"worker": "name", "subtask": "description"}}]}}\n\n'
             f"Task: {ctx.task}"
         )
         plan_msg = await self._orchestrator.run([plan_prompt])

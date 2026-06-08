@@ -3,7 +3,7 @@
 Most frequently used pattern (46.8% in arxiv:2511.08475).
 Each agent has a specialized role and they communicate in a structured order.
 
-LLM calls: N agents × rounds
+LLM calls: N agents x rounds
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ class RoleBased(Pattern):
         messages: list[Message] = []
         conversation: list[Message] = [Message.user(ctx.task)]
 
-        for round_num in range(1, self._rounds + 1):
+        for _round_num in range(1, self._rounds + 1):
             for agent in self._agents:
                 if self._shared_context:
                     input_msgs = list(conversation)

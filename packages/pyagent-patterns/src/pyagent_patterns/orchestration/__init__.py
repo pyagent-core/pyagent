@@ -6,4 +6,4 @@ from pyagent_patterns.orchestration.orchestrator_workers import OrchestratorWork
 from pyagent_patterns.orchestration.pipeline import Pipeline
 from pyagent_patterns.orchestration.supervisor import Supervisor
 
-__all__ = ["Supervisor", "Pipeline", "FanOutFanIn", "Hierarchical", "OrchestratorWorkers"]
+__all__ = ["FanOutFanIn", "Hierarchical", "OrchestratorWorkers", "Pipeline", "Supervisor"]

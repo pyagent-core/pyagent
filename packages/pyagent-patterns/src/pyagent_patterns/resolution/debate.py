@@ -3,7 +3,7 @@
 Multiple debater agents argue different positions over several rounds.
 A judge agent evaluates arguments and renders a final decision.
 
-LLM calls: D debaters × R rounds + 1 judge = D*R + 1
+LLM calls: D debaters x R rounds + 1 judge = D*R + 1
 """
 
 from __future__ import annotations
@@ -43,6 +43,7 @@ class Debate(Pattern):
     async def _execute(self, ctx: Context) -> Result:
         messages: list[Message] = []
         debate_log: list[dict[str, str]] = []
+        round_args_prev: list[str] = []
 
         for round_num in range(1, self._rounds + 1):
             round_args: list[str] = []
@@ -69,12 +70,14 @@ class Debate(Pattern):
                 arg_result = await debater.run([prompt])
                 messages.append(arg_result)
                 round_args.append(arg_result.content)
-                debate_log.append({
-                    "round": round_num,
-                    "debater": debater.name,
-                    "position": position,
-                    "argument": arg_result.content,
-                })
+                debate_log.append(
+                    {
+                        "round": round_num,
+                        "debater": debater.name,
+                        "position": position,
+                        "argument": arg_result.content,
+                    }
+                )
 
             round_args_prev = round_args
 

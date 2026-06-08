@@ -9,8 +9,10 @@ Based on: arxiv:2503.18891 "AgentDropout: Dynamic Agent Elimination for Token-Ef
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from pyagent_patterns.base import Message
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Message
 
 
 @dataclass(frozen=True)
@@ -52,7 +54,7 @@ class AgentPruner:
             name = msg.name or "unknown"
             by_agent.setdefault(name, []).append(msg.content)
 
-        all_contents = [m.content for m in messages]
+        [m.content for m in messages]
         task_words = set(task.lower().split())
 
         scores: list[ContributionScore] = []
@@ -77,18 +79,17 @@ class AgentPruner:
             relevance = len(agent_words & task_words) / max(len(task_words), 1)
 
             # Self-diversity (are recent messages different from each other?)
-            if len(recent) >= 2:
-                diversity = 1.0 - self._similarity(recent[-1], recent[-2])
-            else:
-                diversity = 1.0
+            diversity = 1.0 - self._similarity(recent[-1], recent[-2]) if len(recent) >= 2 else 1.0
 
             score = 0.4 * unique_ratio + 0.3 * relevance + 0.3 * diversity
-            scores.append(ContributionScore(
-                agent_name=agent_name,
-                score=min(score, 1.0),
-                unique_info=unique_ratio,
-                message_count=len(contents),
-            ))
+            scores.append(
+                ContributionScore(
+                    agent_name=agent_name,
+                    score=min(score, 1.0),
+                    unique_info=unique_ratio,
+                    message_count=len(contents),
+                )
+            )
 
         return scores
 

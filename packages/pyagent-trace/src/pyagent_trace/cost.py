@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -40,14 +40,16 @@ class CostTracker:
         cost_usd: float,
     ) -> None:
         """Record a cost entry."""
-        self._entries.append(CostEntry(
-            pattern_type=pattern_type,
-            agent_name=agent_name,
-            model=model,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            cost_usd=cost_usd,
-        ))
+        self._entries.append(
+            CostEntry(
+                pattern_type=pattern_type,
+                agent_name=agent_name,
+                model=model,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                cost_usd=cost_usd,
+            )
+        )
 
     @property
     def total_cost(self) -> float:
