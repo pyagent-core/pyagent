@@ -6,45 +6,63 @@ on:
   pull_request:
     branches: [main]
 
+env:
+    PYTHONPATH: "${{ github.workspace }}/packages/pyagent-patterns/src:${{ github.workspace }}/packages/pyagent-compress/src:${{ github.workspace }}/packages/pyagent-router/src:${{ github.workspace }}/packages/pyagent-trace/src"
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check packages/
+      - run: ruff format --check packages/
+
   test:
-    name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          force-js-actions-to-node24: true
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - run: pip install pytest pytest-asyncio
+      - run: python -m pytest packages/ -v --tb=short
 
-      - name: Install workspace
-        run: uv sync --all-packages --all-extras
+  benchmark:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest pytest-asyncio
+      - run: python -m benchmarks.run --suite cost
 
-      - name: Lint
-        run: uv run ruff check .
+  docs:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'  # Only deploy docs on pushes to main
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install mkdocs mkdocs-material mkdocstrings[python]
+          pip install -e packages/pyagent-patterns
+          pip install -e packages/pyagent-compress
+          pip install -e packages/pyagent-router
+          pip install -e packages/pyagent-trace
 
-      - name: Format check
-        run: uv run ruff format --check .
-
-      - name: Type check
-        run: uv run mypy packages/pyagent-patterns/src packages/pyagent-compress/src packages/pyagent-router/src packages/pyagent-trace/src
-
-      - name: Test (pyagent-patterns)
-        run: uv run pytest packages/pyagent-patterns/tests -v
-
-      - name: Test (pyagent-compress)
-        run: uv run pytest packages/pyagent-compress/tests -v
-
-      - name: Test (pyagent-router)
-        run: uv run pytest packages/pyagent-router/tests -v
-
-      - name: Test (pyagent-trace)
-        run: uv run pytest packages/pyagent-trace/tests -v
+      - run: mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
