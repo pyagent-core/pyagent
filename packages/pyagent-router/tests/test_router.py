@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_router.estimator import CostEstimator
 from pyagent_router.middleware import RouterMiddleware

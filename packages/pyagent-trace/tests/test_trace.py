@@ -7,12 +7,10 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from pyagent_patterns.base import Message, Role
 from pyagent_trace.attributes import PyAgentAttributes
 from pyagent_trace.cost import CostTracker
 from pyagent_trace.recorder import Recorder
-
 
 # --- PyAgentAttributes ---
 

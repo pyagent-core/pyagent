@@ -40,6 +40,7 @@ class CrossReflection(Pattern):
     async def _execute(self, ctx: Context) -> Result:
         messages: list[Message] = []
         current_output = ""
+        review_text = ""
 
         for round_num in range(1, self._max_rounds + 1):
             # Generate or revise

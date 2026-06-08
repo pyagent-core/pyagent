@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import ClassVar
 
 
 @dataclass
@@ -71,7 +72,7 @@ class PIIGuard(Guardrail):
         redact: If True, redact PII and pass. If False, reject on detection.
     """
 
-    _PATTERNS = {
+    _PATTERNS: ClassVar[dict[str, str]] = {
         "email": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
         "phone": r"\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b",
         "ssn": r"\b\d{3}[-]?\d{2}[-]?\d{4}\b",

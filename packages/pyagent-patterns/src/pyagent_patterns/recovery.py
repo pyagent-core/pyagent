@@ -11,14 +11,13 @@ from __future__ import annotations
 
 import asyncio
 import time
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any
+from dataclasses import dataclass
+from enum import StrEnum
 
 from pyagent_patterns.base import Context, Pattern, Result
 
 
-class CircuitState(str, Enum):
+class CircuitState(StrEnum):
     CLOSED = "closed"  # Normal operation
     OPEN = "open"  # Failing, rejecting requests
     HALF_OPEN = "half_open"  # Testing if recovered
@@ -71,8 +70,8 @@ class BoundedExecution:
                 # Token limit exceeded — try next level
                 last_error = Exception(f"Token limit exceeded: {result.token_estimate}/{self.max_tokens}")
                 break
-            except asyncio.TimeoutError:
-                last_error = asyncio.TimeoutError(f"Timeout after {self.timeout_seconds}s")
+            except TimeoutError:
+                last_error = TimeoutError(f"Timeout after {self.timeout_seconds}s")
                 break
             except Exception as e:
                 last_error = e
@@ -131,9 +130,8 @@ class CircuitBreaker:
 
     @property
     def state(self) -> CircuitState:
-        if self._state == CircuitState.OPEN:
-            if time.time() - self._last_failure_time > self._reset_timeout:
-                self._state = CircuitState.HALF_OPEN
+        if self._state == CircuitState.OPEN and time.time() - self._last_failure_time > self._reset_timeout:
+            self._state = CircuitState.HALF_OPEN
         return self._state
 
     async def execute(self, pattern: Pattern, task: str, context: Context | None = None) -> Result:

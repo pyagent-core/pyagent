@@ -7,11 +7,14 @@ import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, AsyncIterator, Callable, Protocol, runtime_checkable
+from enum import StrEnum
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 
-class Role(str, Enum):
+class Role(StrEnum):
     """Well-known agent roles."""
 
     SYSTEM = "system"

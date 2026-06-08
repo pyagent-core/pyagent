@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import (
     FanOutFanIn,

@@ -6,6 +6,7 @@ from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import Hierarchical
 from pyagent_patterns.orchestration.hierarchical import Team
 
+
 async def main():
     llm = MockLLM(responses=[
         "Plan: research phase, then design phase",

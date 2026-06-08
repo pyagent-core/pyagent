@@ -42,7 +42,7 @@ class Layered(Pattern):
         messages: list[Message] = []
         layer_input = ctx.task
 
-        for i, layer in enumerate(self._layers):
+        for _i, layer in enumerate(self._layers):
             # Run all agents in this layer in parallel
             tasks = [
                 agent.run([Message.user(layer_input)]) for agent in layer.agents
@@ -64,7 +64,7 @@ class Layered(Pattern):
             messages=messages,
             metadata={
                 "layer_count": len(self._layers),
-                "layer_names": [l.name for l in self._layers],
-                "agents_per_layer": [len(l.agents) for l in self._layers],
+                "layer_names": [layer_.name for layer_ in self._layers],
+                "agents_per_layer": [len(layer_.agents) for layer_ in self._layers],
             },
         )

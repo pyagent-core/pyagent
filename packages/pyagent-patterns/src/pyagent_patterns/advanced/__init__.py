@@ -5,4 +5,4 @@ from pyagent_patterns.advanced.react import ReAct
 from pyagent_patterns.advanced.swarm import Swarm
 from pyagent_patterns.advanced.talker_reasoner import TalkerReasoner
 
-__all__ = ["TalkerReasoner", "Swarm", "HumanInTheLoop", "ReAct"]
+__all__ = ["HumanInTheLoop", "ReAct", "Swarm", "TalkerReasoner"]

@@ -2,13 +2,14 @@
 
 import asyncio
 
+from pyagent_compress import MessageCompressor, TokenBudget
 from pyagent_patterns.base import Agent, MockLLM
+from pyagent_patterns.guardrails import GuardrailChain, LengthGuard, PIIGuard
 from pyagent_patterns.orchestration import Supervisor
-from pyagent_patterns.guardrails import GuardrailChain, PIIGuard, LengthGuard
 from pyagent_patterns.recovery import BoundedExecution
 from pyagent_router import ModelSelector
-from pyagent_compress import MessageCompressor, TokenBudget
 from pyagent_trace import CostTracker
+
 
 async def main():
     # 1. Guardrails: sanitize input

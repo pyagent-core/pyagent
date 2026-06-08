@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.resolution import Voting
 
+
 async def main():
     pattern = Voting(
         voters=[

@@ -2,9 +2,10 @@
 
 import asyncio
 
-from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.advanced import HumanInTheLoop
 from pyagent_patterns.advanced.human_in_the_loop import HumanDecision
+from pyagent_patterns.base import Agent, MockLLM
+
 
 async def main():
     call_count = 0

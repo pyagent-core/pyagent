@@ -12,11 +12,11 @@ import argparse
 import asyncio
 
 from pyagent_patterns.base import Agent, MockLLM
-from pyagent_patterns.orchestration import Pipeline, FanOutFanIn, Supervisor
-from pyagent_patterns.resolution import SelfReflection, Debate, Voting
+from pyagent_patterns.orchestration import FanOutFanIn, Pipeline
+from pyagent_patterns.resolution import Debate, SelfReflection, Voting
 
 from benchmarks.framework import PatternBenchmark
-from benchmarks.suites import COST_SUITE, QUALITY_SUITE, LATENCY_SUITE, ROUTER_SUITE
+from benchmarks.suites import COST_SUITE, LATENCY_SUITE, QUALITY_SUITE, ROUTER_SUITE
 
 
 def build_patterns() -> dict[str, object]:
@@ -106,10 +106,7 @@ async def main(suite_name: str | None = None) -> None:
         "router": ROUTER_SUITE,
     }
 
-    if suite_name:
-        suites = [suites_map[suite_name]]
-    else:
-        suites = list(suites_map.values())
+    suites = [suites_map[suite_name]] if suite_name else list(suites_map.values())
 
     for suite in suites:
         print(f"\n{'#' * 90}")

@@ -10,9 +10,10 @@ import json
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pyagent_patterns.base import Message, Role
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Message
 
 
 @dataclass

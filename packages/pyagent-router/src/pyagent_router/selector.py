@@ -7,13 +7,13 @@ cheapest model that meets quality requirements.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 from pyagent_router.estimator import CostEstimate, CostEstimator
 from pyagent_router.scorer import DifficultyScore, DifficultyScorer
 
 
-class Capability(str, Enum):
+class Capability(StrEnum):
     """Model capabilities for filtering."""
 
     CODE = "code"
@@ -115,9 +115,10 @@ class ModelSelector:
         # Filter specs by difficulty range and capability
         candidates: list[ModelSpec] = []
         for spec in self._specs:
-            if spec.min_difficulty <= difficulty.score <= spec.max_difficulty:
-                if required_capability is None or required_capability in spec.capabilities:
-                    candidates.append(spec)
+            if spec.min_difficulty <= difficulty.score <= spec.max_difficulty and (
+                required_capability is None or required_capability in spec.capabilities
+            ):
+                candidates.append(spec)
 
         if not candidates:
             # Fallback to the most capable model

@@ -2,12 +2,13 @@
 
 import asyncio
 
-from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.advanced import ReAct
+from pyagent_patterns.base import Agent, MockLLM
+
 
 async def main():
     def search(query: str) -> str:
-        return f"Tim Cook has been CEO of Apple since August 2011."
+        return "Tim Cook has been CEO of Apple since August 2011."
 
     def calculator(expr: str) -> str:
         return str(eval(expr))

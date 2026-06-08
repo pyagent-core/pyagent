@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.structural import RoleBased
 
+
 async def main():
     pattern = RoleBased(
         agents=[

@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import pytest
-
-from pyagent_patterns.base import Agent, Message, MockLLM, Role
 from pyagent_compress.budget import BudgetExceeded, TokenBudget
 from pyagent_compress.compressor import MessageCompressor
 from pyagent_compress.middleware import CompressMiddleware
 from pyagent_compress.pruner import AgentPruner, InteractionPruner
+from pyagent_patterns.base import Agent, Message, MockLLM, Role
 
 
 def test_compressor_reduces_tokens():

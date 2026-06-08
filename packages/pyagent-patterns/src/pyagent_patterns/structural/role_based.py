@@ -39,7 +39,7 @@ class RoleBased(Pattern):
         messages: list[Message] = []
         conversation: list[Message] = [Message.user(ctx.task)]
 
-        for round_num in range(1, self._rounds + 1):
+        for _round_num in range(1, self._rounds + 1):
             for agent in self._agents:
                 if self._shared_context:
                     input_msgs = list(conversation)

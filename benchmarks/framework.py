@@ -7,12 +7,12 @@ Usage:
 
 from __future__ import annotations
 
-import asyncio
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any
 
-from pyagent_patterns.base import Pattern, Result
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Pattern
 
 
 @dataclass

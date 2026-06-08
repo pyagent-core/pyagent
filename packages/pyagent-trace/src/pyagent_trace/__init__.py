@@ -4,6 +4,7 @@ from pyagent_trace.attributes import PyAgentAttributes
 from pyagent_trace.cost import CostTracker
 from pyagent_trace.recorder import Recorder
 
+
 # OTel-dependent imports are lazy to avoid hard dependency
 def __getattr__(name: str):
     if name == "traced_agent":
@@ -18,11 +19,11 @@ def __getattr__(name: str):
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
-    "traced_pattern",
-    "traced_agent",
+    "CostTracker",
     "PatternSpanEmitter",
     "PyAgentAttributes",
-    "CostTracker",
     "Recorder",
+    "traced_agent",
+    "traced_pattern",
 ]
 __version__ = "0.1.0"

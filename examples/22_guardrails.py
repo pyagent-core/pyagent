@@ -1,6 +1,7 @@
 """Example: Guardrails — validate and sanitize agent I/O."""
 
-from pyagent_patterns.guardrails import GuardrailChain, LengthGuard, PIIGuard, ContentGuard
+from pyagent_patterns.guardrails import ContentGuard, GuardrailChain, LengthGuard, PIIGuard
+
 
 def main():
     chain = GuardrailChain([

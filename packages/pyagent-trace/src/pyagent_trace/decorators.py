@@ -8,12 +8,14 @@ from __future__ import annotations
 
 import functools
 import time
-from typing import Any
+from typing import TYPE_CHECKING
 
 from opentelemetry import trace
 
-from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
 from pyagent_trace.attributes import PyAgentAttributes
+
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
 
 _tracer = trace.get_tracer("pyagent", "0.1.0")
 

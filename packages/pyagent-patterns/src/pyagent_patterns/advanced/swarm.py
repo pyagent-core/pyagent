@@ -51,32 +51,34 @@ class Swarm(Pattern):
         # Round 0: each agent independently responds to the task
         init_tasks = [agent.run([Message.user(ctx.task)]) for agent in self._agents]
         init_results = await asyncio.gather(*init_tasks)
-        for agent, result in zip(self._agents, init_results):
+        for agent, result in zip(self._agents, init_results, strict=False):
             states[agent.name] = result.content
             messages.append(result)
 
         # Subsequent rounds: agents interact with random neighbors
-        for round_num in range(1, self._rounds + 1):
+        for _round_num in range(1, self._rounds + 1):
             new_states: dict[str, str] = {}
 
-            async def _update_agent(agent: Agent) -> tuple[str, str]:
+            async def _update_agent(
+                agent: Agent, _states: dict[str, str] = states
+            ) -> tuple[str, str]:
                 # Select random neighbors
                 others = [a for a in self._agents if a.name != agent.name]
                 neighbors = random.sample(others, min(self._neighbor_count, len(others)))
 
                 neighbor_views = "\n".join(
-                    f"- {n.name}: {states[n.name]}" for n in neighbors
+                    f"- {n.name}: {_states[n.name]}" for n in neighbors
                 )
                 prompt = Message.user(
                     f"Task: {ctx.task}\n\n"
-                    f"Your current response: {states[agent.name]}\n\n"
+                    f"Your current response: {_states[agent.name]}\n\n"
                     f"Neighbor responses:\n{neighbor_views}\n\n"
                     f"Update your response considering your neighbors' views."
                 )
                 result = await agent.run([prompt])
                 return agent.name, result.content
 
-            update_tasks = [_update_agent(agent) for agent in self._agents]
+            update_tasks = [_update_agent(agent, states) for agent in self._agents]
             updates = await asyncio.gather(*update_tasks)
             for name, content in updates:
                 new_states[name] = content

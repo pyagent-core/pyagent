@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import OrchestratorWorkers
 
+
 async def main():
     orch_llm = MockLLM(responses=[
         '{"assignments": [{"worker": "researcher", "subtask": "Find AI trends data"}]}',

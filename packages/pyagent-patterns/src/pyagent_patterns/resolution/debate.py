@@ -43,6 +43,7 @@ class Debate(Pattern):
     async def _execute(self, ctx: Context) -> Result:
         messages: list[Message] = []
         debate_log: list[dict[str, str]] = []
+        round_args_prev: list[str] = []
 
         for round_num in range(1, self._rounds + 1):
             round_args: list[str] = []

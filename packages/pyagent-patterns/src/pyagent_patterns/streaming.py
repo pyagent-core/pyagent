@@ -12,9 +12,12 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from typing import Any, AsyncIterator
+from typing import TYPE_CHECKING, Any
 
-from pyagent_patterns.base import Pattern, Result
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from pyagent_patterns.base import Pattern
 
 
 @dataclass
@@ -36,8 +39,8 @@ async def stream_pattern(pattern: Pattern, task: str) -> AsyncIterator[StreamChu
     For Pipeline patterns, yields after each stage completes.
     For Fan-Out, yields as each parallel agent completes.
     """
-    from pyagent_patterns.orchestration.pipeline import Pipeline
     from pyagent_patterns.orchestration.fan_out_fan_in import FanOutFanIn
+    from pyagent_patterns.orchestration.pipeline import Pipeline
 
     if isinstance(pattern, Pipeline):
         async for chunk in _stream_pipeline(pattern, task):
@@ -107,7 +110,7 @@ async def _stream_fanout(fanout: Pattern, task: str) -> AsyncIterator[StreamChun
     await asyncio.gather(*tasks)
 
     # Aggregate
-    aggregated_input = "\n".join(
+    "\n".join(
         f"[{a.name}]: (see prior chunks)" for a in fanout._agents
     )
     result = await fanout.run(task)

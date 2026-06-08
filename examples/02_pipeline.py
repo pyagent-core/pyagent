@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import Pipeline
 
+
 async def main():
     llm = MockLLM(responses=[
         "Extracted: Revenue $94B, profit margin 23%, growth 15%",

@@ -10,9 +10,12 @@ Wall-clock latency: max(agent latencies) + aggregator
 from __future__ import annotations
 
 import asyncio
-from typing import AsyncIterator
+from typing import TYPE_CHECKING
 
 from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 
 class FanOutFanIn(Pattern):

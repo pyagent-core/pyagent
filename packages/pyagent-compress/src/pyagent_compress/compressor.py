@@ -104,7 +104,7 @@ class MessageCompressor:
         kept: list[str] = []
         running_tokens = 0
 
-        for score, sentence in scored:
+        for _score, sentence in scored:
             sent_tokens = len(sentence) // 4
             if running_tokens + sent_tokens > target_tokens and kept:
                 break

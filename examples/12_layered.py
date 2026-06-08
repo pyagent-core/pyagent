@@ -6,6 +6,7 @@ from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.structural import Layered
 from pyagent_patterns.structural.layered import Layer
 
+
 async def main():
     llm = MockLLM(responses=["Raw data gathered", "Analyzed patterns", "Executive summary"])
     pattern = Layered(layers=[

@@ -1,6 +1,7 @@
 """Example: Pattern Advisor — auto-select the best pattern."""
 
-from pyagent_patterns.advisor import PatternAdvisor, Constraints, Quality, Latency
+from pyagent_patterns.advisor import Constraints, Latency, PatternAdvisor, Quality
+
 
 def main():
     advisor = PatternAdvisor()

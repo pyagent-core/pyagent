@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.resolution import SelfReflection
 
+
 async def main():
     llm = MockLLM(responses=[
         "def fib(n): return n if n<=1 else fib(n-1)+fib(n-2)",

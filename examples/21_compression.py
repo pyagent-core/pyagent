@@ -1,7 +1,8 @@
 """Example: Compression — reduce inter-agent token transfer."""
 
-from pyagent_compress import MessageCompressor, TokenBudget, AgentPruner
+from pyagent_compress import AgentPruner, MessageCompressor, TokenBudget
 from pyagent_patterns.base import Message, Role
+
 
 def main():
     # Compress verbose LLM output

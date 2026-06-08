@@ -8,9 +8,12 @@ LLM calls: N (one per stage)
 
 from __future__ import annotations
 
-from typing import AsyncIterator
+from typing import TYPE_CHECKING
 
 from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 
 class Pipeline(Pattern):
@@ -33,7 +36,7 @@ class Pipeline(Pattern):
         messages: list[Message] = []
         current_input = ctx.task
 
-        for i, stage in enumerate(self._stages):
+        for _i, stage in enumerate(self._stages):
             stage_msg = Message.user(current_input)
             response = await stage.run([stage_msg])
             messages.append(response)
@@ -47,7 +50,7 @@ class Pipeline(Pattern):
 
     async def stream(self, task: str, context: Context | None = None) -> AsyncIterator[str]:
         """Stream stage completions as they finish."""
-        ctx = context or Context(task=task)
+        context or Context(task=task)
         current_input = task
 
         for i, stage in enumerate(self._stages):

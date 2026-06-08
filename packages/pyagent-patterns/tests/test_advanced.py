@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import pytest
-
-from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.advanced import HumanInTheLoop, ReAct, Swarm, TalkerReasoner
 from pyagent_patterns.advanced.human_in_the_loop import HumanDecision
+from pyagent_patterns.base import Agent, MockLLM
 
 
 @pytest.mark.asyncio

@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.resolution import CrossReflection
 
+
 async def main():
     pattern = CrossReflection(
         generator=Agent("writer", MockLLM(responses=["Draft blog post about AI safety...", "Revised with stronger intro..."])),

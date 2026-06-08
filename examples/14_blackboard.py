@@ -6,6 +6,7 @@ from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.structural import Blackboard
 from pyagent_patterns.structural.blackboard import BlackboardAgent
 
+
 async def main():
     pattern = Blackboard(
         agents=[

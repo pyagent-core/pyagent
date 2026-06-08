@@ -10,12 +10,12 @@ from __future__ import annotations
 
 import asyncio
 from collections import Counter
-from enum import Enum
+from enum import StrEnum
 
 from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
 
 
-class VotingStrategy(str, Enum):
+class VotingStrategy(StrEnum):
     MAJORITY = "majority"
     WEIGHTED = "weighted"
 
@@ -75,7 +75,7 @@ class Voting(Pattern):
         else:
             # Weighted voting
             weighted_counts: dict[str, float] = {}
-            for label, weight in zip(vote_labels, self._weights):
+            for label, weight in zip(vote_labels, self._weights, strict=False):
                 weighted_counts[label] = weighted_counts.get(label, 0.0) + weight
             winner = max(weighted_counts, key=weighted_counts.get)  # type: ignore[arg-type]
             tally = weighted_counts

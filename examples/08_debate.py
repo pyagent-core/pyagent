@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.resolution import Debate
 
+
 async def main():
     debate = Debate(
         debaters=[

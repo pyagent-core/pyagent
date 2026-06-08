@@ -5,6 +5,7 @@ import asyncio
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.resolution import EvaluatorOptimizer
 
+
 async def main():
     pattern = EvaluatorOptimizer(
         generator=Agent("copywriter", MockLLM(responses=["Buy now!", "Save 30% on premium headphones this week!"])),

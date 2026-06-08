@@ -103,7 +103,7 @@ class Blackboard(Pattern):
         for key, value in self._initial_state.items():
             board.write(key, value, "system")
 
-        for round_num in range(1, self._rounds + 1):
+        for _round_num in range(1, self._rounds + 1):
             for ba in self._agents:
                 # Build prompt from readable keys
                 readable = {k: board.read(k) for k in ba.reads if board.read(k) is not None}

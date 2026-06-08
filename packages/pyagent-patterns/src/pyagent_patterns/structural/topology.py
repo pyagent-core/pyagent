@@ -11,12 +11,12 @@ flow, overhead, and result quality.
 from __future__ import annotations
 
 import asyncio
-from enum import Enum
+from enum import StrEnum
 
 from pyagent_patterns.base import Agent, Context, Message, Pattern, Result
 
 
-class TopologyType(str, Enum):
+class TopologyType(StrEnum):
     CHAIN = "chain"
     STAR = "star"
     MESH = "mesh"
@@ -100,7 +100,7 @@ class Topology(Pattern):
         # Initial round
         tasks = [a.run([Message.user(ctx.task)]) for a in self._agents]
         initial = await asyncio.gather(*tasks)
-        for agent, result in zip(self._agents, initial):
+        for agent, result in zip(self._agents, initial, strict=False):
             outputs[agent.name] = result.content
             messages.append(result)
 

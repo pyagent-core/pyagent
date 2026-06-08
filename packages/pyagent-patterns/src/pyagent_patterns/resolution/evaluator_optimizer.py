@@ -44,6 +44,7 @@ class EvaluatorOptimizer(Pattern):
         messages: list[Message] = []
         current_output = ""
         scores: list[int] = []
+        eval_text = ""
 
         criteria_text = "\n".join(f"- {c}" for c in self._criteria)
 

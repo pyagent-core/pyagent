@@ -4,7 +4,8 @@ import asyncio
 
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import Pipeline
-from pyagent_patterns.recovery import BoundedExecution, CircuitBreaker, CircuitState
+from pyagent_patterns.recovery import BoundedExecution, CircuitBreaker
+
 
 async def main():
     # Bounded execution with fallback

@@ -1,7 +1,8 @@
 """Example: Router — difficulty-aware model selection."""
 
-from pyagent_router import DifficultyScorer, CostEstimator, ModelSelector
+from pyagent_router import CostEstimator, DifficultyScorer, ModelSelector
 from pyagent_router.selector import Capability
+
 
 def main():
     # Score difficulty

@@ -2,8 +2,9 @@
 
 import asyncio
 
-from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.advanced import Swarm
+from pyagent_patterns.base import Agent, MockLLM
+
 
 async def main():
     pattern = Swarm(

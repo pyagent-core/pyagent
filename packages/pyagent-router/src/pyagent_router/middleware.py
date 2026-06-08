@@ -7,6 +7,7 @@ optimal model based on task difficulty and cost.
 from __future__ import annotations
 
 from pyagent_patterns.base import Agent, LLMCallable, Message
+
 from pyagent_router.selector import Capability, ModelSelector, SelectionResult
 
 

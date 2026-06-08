@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
-from pyagent_patterns.base import Pattern
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Pattern
 
 _REGISTRY: dict[str, type[Pattern]] = {}
 

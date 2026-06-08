@@ -6,6 +6,7 @@ from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.composite import CompositePattern, min_length_check
 from pyagent_patterns.resolution import SelfReflection, Voting
 
+
 async def main():
     # Pattern 1: Quick reflection (may produce short output)
     reflection = SelfReflection(

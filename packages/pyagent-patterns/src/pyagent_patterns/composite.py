@@ -8,10 +8,9 @@ EscalationChain is a pre-built composite: Reflection → Debate → Voting → H
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from pyagent_patterns.base import Context, Pattern, Result
-
 
 # Quality check: returns True if the result is acceptable
 QualityCheckFn = Callable[[Result], bool]
