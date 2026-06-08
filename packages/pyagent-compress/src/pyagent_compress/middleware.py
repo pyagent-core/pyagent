@@ -48,11 +48,13 @@ class CompressedAgent(Agent):
 
         # Compress the output
         compressed = self._compressor.compress(result.content)
-        self.compression_log.append({
-            "original_tokens": compressed.original_tokens,
-            "compressed_tokens": compressed.compressed_tokens,
-            "savings_pct": compressed.savings_pct,
-        })
+        self.compression_log.append(
+            {
+                "original_tokens": compressed.original_tokens,
+                "compressed_tokens": compressed.compressed_tokens,
+                "savings_pct": compressed.savings_pct,
+            }
+        )
 
         # Track budget if available
         if self._budget:

@@ -100,7 +100,9 @@ class CostEstimator:
             )
 
         pricing = self._pricing[model]
-        est_output = output_tokens if output_tokens is not None else int(input_tokens * self._output_ratio)
+        est_output = (
+            output_tokens if output_tokens is not None else int(input_tokens * self._output_ratio)
+        )
 
         return CostEstimate(
             model=model,

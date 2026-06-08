@@ -36,7 +36,9 @@ def test_agent_pruner_scores():
     messages = [
         Message(role=Role.ASSISTANT, content="Unique analysis of market trends", name="analyst"),
         Message(role=Role.ASSISTANT, content="Unique analysis of market trends", name="copycat"),
-        Message(role=Role.ASSISTANT, content="Different risk assessment with new data", name="risk"),
+        Message(
+            role=Role.ASSISTANT, content="Different risk assessment with new data", name="risk"
+        ),
     ]
     scores = pruner.score_agents(messages, "analyze market trends")
     assert len(scores) == 3
@@ -49,11 +51,16 @@ def test_interaction_pruner_consensus():
     assert pruner.has_consensus(["The answer is 42", "The answer is 42"], current_round=1) is True
 
     # Very different outputs → no consensus
-    assert pruner.has_consensus(
-        ["Completely different analysis about stocks",
-         "An unrelated discussion about weather patterns"],
-        current_round=1,
-    ) is False
+    assert (
+        pruner.has_consensus(
+            [
+                "Completely different analysis about stocks",
+                "An unrelated discussion about weather patterns",
+            ],
+            current_round=1,
+        )
+        is False
+    )
 
 
 def test_interaction_pruner_min_rounds():
@@ -82,11 +89,13 @@ def test_token_budget_strict_raises():
 
 @pytest.mark.asyncio
 async def test_compress_middleware():
-    llm = MockLLM(responses=[
-        "Let me think about this carefully. Basically, the revenue data shows "
-        "a 15% increase year-over-year, which is significant. The profit margin "
-        "expanded to 23%. In conclusion, this is a buy signal."
-    ])
+    llm = MockLLM(
+        responses=[
+            "Let me think about this carefully. Basically, the revenue data shows "
+            "a 15% increase year-over-year, which is significant. The profit margin "
+            "expanded to 23%. In conclusion, this is a buy signal."
+        ]
+    )
     agent = Agent("analyst", llm)
 
     middleware = CompressMiddleware(target_ratio=0.5)

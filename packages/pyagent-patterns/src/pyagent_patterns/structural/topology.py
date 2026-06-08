@@ -82,12 +82,10 @@ class Topology(Pattern):
         messages.extend(spoke_results)
 
         # Hub synthesizes
-        summary = "\n".join(
-            f"- {spokes[i].name}: {r.content}" for i, r in enumerate(spoke_results)
+        summary = "\n".join(f"- {spokes[i].name}: {r.content}" for i, r in enumerate(spoke_results))
+        hub_result = await hub.run(
+            [Message.user(f"Synthesize these inputs:\n{summary}\n\nOriginal task: {ctx.task}")]
         )
-        hub_result = await hub.run([Message.user(
-            f"Synthesize these inputs:\n{summary}\n\nOriginal task: {ctx.task}"
-        )])
         messages.append(hub_result)
 
         return Result(output=hub_result.content, messages=messages, metadata={"topology": "star"})
@@ -112,12 +110,18 @@ class Topology(Pattern):
                     for name, content in outputs.items()
                     if name != agent.name
                 )
-                result = await agent.run([Message.user(
-                    f"Task: {ctx.task}\n\nPeer outputs:\n{peer_outputs}\n\nProvide your updated response."
-                )])
+                result = await agent.run(
+                    [
+                        Message.user(
+                            f"Task: {ctx.task}\n\nPeer outputs:\n{peer_outputs}\n\nProvide your updated response."
+                        )
+                    ]
+                )
                 outputs[agent.name] = result.content
                 messages.append(result)
 
         # Final output is concatenation of all agent outputs
         final = "\n\n".join(f"[{name}]: {content}" for name, content in outputs.items())
-        return Result(output=final, messages=messages, metadata={"topology": "mesh", "rounds": self._rounds})
+        return Result(
+            output=final, messages=messages, metadata={"topology": "mesh", "rounds": self._rounds}
+        )

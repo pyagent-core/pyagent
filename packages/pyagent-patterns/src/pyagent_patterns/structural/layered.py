@@ -44,9 +44,7 @@ class Layered(Pattern):
 
         for _i, layer in enumerate(self._layers):
             # Run all agents in this layer in parallel
-            tasks = [
-                agent.run([Message.user(layer_input)]) for agent in layer.agents
-            ]
+            tasks = [agent.run([Message.user(layer_input)]) for agent in layer.agents]
             layer_results = await asyncio.gather(*tasks)
             messages.extend(layer_results)
 
@@ -55,8 +53,7 @@ class Layered(Pattern):
                 layer_input = layer_results[0].content
             else:
                 layer_input = "\n\n".join(
-                    f"[{layer.agents[j].name}]: {r.content}"
-                    for j, r in enumerate(layer_results)
+                    f"[{layer.agents[j].name}]: {r.content}" for j, r in enumerate(layer_results)
                 )
 
         return Result(

@@ -131,10 +131,13 @@ class MessageCompressor:
         score += min(numbers / 3, 1.0) * 0.3
 
         # Sentences with technical terms
-        technical = len(re.findall(
-            r"(?i)\b(result|conclusion|therefore|because|shows|indicates|found|"
-            r"evidence|data|percent|increase|decrease|significant)\b", sentence
-        ))
+        technical = len(
+            re.findall(
+                r"(?i)\b(result|conclusion|therefore|because|shows|indicates|found|"
+                r"evidence|data|percent|increase|decrease|significant)\b",
+                sentence,
+            )
+        )
         score += min(technical / 3, 1.0) * 0.2
 
         # Shorter sentences with substance are preferred

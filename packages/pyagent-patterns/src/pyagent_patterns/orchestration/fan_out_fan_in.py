@@ -46,8 +46,7 @@ class FanOutFanIn(Pattern):
 
         # Fan-in: aggregate results
         combined = "\n\n".join(
-            f"--- {self._agents[i].name} ---\n{r.content}"
-            for i, r in enumerate(parallel_results)
+            f"--- {self._agents[i].name} ---\n{r.content}" for i, r in enumerate(parallel_results)
         )
         agg_prompt = Message.user(
             f"Combine the following analyses into a unified response:\n\n{combined}"

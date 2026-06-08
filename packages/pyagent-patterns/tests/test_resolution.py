@@ -24,7 +24,16 @@ async def test_self_reflection_early_stop():
 
 @pytest.mark.asyncio
 async def test_self_reflection_max_rounds():
-    llm = MockLLM(responses=["Draft 1", "Needs work", "Draft 2", "Still needs work", "Draft 3", "More feedback"])
+    llm = MockLLM(
+        responses=[
+            "Draft 1",
+            "Needs work",
+            "Draft 2",
+            "Still needs work",
+            "Draft 3",
+            "More feedback",
+        ]
+    )
     pattern = SelfReflection(agent=Agent("coder", llm), max_rounds=3)
     result = await pattern.run("Write code")
     assert result.metadata["rounds"] == 3
@@ -68,11 +77,13 @@ async def test_voting_majority():
     llm_b = MockLLM(responses=["YES\nBecause of Y"])
     llm_c = MockLLM(responses=["NO\nBecause of Z"])
 
-    pattern = Voting(voters=[
-        Agent("voter_a", llm_a),
-        Agent("voter_b", llm_b),
-        Agent("voter_c", llm_c),
-    ])
+    pattern = Voting(
+        voters=[
+            Agent("voter_a", llm_a),
+            Agent("voter_b", llm_b),
+            Agent("voter_c", llm_c),
+        ]
+    )
     result = await pattern.run("Is this a good idea?")
     assert result.metadata["winner"] == "YES"
     assert result.metadata["tally"]["YES"] == 2

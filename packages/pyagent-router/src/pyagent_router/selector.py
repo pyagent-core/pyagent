@@ -46,10 +46,26 @@ class ModelSpec:
 DEFAULT_MODEL_SPECS: list[ModelSpec] = [
     ModelSpec("gpt-4.1-nano", 1, 3, {Capability.GENERAL}, 1_000_000),
     ModelSpec("gpt-4o-mini", 1, 5, {Capability.GENERAL, Capability.CODE}, 128_000),
-    ModelSpec("gpt-4.1-mini", 1, 6, {Capability.GENERAL, Capability.CODE, Capability.REASONING}, 1_000_000),
-    ModelSpec("gpt-4o", 3, 8, {Capability.GENERAL, Capability.CODE, Capability.CREATIVE, Capability.VISION}, 128_000),
-    ModelSpec("gpt-4.1", 4, 9, {Capability.GENERAL, Capability.CODE, Capability.REASONING}, 1_000_000),
-    ModelSpec("claude-sonnet-4", 5, 10, {Capability.GENERAL, Capability.CODE, Capability.REASONING, Capability.CREATIVE}, 200_000),
+    ModelSpec(
+        "gpt-4.1-mini", 1, 6, {Capability.GENERAL, Capability.CODE, Capability.REASONING}, 1_000_000
+    ),
+    ModelSpec(
+        "gpt-4o",
+        3,
+        8,
+        {Capability.GENERAL, Capability.CODE, Capability.CREATIVE, Capability.VISION},
+        128_000,
+    ),
+    ModelSpec(
+        "gpt-4.1", 4, 9, {Capability.GENERAL, Capability.CODE, Capability.REASONING}, 1_000_000
+    ),
+    ModelSpec(
+        "claude-sonnet-4",
+        5,
+        10,
+        {Capability.GENERAL, Capability.CODE, Capability.REASONING, Capability.CREATIVE},
+        200_000,
+    ),
     ModelSpec("o3-mini", 6, 10, {Capability.REASONING, Capability.MATH, Capability.CODE}, 200_000),
     ModelSpec("o3", 8, 10, {Capability.REASONING, Capability.MATH, Capability.CODE}, 200_000),
 ]

@@ -70,12 +70,14 @@ class Debate(Pattern):
                 arg_result = await debater.run([prompt])
                 messages.append(arg_result)
                 round_args.append(arg_result.content)
-                debate_log.append({
-                    "round": round_num,
-                    "debater": debater.name,
-                    "position": position,
-                    "argument": arg_result.content,
-                })
+                debate_log.append(
+                    {
+                        "round": round_num,
+                        "debater": debater.name,
+                        "position": position,
+                        "argument": arg_result.content,
+                    }
+                )
 
             round_args_prev = round_args
 

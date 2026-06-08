@@ -66,9 +66,7 @@ class Swarm(Pattern):
                 others = [a for a in self._agents if a.name != agent.name]
                 neighbors = random.sample(others, min(self._neighbor_count, len(others)))
 
-                neighbor_views = "\n".join(
-                    f"- {n.name}: {_states[n.name]}" for n in neighbors
-                )
+                neighbor_views = "\n".join(f"- {n.name}: {_states[n.name]}" for n in neighbors)
                 prompt = Message.user(
                     f"Task: {ctx.task}\n\n"
                     f"Your current response: {_states[agent.name]}\n\n"

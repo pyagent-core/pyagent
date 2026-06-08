@@ -31,10 +31,12 @@ async def test_composite_escalation():
     reflection = SelfReflection(agent=Agent("coder", short_llm), max_rounds=1)
 
     # Second pattern produces adequate output
-    vote_llm = MockLLM(responses=[
-        "A much longer and more detailed response that passes the length check",
-        "A much longer and more detailed response that passes the length check",
-    ])
+    vote_llm = MockLLM(
+        responses=[
+            "A much longer and more detailed response that passes the length check",
+            "A much longer and more detailed response that passes the length check",
+        ]
+    )
     voting = Voting(voters=[Agent("a", vote_llm), Agent("b", vote_llm)])
 
     composite = CompositePattern(

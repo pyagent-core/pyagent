@@ -14,6 +14,7 @@ from pyagent_trace.recorder import Recorder
 
 # --- PyAgentAttributes ---
 
+
 def test_attributes_pattern_keys():
     assert PyAgentAttributes.PATTERN_TYPE == "pyagent.pattern.type"
     assert PyAgentAttributes.PATTERN_ROUNDS == "pyagent.pattern.rounds"
@@ -40,6 +41,7 @@ def test_attributes_exec_keys():
 
 
 # --- CostTracker ---
+
 
 def test_cost_tracker_empty():
     tracker = CostTracker()
@@ -103,6 +105,7 @@ def test_cost_tracker_summary():
 
 
 # --- Recorder ---
+
 
 def test_recorder_start_end():
     rec = Recorder()

@@ -67,11 +67,13 @@ class CompositePattern(Pattern):
 
             result = await pattern._execute(child_ctx)
             all_messages.extend(result.messages)
-            escalation_log.append({
-                "pattern": pattern.pattern_type,
-                "output_length": len(result.output),
-                "metadata": result.metadata,
-            })
+            escalation_log.append(
+                {
+                    "pattern": pattern.pattern_type,
+                    "output_length": len(result.output),
+                    "metadata": result.metadata,
+                }
+            )
 
             if self._quality_check(result):
                 return Result(

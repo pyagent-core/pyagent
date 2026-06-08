@@ -55,12 +55,12 @@ class Voting(Pattern):
 
         suffix = ""
         if self._normalize:
-            suffix = "\n\nRespond with a concise answer (one word or short phrase) first, then explain."
+            suffix = (
+                "\n\nRespond with a concise answer (one word or short phrase) first, then explain."
+            )
 
         # All voters run in parallel
-        tasks = [
-            voter.run([Message.user(ctx.task + suffix)]) for voter in self._voters
-        ]
+        tasks = [voter.run([Message.user(ctx.task + suffix)]) for voter in self._voters]
         votes = await asyncio.gather(*tasks)
         messages.extend(votes)
 

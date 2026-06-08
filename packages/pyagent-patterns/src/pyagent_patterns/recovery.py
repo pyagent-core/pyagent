@@ -68,7 +68,9 @@ class BoundedExecution:
                     result.metadata["attempts"] = attempt
                     return result
                 # Token limit exceeded — try next level
-                last_error = Exception(f"Token limit exceeded: {result.token_estimate}/{self.max_tokens}")
+                last_error = Exception(
+                    f"Token limit exceeded: {result.token_estimate}/{self.max_tokens}"
+                )
                 break
             except TimeoutError:
                 last_error = TimeoutError(f"Timeout after {self.timeout_seconds}s")
@@ -130,7 +132,10 @@ class CircuitBreaker:
 
     @property
     def state(self) -> CircuitState:
-        if self._state == CircuitState.OPEN and time.time() - self._last_failure_time > self._reset_timeout:
+        if (
+            self._state == CircuitState.OPEN
+            and time.time() - self._last_failure_time > self._reset_timeout
+        ):
             self._state = CircuitState.HALF_OPEN
         return self._state
 

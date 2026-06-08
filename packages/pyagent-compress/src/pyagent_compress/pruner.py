@@ -82,12 +82,14 @@ class AgentPruner:
             diversity = 1.0 - self._similarity(recent[-1], recent[-2]) if len(recent) >= 2 else 1.0
 
             score = 0.4 * unique_ratio + 0.3 * relevance + 0.3 * diversity
-            scores.append(ContributionScore(
-                agent_name=agent_name,
-                score=min(score, 1.0),
-                unique_info=unique_ratio,
-                message_count=len(contents),
-            ))
+            scores.append(
+                ContributionScore(
+                    agent_name=agent_name,
+                    score=min(score, 1.0),
+                    unique_info=unique_ratio,
+                    message_count=len(contents),
+                )
+            )
 
         return scores
 
