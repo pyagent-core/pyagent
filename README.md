@@ -1759,7 +1759,6 @@ The easiest way to contribute is to **add a new pattern**:
 
 Other welcome contributions: new provider adapters in the docs/examples, bug reports, benchmarks, and documentation improvements.
 
-- **Docs**: https://pyagent.dev
 - **Issues**: https://github.com/pyagent-core/pyagent/issues
 
 ---
