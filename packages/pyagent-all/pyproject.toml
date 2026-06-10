@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pyagent-all"
 version = "0.2.0"
-description = "Meta-package: installs all PyAgent packages (patterns, router, compress, trace)"
+description = "Meta-package: installs all PyAgent packages (patterns, router, compress, trace, context, providers, blueprint, studio)"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -24,10 +24,14 @@ authors = [
     {name = "PyAgent Contributors"},
 ]
 dependencies = [
-    "pyagent-patterns>=0.1.0",
-    "pyagent-router>=0.1.0",
-    "pyagent-compress>=0.1.0",
-    "pyagent-trace>=0.1.0",
+    "pyagent-patterns>=0.2.0",
+    "pyagent-router>=0.2.0",
+    "pyagent-compress>=0.2.0",
+    "pyagent-trace>=0.2.0",
+    "pyagent-context>=0.1.0",
+    "pyagent-providers>=0.1.0",
+    "pyagent-blueprint>=0.1.0",
+    "pyagent-studio>=0.1.0",
 ]
 
 [project.urls]

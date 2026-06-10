@@ -3,7 +3,7 @@ name: Publish to PyPI
 on:
   push:
     tags:
-      - "v*"          # e.g. v0.1.0
+      - "v*"          # e.g. v0.2.1
   workflow_dispatch:  # allow manual trigger
 
 jobs:
@@ -32,6 +32,18 @@ jobs:
       - name: Build pyagent-trace
         run: uv build --package pyagent-trace --out-dir dist/pyagent-trace
 
+      - name: Build pyagent-context
+        run: uv build --package pyagent-context --out-dir dist/pyagent-context
+
+      - name: Build pyagent-providers
+        run: uv build --package pyagent-providers --out-dir dist/pyagent-providers
+
+      - name: Build pyagent-blueprint
+        run: uv build --package pyagent-blueprint --out-dir dist/pyagent-blueprint
+
+      - name: Build pyagent-studio
+        run: uv build --package pyagent-studio --out-dir dist/pyagent-studio
+
       - name: Build pyagent-all
         run: uv build --package pyagent-all --out-dir dist/pyagent-all
 
@@ -59,7 +71,7 @@ jobs:
           name: dist
           path: dist/
 
-      # Publish base package first (others depend on it)
+      # Tier 1 — no inter-package deps
       - name: Publish pyagent-patterns
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -80,7 +92,30 @@ jobs:
         with:
           packages-dir: dist/pyagent-trace/
 
-      # Meta-package last (depends on all of the above)
+      - name: Publish pyagent-context
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-context/
+
+      # Tier 2 — depends on patterns + router
+      - name: Publish pyagent-providers
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-providers/
+
+      # Tier 3 — depends on providers + context
+      - name: Publish pyagent-blueprint
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-blueprint/
+
+      # Tier 4 — depends on blueprint + trace
+      - name: Publish pyagent-studio
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-studio/
+
+      # Meta-package last — depends on everything
       - name: Publish pyagent-all
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
