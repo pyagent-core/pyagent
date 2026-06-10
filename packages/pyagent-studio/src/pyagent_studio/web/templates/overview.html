@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Overview — PyAgent Studio{% endblock %}
+{% block content %}
+<h1>{{ blueprint_name }}</h1>
+<p>Version: {{ blueprint_version }} | Owner: {{ owner }}</p>
+<div class="grid">
+    <article><h3>{{ agent_count }}</h3><p>Agents</p></article>
+    <article><h3>{{ workflow_count }}</h3><p>Workflows</p></article>
+    <article><h3>{{ provider_count }}</h3><p>Providers</p></article>
+    <article><h3>{{ contract_count }}</h3><p>Contracts</p></article>
+</div>
+{% if valid %}
+<p>Status: <mark>✓ Valid</mark></p>
+{% else %}
+<p>Status: <mark class="error">✗ {{ issue_count }} issues</mark></p>
+{% endif %}
+{% endblock %}

@@ -1,8 +1,8 @@
 site_name: PyAgent
 site_description: "18 reusable multi-agent orchestration patterns for LLMs — with routing, compression, and OTel tracing"
-site_url: https://pyagent.dev
-repo_url: https://github.com/pyagent/pyagent
-repo_name: pyagent/pyagent
+site_url: https://pyagent.org
+repo_url: https://github.com/pyagent-core/pyagent
+repo_name: pyagent-core/pyagent
 
 theme:
   name: material
@@ -64,6 +64,10 @@ plugins:
             - packages/pyagent-router/src
             - packages/pyagent-compress/src
             - packages/pyagent-trace/src
+            - packages/pyagent-context/src
+            - packages/pyagent-providers/src
+            - packages/pyagent-blueprint/src
+            - packages/pyagent-studio/src
           options:
             show_source: true
             show_root_heading: true
@@ -103,6 +107,13 @@ nav:
     - Tracing: guides/tracing.md
     - Guardrails: guides/guardrails.md
     - Recovery: guides/recovery.md
+  - Packages:
+    - Context: packages/context.md
+    - Compress: packages/compress.md
+    - Trace: packages/trace.md
+    - Providers: packages/providers.md
+    - Blueprint: packages/blueprint.md
+    - Studio: packages/studio.md
   - Cookbook:
     - Code Review Agent: cookbook/code-review.md
     - Research Agent: cookbook/research.md
@@ -112,5 +123,9 @@ nav:
     - pyagent-router: api/router.md
     - pyagent-compress: api/compress.md
     - pyagent-trace: api/trace.md
+    - pyagent-context: api/context.md
+    - pyagent-providers: api/providers.md
+    - pyagent-blueprint: api/blueprint.md
+    - pyagent-studio: api/studio.md
   - Benchmarks: benchmarks.md
   - Contributing: contributing.md

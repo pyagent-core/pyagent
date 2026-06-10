@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PyAgent Studio{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/htmx.min.js"></script>
+</head>
+<body>
+<div class="dashboard-layout">
+    <nav class="sidebar">
+        <h3>PyAgent Studio</h3>
+        <ul>
+            <li><a href="/">Overview</a></li>
+            <li><a href="/agents">Agents</a></li>
+            <li><a href="/workflows">Workflows</a></li>
+            <li><a href="/simulate">Simulate</a></li>
+            <li><a href="/traces">Traces</a></li>
+            <li><a href="/governance">Governance</a></li>
+            <li><a href="/providers">Providers</a></li>
+            <li><a href="/diff">Diff</a></li>
+            <li><a href="/docs">Docs</a></li>
+        </ul>
+    </nav>
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+</body>
+</html>

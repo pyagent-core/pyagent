@@ -32,7 +32,11 @@ Existing frameworks give you primitives. PyAgent gives you **named, tested, comp
 | **pyagent-router** | Difficulty scoring + cost estimation + model selection | `pip install pyagent-router` |
 | **pyagent-compress** | Message compression + agent pruning + token budgets | `pip install pyagent-compress` |
 | **pyagent-trace** | OTel spans + cost tracking + record/replay | `pip install pyagent-trace` |
-| **pyagent-all** | All four above | `pip install pyagent-all` |
+| **pyagent-context** | Three-tier memory with trust-aware context ledger | `pip install pyagent-context` |
+| **pyagent-providers** | Multi-provider abstraction with capability negotiation + fallback chains | `pip install pyagent-providers` |
+| **pyagent-blueprint** | Declarative YAML specs — validate, compile, test, diff, render | `pip install pyagent-blueprint` |
+| **pyagent-studio** | CLI + web control plane (dashboard, simulate, govern) | `pip install pyagent-studio` |
+| **pyagent-all** | All packages above | `pip install pyagent-all` |
 
 ---
 
@@ -50,6 +54,10 @@ Existing frameworks give you primitives. PyAgent gives you **named, tested, comp
 - [pyagent-router](#pyagent-router)
 - [pyagent-compress](#pyagent-compress)
 - [pyagent-trace](#pyagent-trace)
+- [pyagent-context](#pyagent-context)
+- [pyagent-providers](#pyagent-providers)
+- [pyagent-blueprint](#pyagent-blueprint)
+- [pyagent-studio](#pyagent-studio)
 - [Guardrails](#guardrails)
 - [Recovery](#recovery)
 - [When to use which pattern](#when-to-use-which-pattern)
@@ -1611,6 +1619,306 @@ span.end()
 
 ---
 
+## pyagent-context
+
+```bash
+pip install pyagent-context                   # Core (working + session + semantic memory)
+pip install pyagent-context[compress]         # + ContextCompressor with pyagent-compress
+pip install pyagent-context[chromadb]         # + ChromaDB semantic memory backend
+```
+
+Replaces flat `list[Message]` with structured context that tracks *who* said *what*, *when*, and *how much to trust it*. Adds trust levels, sensitivity tiers, TTL expiry, compression, and three memory tiers.
+
+### ContextItem + ContextLedger
+
+```python
+import time
+from pyagent_context import ContextItem, ContextLedger, TrustLevel, Sensitivity
+
+item = ContextItem(
+    content="Revenue grew 15% YoY to $25.2B",
+    source="analyst",
+    trust_level=TrustLevel.VERIFIED,       # verified | inferred | user | external
+    sensitivity=Sensitivity.INTERNAL,       # public | internal | confidential | restricted
+    expires_at=time.time() + 3600,
+)
+
+ledger = ContextLedger()
+ledger.add("User asked about Q3 earnings", "user", TrustLevel.USER_PROVIDED)
+ledger.add("Revenue: $25.2B (+8% YoY)", "analyst", TrustLevel.VERIFIED)
+
+# Query by trust, age, or source
+verified = ledger.query(min_trust=TrustLevel.VERIFIED)
+recent   = ledger.query(max_age_seconds=300)
+
+# Convert to Messages for pattern consumption (budget-constrained)
+messages = ledger.to_messages(max_tokens=2000)
+```
+
+### Three-Tier Memory
+
+```python
+from pyagent_context import WorkingMemory, SessionMemory, InMemorySemanticStore
+
+# WorkingMemory: bounded in-flight context
+wm = WorkingMemory(max_items=50, max_tokens=10_000)
+evicted = wm.add(item)
+print(f"{wm.utilization:.0%}")   # "42%"
+
+# SessionMemory: persist across turns (JSON or SQLite backend)
+session = SessionMemory("user-123", backend="sqlite", storage_path=".sessions")
+session.add(item)
+session.save()
+
+# SemanticMemory: TF-IDF vector search over long-term context
+store = InMemorySemanticStore()
+store.add(ContextItem(content="Python FastAPI async REST API design", source="docs"))
+results = store.search("Python async web", top_k=3)
+```
+
+### ContextCompressor, TrustAwareRetriever, ContextRedactor
+
+```python
+from pyagent_context import ContextCompressor, CompressionPolicy, TrustAwareRetriever, ContextRedactor
+
+# FIFO / SAWTOOTH / SEMANTIC_LOSSLESS compression policies
+compressor = ContextCompressor(policy=CompressionPolicy.SEMANTIC_LOSSLESS,
+                                threshold_tokens=8_000, floor_tokens=4_000)
+if compressor.should_compress(ledger):
+    ledger = compressor.compress(ledger)
+
+# Trust × recency × relevance scoring
+retriever = TrustAwareRetriever(weight_trust=0.3, weight_recency=0.3, weight_relevance=0.4)
+results = retriever.retrieve(ledger, "Q3 earnings revenue growth", top_k=5)
+
+# Redact items above a sensitivity threshold before passing to agents
+redactor = ContextRedactor(max_sensitivity=Sensitivity.INTERNAL, redaction_text="[REDACTED]")
+safe_ledger = redactor.redact_ledger(ledger)
+```
+
+---
+
+## pyagent-providers
+
+```bash
+pip install pyagent-providers                  # Core (includes MockProvider)
+pip install pyagent-providers[openai]          # + OpenAI adapter
+pip install pyagent-providers[anthropic]       # + Anthropic adapter
+pip install pyagent-providers[litellm]         # + LiteLLM (100+ models)
+pip install pyagent-providers[all]             # All adapters
+```
+
+Multi-provider abstraction layer. Providers satisfy the `LLMCallable` interface so they are drop-in replacements for `Agent.llm`.
+
+### ProviderRegistry + ProviderRouter
+
+```python
+import asyncio
+from pyagent_providers import ProviderRegistry, ProviderRouter, RoutingStrategy
+from pyagent_providers.adapters.openai import OpenAIProvider
+from pyagent_providers.adapters.anthropic import AnthropicProvider
+from pyagent_router.selector import Capability
+
+registry = ProviderRegistry()
+asyncio.run(registry.register(OpenAIProvider(default_model="gpt-4o-mini")))
+asyncio.run(registry.register(AnthropicProvider(default_model="claude-sonnet-4-20250514")))
+
+# Discover by capability
+coders = registry.discover({Capability.CODE})
+
+# Health check all providers
+statuses = asyncio.run(registry.check_health())
+
+# Route by strategy: CAPABILITY_FIRST | COST_FIRST | LATENCY_FIRST | ROUND_ROBIN
+router = ProviderRouter(registry, strategy=RoutingStrategy.COST_FIRST)
+provider, model = asyncio.run(router.route([Message.user("What is 2+2?")]))
+print(f"{provider.name}/{model}")   # picks cheapest model
+```
+
+### FallbackChain + CapabilityNegotiator + CostOptimizer
+
+```python
+from pyagent_providers import FallbackChain, CapabilityNegotiator, CostOptimizer
+
+# Try providers in order — fall through on failure
+chain = FallbackChain(providers=[primary_openai, fallback_anthropic, emergency_litellm])
+result = asyncio.run(chain.complete([Message.user("Important task")]))
+print(result.provider_name)   # which provider answered
+
+# Find best provider by capability + context window
+negotiator = CapabilityNegotiator(registry)
+match = negotiator.negotiate(required_capabilities={Capability.CODE, Capability.REASONING},
+                              min_context=100_000)
+print(f"{match.provider.name}: {match.match_score:.0%}")
+
+# Find cheapest provider for a task
+optimizer = CostOptimizer(registry)
+cheapest = optimizer.cheapest("Simple greeting task")
+print(f"{cheapest.provider_name}/{cheapest.model}: ${cheapest.estimate.total_cost:.7f}")
+```
+
+---
+
+## pyagent-blueprint
+
+```bash
+pip install pyagent-blueprint
+```
+
+Define your entire agent system as a versioned YAML file. Validate, compile, test, diff, and render it — without running any LLM calls.
+
+### Blueprint YAML
+
+```yaml
+api_version: pyagent/v1
+metadata:
+  name: customer-support
+  version: 1.0.0
+  owner: platform-team
+
+providers:
+  primary:
+    model: gpt-4.1-mini
+  fallback:
+    model: gpt-4.1-nano
+
+agents:
+  classifier:
+    prompt: "Classify into: billing, tech, general"
+    provider: primary
+  billing:
+    prompt: "Handle billing inquiries"
+    provider: primary
+    guardrails: [pii_redact]
+  tech:
+    prompt: "Handle technical support"
+    provider: primary
+
+workflows:
+  support:
+    pattern: supervisor
+    agents:
+      classifier: classifier
+      routes:
+        billing: billing
+        tech: tech
+    recovery:
+      max_retries: 2
+      timeout_seconds: 30
+
+contracts:
+  support:
+    output:
+      type: string
+    sla:
+      latency_p95_ms: 5000
+      cost_max_usd: 0.05
+```
+
+### Loader, Compiler, Validator, Renderer, Differ, Tester
+
+```python
+import asyncio
+from pyagent_blueprint import (
+    load_blueprint, BlueprintCompiler, BlueprintValidator,
+    BlueprintRenderer, BlueprintDiffer, BlueprintTester,
+)
+
+spec = load_blueprint("blueprint.yaml")
+
+# Compile to executable RuntimeGraph
+graph = BlueprintCompiler().compile(spec)
+result = asyncio.run(graph.run("support", "I can't see my invoice"))
+
+# Static analysis — dangling refs, hardcoded API keys, unrealistic SLAs
+issues = BlueprintValidator().validate(spec)
+for issue in issues:
+    print(f"[{issue.severity}] {issue.path}: {issue.message}")
+
+# Render Mermaid diagram or Markdown docs
+print(BlueprintRenderer().to_mermaid(spec))
+
+# Semantic diff (BREAKING / WARNING / INFO)
+changes = BlueprintDiffer().diff(old_spec, new_spec)
+
+# Contract conformance tests with MockLLM
+results = asyncio.run(BlueprintTester().test(spec))
+```
+
+### CLI
+
+```bash
+pyagent-blueprint validate blueprint.yaml
+pyagent-blueprint compile blueprint.yaml
+pyagent-blueprint render blueprint.yaml --format mermaid
+pyagent-blueprint test blueprint.yaml
+pyagent-blueprint diff v1.yaml v2.yaml
+pyagent-blueprint generate --pattern supervisor --agents "classifier,billing,tech" --name my-system
+```
+
+---
+
+## pyagent-studio
+
+```bash
+pip install pyagent-studio
+```
+
+The Kubernetes Dashboard for Agent Systems — CLI + web control plane for designing, simulating, debugging, and governing multi-agent blueprints.
+
+### CLI
+
+```bash
+pyagent apply blueprint.yaml                                    # load, validate, summarize
+pyagent get agents blueprint.yaml                               # list agents
+pyagent simulate blueprint.yaml support "Help with billing"     # MockLLM simulation
+pyagent simulate blueprint.yaml support "Help with billing" --live  # real LLMs
+pyagent diff v1.yaml v2.yaml                                    # semantic diff
+pyagent dashboard                                               # launch web UI
+```
+
+### Web Dashboard (FastAPI + HTMX)
+
+| Page | Description |
+|---|---|
+| Overview `/` | Blueprint summary, card grid, validation status |
+| Agents `/agents` | Agent table with prompts, providers, guardrails |
+| Workflows `/workflows` | Workflow table with Mermaid DAG diagrams |
+| Simulate `/simulate` | Run workflows with MockLLM or live LLMs |
+| Traces `/traces` | Live SSE trace stream + historical JSONL viewer |
+| Governance `/governance` | Compliance score, validation issues |
+| Providers `/providers` | LLM model list, health checks |
+| Diff `/diff` | Semantic diff between blueprint versions |
+| Docs `/docs` | Auto-rendered blueprint documentation |
+
+### Services API
+
+```python
+from pyagent_studio import BlueprintService, SimulationService, GovernanceService, ProviderService
+import asyncio
+
+# Load and validate
+svc = BlueprintService()
+spec = svc.load("blueprint.yaml")
+issues = svc.validate()
+print(svc.summary())
+
+# Simulate a workflow
+sim = SimulationService()
+result = asyncio.run(sim.run(spec, "support", "I can't see my invoice"))
+print(result.output)
+
+# Governance compliance report
+gov = GovernanceService()
+report = gov.check_compliance(spec)
+print(gov.format_report(report))
+
+# Provider health check
+asyncio.run(ProviderService().health_check())
+```
+
+---
+
 ## Guardrails
 
 Four insertion points: input validation, inter-agent, tool-call, and output validation.
@@ -1745,6 +2053,10 @@ print(rec.pattern, "—", rec.reason)
 | pyagent-router | ≥ 3.11 | pyagent-patterns |
 | pyagent-compress | ≥ 3.11 | pyagent-patterns |
 | pyagent-trace | ≥ 3.11 | pyagent-patterns, opentelemetry-api, opentelemetry-sdk |
+| pyagent-context | ≥ 3.11 | pyagent-patterns |
+| pyagent-providers | ≥ 3.11 | pyagent-patterns, pyagent-router |
+| pyagent-blueprint | ≥ 3.11 | pyagent-providers, pyagent-context, pydantic, pyyaml |
+| pyagent-studio | ≥ 3.11 | pyagent-blueprint, pyagent-trace, fastapi, litellm |
 | pyagent-all | ≥ 3.11 | all above |
 
 ---

@@ -1,0 +1,59 @@
+api_version: pyagent/v1
+metadata:
+  name: customer-support
+  version: 1.0.0
+  description: Support routing system
+  owner: platform-team
+providers:
+  primary:
+    model: gpt-4.1-mini
+  fallback:
+    model: gpt-4.1-nano
+context:
+  memory:
+    working_max_tokens: 128000
+  compression:
+    policy: semantic_lossless
+    target_ratio: 0.6
+agents:
+  classifier:
+    prompt: "Classify into: billing, tech, general"
+    provider: primary
+    description: Routes customer requests
+  billing:
+    prompt: "Handle billing inquiries"
+    provider: primary
+    guardrails: [pii_redact]
+    description: Billing specialist
+  tech:
+    prompt: "Handle technical support"
+    provider: primary
+    description: Technical support agent
+workflows:
+  support:
+    pattern: supervisor
+    agents:
+      classifier: classifier
+      routes:
+        billing: billing
+        tech: tech
+    recovery:
+      max_retries: 2
+      timeout_seconds: 30
+      fallback_provider: fallback
+contracts:
+  support:
+    input:
+      type: string
+      max_tokens: 2000
+    output:
+      type: string
+    sla:
+      latency_p95_ms: 5000
+      cost_max_usd: 0.05
+observability:
+  tracing:
+    enabled: true
+  cost_budget:
+    daily_usd: 100.0
+    alert_threshold: 0.8
