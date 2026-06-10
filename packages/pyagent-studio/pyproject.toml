@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyagent-studio"
+version = "0.2.0"
+description = "Kubernetes Dashboard for Agent Systems — CLI + web control plane for multi-agent LLM blueprints"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "PyAgent Team", email = "team@pyagent.org"}]
+keywords = ["agents", "studio", "LLM", "workbench", "dashboard", "fastapi", "litellm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pyagent-blueprint>=0.1.0",
+    "pyagent-trace>=0.1.0",
+    "pyagent-providers>=0.1.0",
+    "click>=8.1",
+    "rich>=13.0",
+    "litellm>=1.40",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "jinja2>=3.1",
+]
+
+[project.urls]
+Homepage = "https://pyagent.org"
+Repository = "https://github.com/pyagent-core/pyagent"
+Documentation = "https://pyagent.org"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "httpx>=0.27"]
+
+[project.scripts]
+pyagent = "pyagent_studio.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pyagent_studio"]

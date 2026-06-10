@@ -1,0 +1,45 @@
+/* PyAgent Studio — custom styles */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 220px;
+    padding: 1rem;
+    background: var(--pico-card-background-color, #f8f9fa);
+    border-right: 1px solid var(--pico-muted-border-color, #dee2e6);
+}
+
+.sidebar h3 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    margin-bottom: 0.5rem;
+}
+
+.sidebar a {
+    text-decoration: none;
+}
+
+.content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+}
+
+.grid article {
+    text-align: center;
+}
+
+mark.error {
+    background: var(--pico-del-color, #dc3545);
+    color: white;
+}

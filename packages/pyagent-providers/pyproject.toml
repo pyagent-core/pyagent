@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyagent-providers"
+version = "0.1.0"
+description = "Multi-provider abstraction with capability negotiation, health checks, and fallback chains"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "PyAgent Team", email = "team@pyagent.org"}]
+keywords = ["agents", "LLM", "providers", "fallback", "routing", "multi-provider"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+dependencies = ["pyagent-patterns>=0.1.0", "pyagent-router>=0.1.0"]
+
+[project.urls]
+Homepage = "https://pyagent.org"
+Repository = "https://github.com/pyagent-core/pyagent"
+Documentation = "https://pyagent.org"
+
+[project.optional-dependencies]
+openai = ["openai>=1.30"]
+anthropic = ["anthropic>=0.30"]
+litellm = ["litellm>=1.40"]
+all = ["openai>=1.30", "anthropic>=0.30", "litellm>=1.40"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.5", "mypy>=1.10"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pyagent_providers"]

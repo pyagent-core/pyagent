@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Agents — PyAgent Studio{% endblock %}
+{% block content %}
+<h1>Agents</h1>
+<table>
+    <thead><tr><th>Name</th><th>Provider</th><th>Prompt</th><th>Guardrails</th></tr></thead>
+    <tbody>
+    {% for name, agent in agents.items() %}
+    <tr>
+        <td><a href="/agents/{{ name }}">{{ name }}</a></td>
+        <td>{{ agent.provider }}</td>
+        <td>{{ agent.prompt[:50] }}{% if agent.prompt|length > 50 %}...{% endif %}</td>
+        <td>{{ agent.guardrails|join(', ') }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

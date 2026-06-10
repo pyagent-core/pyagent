@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Governance — PyAgent Studio{% endblock %}
+{% block content %}
+<h1>Governance</h1>
+<p>Compliance Score: <strong>{{ score }}%</strong></p>
+{% if issues %}
+<table>
+    <thead><tr><th>Severity</th><th>Path</th><th>Message</th></tr></thead>
+    <tbody>
+    {% for issue in issues %}
+    <tr><td>{{ issue.severity }}</td><td>{{ issue.path }}</td><td>{{ issue.message }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No issues found.</p>
+{% endif %}
+{% endblock %}

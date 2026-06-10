@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Providers — PyAgent Studio{% endblock %}
+{% block content %}
+<h1>Providers</h1>
+{% if providers %}
+<table>
+    <thead><tr><th>Model</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for p in providers %}
+    <tr><td>{{ p.name }}</td><td>{{ p.status }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No providers configured. Install litellm and set API keys.</p>
+{% endif %}
+{% endblock %}

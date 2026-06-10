@@ -9,6 +9,7 @@ description = "Difficulty-aware routing and model selection for multi-agent LLM 
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
+authors = [{name = "PyAgent Team", email = "team@pyagent.org"}]
 keywords = ["agents", "routing", "LLM", "cost-optimization", "model-selection"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -21,6 +22,11 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = ["pyagent-patterns>=0.1.0"]
+
+[project.urls]
+Homepage = "https://pyagent.org"
+Repository = "https://github.com/pyagent-core/pyagent"
+Documentation = "https://pyagent.org"
 
 [project.optional-dependencies]
 tiktoken = ["tiktoken>=0.7"]

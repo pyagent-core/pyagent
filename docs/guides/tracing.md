@@ -86,6 +86,78 @@ for entry in entries:
     print(f"[{entry.event_type}] {entry.agent_name}: {entry.response[:80]}...")
 ```
 
+## Trace Event Bus & Exporters
+
+`pyagent-trace` provides a portal-agnostic `TraceExporter` protocol and a pub/sub `TraceEventBus` for streaming trace events to multiple backends simultaneously.
+
+### TraceEventBus
+
+```python
+from pyagent_trace.events import TraceEvent, TraceEventBus
+
+bus = TraceEventBus()
+
+# Subscribe to all events
+bus.subscribe(lambda e: print(e.event_type))
+
+# Subscribe to specific event types
+bus.subscribe_filter({"llm_call", "error"}, lambda e: handle_error(e))
+```
+
+### Built-in Exporters
+
+| Exporter | Backend | Install |
+|----------|---------|---------|
+| `ConsoleExporter` | stdout | built-in |
+| `JsonlExporter` | JSONL file | built-in |
+| `OTelExporter` | Jaeger, Tempo, Datadog, Honeycomb | `pip install opentelemetry-api opentelemetry-sdk` |
+| `LangfuseExporter` | Langfuse | `pip install langfuse` |
+
+```python
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.exporters.console import ConsoleExporter
+from pyagent_trace.exporters.jsonl import JsonlExporter
+from pyagent_trace.exporters.langfuse import LangfuseExporter
+
+bus = TraceEventBus()
+
+# Fan-out to multiple backends simultaneously
+bus.subscribe(ConsoleExporter().export_event)
+bus.subscribe(JsonlExporter("traces/run.jsonl").export_event)
+bus.subscribe(LangfuseExporter().export_event)  # uses LANGFUSE_* env vars
+```
+
+### Custom Exporters
+
+Implement the `TraceExporter` protocol:
+
+```python
+from pyagent_trace.exporters.base import TraceExporter
+from pyagent_trace.events import TraceEvent
+
+class MyExporter(TraceExporter):
+    def export_event(self, event: TraceEvent) -> None:
+        # Send to your backend
+        ...
+
+    def flush(self) -> None: ...
+    def shutdown(self) -> None: ...
+```
+
+### Wiring Producers
+
+`Recorder` and `CostTracker` accept an optional `event_bus` parameter:
+
+```python
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.recorder import Recorder
+from pyagent_trace.cost import CostTracker
+
+bus = TraceEventBus()
+recorder = Recorder(event_bus=bus)
+tracker = CostTracker(event_bus=bus)
+```
+
 ## Custom Attributes
 
 All attributes are namespaced under `pyagent.*`:

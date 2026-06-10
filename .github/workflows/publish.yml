@@ -9,13 +9,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      PYTHONPATH: packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src
+      PYTHONPATH: packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src:packages/pyagent-providers/src:packages/pyagent-context/src:packages/pyagent-blueprint/src:packages/pyagent-studio/src
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pytest pytest-asyncio
+      - run: pip install pytest pytest-asyncio pydantic pyyaml click rich fastapi uvicorn jinja2 httpx
       - run: python -m pytest packages/ -v --tb=short
 
   publish:
@@ -30,6 +30,10 @@ jobs:
           - pyagent-router
           - pyagent-compress
           - pyagent-trace
+          - pyagent-providers
+          - pyagent-context
+          - pyagent-blueprint
+          - pyagent-studio
           - pyagent-all
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +44,7 @@ jobs:
       - name: Set version from tag
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          sed -i "s/version = \"0.1.0\"/version = \"${VERSION}\"/" packages/${{ matrix.package }}/pyproject.toml
+          sed -i "s/^version = \".*\"/version = \"${VERSION}\"/" packages/${{ matrix.package }}/pyproject.toml
       - run: python -m build
         working-directory: packages/${{ matrix.package }}
       - uses: pypa/gh-action-pypi-publish@release/v1

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Simulate — PyAgent Studio{% endblock %}
+{% block content %}
+<h1>Simulate</h1>
+<form>
+    <label for="workflow">Workflow</label>
+    <input type="text" id="workflow" name="workflow" placeholder="workflow name">
+    <label for="task">Task</label>
+    <textarea id="task" name="task" placeholder="Enter task..."></textarea>
+    <fieldset>
+        <label><input type="radio" name="mode" value="mock" checked> MockLLM</label>
+        <label><input type="radio" name="mode" value="live"> Live LLM</label>
+    </fieldset>
+    <button type="submit">Run</button>
+</form>
+<div id="results"></div>
+{% endblock %}

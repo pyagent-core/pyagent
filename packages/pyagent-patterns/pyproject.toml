@@ -9,6 +9,7 @@ description = "18 reusable multi-agent orchestration patterns for LLMs"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
+authors = [{name = "PyAgent Team", email = "team@pyagent.org"}]
 keywords = ["agents", "multi-agent", "LLM", "patterns", "orchestration"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -20,6 +21,11 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://pyagent.org"
+Repository = "https://github.com/pyagent-core/pyagent"
+Documentation = "https://pyagent.org"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.5", "mypy>=1.10"]

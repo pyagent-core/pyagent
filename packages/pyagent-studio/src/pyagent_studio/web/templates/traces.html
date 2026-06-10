@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Traces — PyAgent Studio{% endblock %}
+{% block content %}
+<h1>Traces</h1>
+<div hx-ext="sse" sse-connect="/traces/live" sse-swap="message">
+    <table id="trace-table">
+        <thead><tr><th>Time</th><th>Type</th><th>Agent</th><th>Details</th></tr></thead>
+        <tbody id="trace-body"></tbody>
+    </table>
+</div>
+{% endblock %}

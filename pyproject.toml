@@ -12,6 +12,10 @@ members = [
     "packages/pyagent-router",
     "packages/pyagent-compress",
     "packages/pyagent-trace",
+    "packages/pyagent-providers",
+    "packages/pyagent-context",
+    "packages/pyagent-blueprint",
+    "packages/pyagent-studio",
     "packages/pyagent-all",
 ]
 

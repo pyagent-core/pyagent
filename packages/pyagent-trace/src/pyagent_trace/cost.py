@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyagent_trace.events import TraceEventBus
 
 
 @dataclass
@@ -27,8 +32,9 @@ class CostTracker:
         print(tracker.summary())
     """
 
-    def __init__(self) -> None:
+    def __init__(self, event_bus: TraceEventBus | None = None) -> None:
         self._entries: list[CostEntry] = []
+        self._event_bus = event_bus
 
     def record(
         self,
@@ -50,6 +56,23 @@ class CostTracker:
                 cost_usd=cost_usd,
             )
         )
+        if self._event_bus:
+            from pyagent_trace.events import TraceEvent
+
+            self._event_bus.emit(
+                TraceEvent(
+                    timestamp=time.time(),
+                    event_type="cost_record",
+                    agent_name=agent_name,
+                    pattern_type=pattern_type,
+                    payload={
+                        "model": model,
+                        "input_tokens": input_tokens,
+                        "output_tokens": output_tokens,
+                        "cost_usd": cost_usd,
+                    },
+                )
+            )
 
     @property
     def total_cost(self) -> float:

@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  PYTHONPATH: packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src
+  PYTHONPATH: packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src:packages/pyagent-providers/src:packages/pyagent-context/src:packages/pyagent-blueprint/src:packages/pyagent-studio/src
 
 jobs:
   lint:
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install pytest pytest-asyncio
+      - run: pip install pytest pytest-asyncio pydantic pyyaml click rich fastapi uvicorn jinja2 httpx
       - run: python -m pytest packages/ -v --tb=short
 
   benchmarks:
@@ -60,6 +60,10 @@ jobs:
           pip install -e packages/pyagent-router
           pip install -e packages/pyagent-compress
           pip install -e packages/pyagent-trace
+          pip install -e packages/pyagent-providers
+          pip install -e packages/pyagent-context
+          pip install -e packages/pyagent-blueprint
+          pip install -e packages/pyagent-studio
       - run: mkdocs build --strict
       - uses: actions/upload-pages-artifact@v3
         with:

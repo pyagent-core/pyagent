@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Workflows — PyAgent Studio{% endblock %}
+{% block content %}
+<h1>Workflows</h1>
+<table>
+    <thead><tr><th>Name</th><th>Pattern</th></tr></thead>
+    <tbody>
+    {% for name, wf in workflows.items() %}
+    <tr>
+        <td><a href="/workflows/{{ name }}">{{ name }}</a></td>
+        <td>{{ wf.pattern }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

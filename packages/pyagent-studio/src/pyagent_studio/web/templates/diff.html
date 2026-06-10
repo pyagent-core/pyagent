@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Diff — PyAgent Studio{% endblock %}
+{% block content %}
+<h1>Blueprint Diff</h1>
+<p>Upload or select two blueprints to compare.</p>
+<form>
+    <label for="old">Old Blueprint</label>
+    <input type="file" id="old" name="old" accept=".yaml,.yml,.json">
+    <label for="new">New Blueprint</label>
+    <input type="file" id="new" name="new" accept=".yaml,.yml,.json">
+    <button type="submit">Compare</button>
+</form>
+<div id="diff-output"></div>
+{% endblock %}

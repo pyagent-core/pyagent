@@ -64,6 +64,10 @@ plugins:
             - packages/pyagent-router/src
             - packages/pyagent-compress/src
             - packages/pyagent-trace/src
+            - packages/pyagent-providers/src
+            - packages/pyagent-context/src
+            - packages/pyagent-blueprint/src
+            - packages/pyagent-studio/src
           options:
             show_source: true
             show_root_heading: true
@@ -103,6 +107,10 @@ nav:
     - Tracing: guides/tracing.md
     - Guardrails: guides/guardrails.md
     - Recovery: guides/recovery.md
+    - Providers: guides/providers.md
+    - Context: guides/context.md
+    - Blueprint: guides/blueprint.md
+    - Studio: guides/studio.md
   - Cookbook:
     - Code Review Agent: cookbook/code-review.md
     - Research Agent: cookbook/research.md
@@ -112,5 +120,9 @@ nav:
     - pyagent-router: api/router.md
     - pyagent-compress: api/compress.md
     - pyagent-trace: api/trace.md
+    - pyagent-providers: api/providers.md
+    - pyagent-context: api/context.md
+    - pyagent-blueprint: api/blueprint.md
+    - pyagent-studio: api/studio.md
   - Benchmarks: benchmarks.md
   - Contributing: contributing.md

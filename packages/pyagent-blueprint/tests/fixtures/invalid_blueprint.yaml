@@ -1,0 +1,10 @@
+api_version: pyagent/v1
+# Missing required metadata field
+agents:
+  test_agent:
+    prompt: "Test"
+workflows:
+  main:
+    pattern: nonexistent_pattern
+    agents:
+      agent: missing_agent_ref
