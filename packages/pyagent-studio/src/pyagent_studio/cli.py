@@ -44,7 +44,9 @@ def apply(file: str) -> None:
             for issue in issues:
                 click.echo(f"  [{issue.severity}] {issue.path}: {issue.message}")
         else:
-            click.echo(f"✓ Blueprint '{spec.metadata.name}' v{spec.metadata.version} loaded and valid.")
+            click.echo(
+                f"✓ Blueprint '{spec.metadata.name}' v{spec.metadata.version} loaded and valid."
+            )
     except Exception as exc:
         click.echo(f"Error: {exc}", err=True)
         sys.exit(1)
@@ -141,7 +143,9 @@ def diff(old_file: str, new_file: str) -> None:
 @click.argument("file", type=click.Path(exists=True))
 @click.argument("workflow")
 @click.argument("task")
-@click.option("--live", is_flag=True, default=False, help="Use real LLMs via LiteLLM instead of MockLLM.")
+@click.option(
+    "--live", is_flag=True, default=False, help="Use real LLMs via LiteLLM instead of MockLLM."
+)
 def simulate(file: str, workflow: str, task: str, live: bool) -> None:
     """Run a workflow simulation (MockLLM by default, --live for real LLMs)."""
     from pyagent_studio.services.simulation_service import SimulationService
@@ -165,7 +169,9 @@ def simulate(file: str, workflow: str, task: str, live: bool) -> None:
 
 @main.command()
 @click.argument("file", type=click.Path(exists=True))
-@click.option("--format", "fmt", type=click.Choice(["md", "mermaid"]), default="md", help="Output format.")
+@click.option(
+    "--format", "fmt", type=click.Choice(["md", "mermaid"]), default="md", help="Output format."
+)
 def render(file: str, fmt: str) -> None:
     """Render blueprint as Markdown or Mermaid diagram."""
     from pyagent_blueprint import BlueprintRenderer

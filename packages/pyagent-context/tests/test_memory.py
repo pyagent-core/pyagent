@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import tempfile
-from pathlib import Path
 
-from pyagent_context.item import ContextItem, TrustLevel
-from pyagent_context.memory.working import WorkingMemory
-from pyagent_context.memory.session import SessionMemory
+from pyagent_context.item import ContextItem
 from pyagent_context.memory.semantic import InMemorySemanticStore
-
+from pyagent_context.memory.session import SessionMemory
+from pyagent_context.memory.working import WorkingMemory
 
 # ── WorkingMemory ─────────────────────────────────────────────────────
+
 
 def test_working_memory_add() -> None:
     wm = WorkingMemory(max_items=10, max_tokens=5000)
@@ -48,6 +47,7 @@ def test_working_memory_utilization() -> None:
 
 # ── SessionMemory (JSON) ─────────────────────────────────────────────
 
+
 def test_session_memory_json_persist() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         sm = SessionMemory("test-session", backend="json", storage_path=tmpdir)
@@ -73,6 +73,7 @@ def test_session_memory_json_clear() -> None:
 
 # ── SessionMemory (SQLite) ───────────────────────────────────────────
 
+
 def test_session_memory_sqlite_persist() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         sm = SessionMemory("test-session", backend="sqlite", storage_path=tmpdir)
@@ -88,6 +89,7 @@ def test_session_memory_sqlite_persist() -> None:
 
 # ── InMemorySemanticStore ────────────────────────────────────────────
 
+
 def test_semantic_add_and_search() -> None:
     store = InMemorySemanticStore()
     store.add(ContextItem(content="Python asyncio event loop concurrency", source="docs"))
@@ -97,7 +99,9 @@ def test_semantic_add_and_search() -> None:
     results = store.search("Python async web")
     assert len(results) > 0
     # Python items should score higher
-    assert "python" in results[0].item.content.lower() or "python" in results[0].item.content.lower()
+    assert (
+        "python" in results[0].item.content.lower() or "python" in results[0].item.content.lower()
+    )
 
 
 def test_semantic_remove() -> None:

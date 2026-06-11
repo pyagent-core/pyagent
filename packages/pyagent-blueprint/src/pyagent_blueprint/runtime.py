@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, AsyncIterator
+from typing import TYPE_CHECKING, Any
 
-from pyagent_patterns.base import Agent, Pattern, Result
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from pyagent_patterns.base import Agent, Pattern, Result
 
 
 class RuntimeGraph:

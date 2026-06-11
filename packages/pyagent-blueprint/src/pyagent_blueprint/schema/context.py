@@ -25,7 +25,9 @@ class CompressionConfig(BaseModel):
 class RedactionConfig(BaseModel):
     """Redaction configuration."""
 
-    max_sensitivity: str = Field(default="internal", description="public | internal | confidential | restricted")
+    max_sensitivity: str = Field(
+        default="internal", description="public | internal | confidential | restricted"
+    )
     exclude_above: bool = Field(default=False)
 
 

@@ -18,7 +18,7 @@ class ContextLifecycle:
     - **Consolidation**: merge items from the same source with similar content.
 
     Args:
-        consolidation_threshold: Minimum keyword overlap ratio (0.0–1.0)
+        consolidation_threshold: Minimum keyword overlap ratio (0.0-1.0)
             to consider two items similar enough to merge.
     """
 
@@ -123,7 +123,10 @@ class ContextLifecycle:
                     if j in merged_indices:
                         continue
                     item_b = items[j]
-                    if self._similarity(item_a.content, item_b.content) >= self._consolidation_threshold:
+                    if (
+                        self._similarity(item_a.content, item_b.content)
+                        >= self._consolidation_threshold
+                    ):
                         merged_content = f"{merged_content}\n{item_b.content}"
                         if item_b.trust_level > best_trust:
                             best_trust = item_b.trust_level

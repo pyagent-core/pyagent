@@ -8,7 +8,7 @@ from pathlib import Path
 
 import click
 
-from pyagent_blueprint.loader import load_blueprint, BlueprintLoadError
+from pyagent_blueprint.loader import BlueprintLoadError, load_blueprint
 
 
 @click.group()
@@ -69,7 +69,9 @@ def compile_cmd(path: str) -> None:
 
 @cli.command()
 @click.argument("path", type=click.Path(exists=True))
-@click.option("-o", "--output", type=click.Path(), default=None, help="Write to file instead of stdout")
+@click.option(
+    "-o", "--output", type=click.Path(), default=None, help="Write to file instead of stdout"
+)
 @click.option("--format", "fmt", type=click.Choice(["mermaid", "markdown"]), default="mermaid")
 def render(path: str, output: str | None, fmt: str) -> None:
     """Render a blueprint as a Mermaid diagram or Markdown doc."""
@@ -82,10 +84,7 @@ def render(path: str, output: str | None, fmt: str) -> None:
         sys.exit(1)
 
     renderer = BlueprintRenderer()
-    if fmt == "markdown":
-        result = renderer.to_markdown(spec)
-    else:
-        result = renderer.to_mermaid(spec)
+    result = renderer.to_markdown(spec) if fmt == "markdown" else renderer.to_mermaid(spec)
 
     if output:
         Path(output).write_text(result)

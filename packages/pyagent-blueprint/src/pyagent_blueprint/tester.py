@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING
 
 from pyagent_blueprint.compiler import BlueprintCompiler
-from pyagent_blueprint.schema.spec import BlueprintSpec
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.schema.spec import BlueprintSpec
 
 
 @dataclass
@@ -63,11 +65,13 @@ class BlueprintTester:
 
         for contract_name, contract in spec.contracts.items():
             if contract_name not in spec.workflows:
-                results.append(TestResult(
-                    workflow=contract_name,
-                    passed=False,
-                    error=f"Contract references non-existent workflow '{contract_name}'",
-                ))
+                results.append(
+                    TestResult(
+                        workflow=contract_name,
+                        passed=False,
+                        error=f"Contract references non-existent workflow '{contract_name}'",
+                    )
+                )
                 continue
 
             test_input = (test_inputs or {}).get(
@@ -93,19 +97,23 @@ class BlueprintTester:
                     checks["input_within_token_limit"] = estimated_tokens <= max_tokens
 
                 all_passed = all(checks.values())
-                results.append(TestResult(
-                    workflow=contract_name,
-                    passed=all_passed,
-                    output=result.output,
-                    checks=checks,
-                ))
+                results.append(
+                    TestResult(
+                        workflow=contract_name,
+                        passed=all_passed,
+                        output=result.output,
+                        checks=checks,
+                    )
+                )
 
             except Exception as exc:
-                results.append(TestResult(
-                    workflow=contract_name,
-                    passed=False,
-                    error=f"{type(exc).__name__}: {exc}",
-                ))
+                results.append(
+                    TestResult(
+                        workflow=contract_name,
+                        passed=False,
+                        error=f"{type(exc).__name__}: {exc}",
+                    )
+                )
 
         return results
 

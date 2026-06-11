@@ -63,9 +63,6 @@ def load_blueprint_from_str(text: str, fmt: str = "yaml") -> BlueprintSpec:
     Returns:
         Validated ``BlueprintSpec``.
     """
-    if fmt == "json":
-        data = json.loads(text)
-    else:
-        data = yaml.safe_load(text)
+    data = json.loads(text) if fmt == "json" else yaml.safe_load(text)
 
     return BlueprintSpec(**data)

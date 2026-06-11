@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from pyagent_trace.events import TraceEvent
+if TYPE_CHECKING:
+    from pyagent_trace.events import TraceEvent
 
 
 @runtime_checkable

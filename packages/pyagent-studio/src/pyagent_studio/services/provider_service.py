@@ -7,8 +7,10 @@ DeepSeek, Cohere, Together, vLLM, HuggingFace, Replicate, etc.).
 
 from __future__ import annotations
 
-import asyncio
-from typing import Any, AsyncIterator
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 try:
     import litellm
@@ -31,9 +33,7 @@ class ProviderService:
 
     def __init__(self, default_model: str = "gpt-4o") -> None:
         if not _HAS_LITELLM:
-            raise ImportError(
-                "litellm package not installed. Install with: pip install litellm"
-            )
+            raise ImportError("litellm package not installed. Install with: pip install litellm")
         self._default_model = default_model
 
     @property
@@ -80,9 +80,7 @@ class ProviderService:
         """
         model = model or self._default_model
         messages = messages or []
-        response = await litellm.acompletion(
-            model=model, messages=messages, stream=True, **kwargs
-        )
+        response = await litellm.acompletion(model=model, messages=messages, stream=True, **kwargs)
         async for chunk in response:
             delta = chunk.choices[0].delta
             if delta and delta.content:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from pyagent_patterns.base import Agent, MockLLM, Message
+from pyagent_patterns.base import Agent, Message, MockLLM
 
 
 @pytest.mark.asyncio
@@ -45,10 +45,12 @@ async def test_agent_trace_hook_emits_events():
 async def test_agent_context_hook_reads_and_writes():
     """Agent reads context before LLM call and writes output after."""
     from pyagent_context import ContextLedger
-    from pyagent_context.item import ContextItem, TrustLevel
+    from pyagent_context.item import TrustLevel
 
     ledger = ContextLedger()
-    ledger.add("Prior knowledge: revenue was $10B", source="database", trust_level=TrustLevel.VERIFIED)
+    ledger.add(
+        "Prior knowledge: revenue was $10B", source="database", trust_level=TrustLevel.VERIFIED
+    )
 
     llm = MockLLM(responses=["Analysis complete"])
     agent = Agent("analyst", llm)
@@ -118,17 +120,13 @@ async def test_agent_cost_tracker_hook():
 @pytest.mark.asyncio
 async def test_agent_hook_chaining():
     """Setter methods return self for chaining."""
-    from pyagent_trace.events import TraceEventBus
     from pyagent_trace import CostTracker
+    from pyagent_trace.events import TraceEventBus
 
     llm = MockLLM(responses=["ok"])
     bus = TraceEventBus()
 
-    agent = (
-        Agent("chained", llm)
-        .set_trace_bus(bus)
-        .set_cost_tracker(CostTracker())
-    )
+    agent = Agent("chained", llm).set_trace_bus(bus).set_cost_tracker(CostTracker())
 
     assert agent._trace_bus is bus
     assert agent._cost_tracker is not None
@@ -138,10 +136,10 @@ async def test_agent_hook_chaining():
 @pytest.mark.asyncio
 async def test_agent_all_hooks_together():
     """All hooks work simultaneously without interference."""
-    from pyagent_trace.events import TraceEventBus
-    from pyagent_trace import CostTracker
-    from pyagent_context import ContextLedger
     from pyagent_compress import MessageCompressor
+    from pyagent_context import ContextLedger
+    from pyagent_trace import CostTracker
+    from pyagent_trace.events import TraceEventBus
 
     bus = TraceEventBus()
     events = []

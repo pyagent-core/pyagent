@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from collections import deque
+from typing import TYPE_CHECKING
 
-from pyagent_context.item import ContextItem
+if TYPE_CHECKING:
+    from pyagent_context.item import ContextItem
 
 
 class WorkingMemory:

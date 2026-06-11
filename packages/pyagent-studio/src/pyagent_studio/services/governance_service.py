@@ -3,16 +3,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING
 
 from pyagent_blueprint import (
     BlueprintDiffer,
     BlueprintValidator,
-    load_blueprint,
 )
-from pyagent_blueprint.differ import Change
-from pyagent_blueprint.schema import BlueprintSpec
 from pyagent_blueprint.validator import IssueSeverity, ValidationIssue
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.differ import Change
+    from pyagent_blueprint.schema import BlueprintSpec
 
 
 @dataclass
@@ -23,7 +24,7 @@ class ComplianceReport:
         total_checks: Number of checks performed.
         passed: Number passing.
         issues: List of validation issues.
-        score: Compliance score (0.0–1.0).
+        score: Compliance score (0.0-1.0).
     """
 
     total_checks: int
@@ -93,7 +94,9 @@ class GovernanceService:
     def format_report(self, report: ComplianceReport) -> str:
         """Format a compliance report as text."""
         lines: list[str] = []
-        lines.append(f"Compliance Score: {report.score:.0%} ({report.passed}/{report.total_checks})")
+        lines.append(
+            f"Compliance Score: {report.score:.0%} ({report.passed}/{report.total_checks})"
+        )
 
         if report.issues:
             lines.append("\nIssues:")

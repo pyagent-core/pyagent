@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import yaml
-
 from pyagent_patterns.registry import get_pattern_class, list_patterns
 
 
@@ -43,9 +42,7 @@ class BlueprintGenerator:
         """
         if get_pattern_class(pattern) is None:
             available = list_patterns()
-            raise ValueError(
-                f"Unknown pattern '{pattern}'. Available: {available}"
-            )
+            raise ValueError(f"Unknown pattern '{pattern}'. Available: {available}")
 
         spec: dict = {
             "api_version": "pyagent/v1",

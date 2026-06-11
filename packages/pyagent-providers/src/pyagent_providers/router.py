@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import itertools
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
-from pyagent_patterns.base import Message
-from pyagent_providers.base import HealthStatus, ProviderProtocol
-from pyagent_providers.registry import ProviderRegistry
 from pyagent_router.estimator import CostEstimator
 from pyagent_router.scorer import DifficultyScorer
-from pyagent_router.selector import Capability
+
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Message
+    from pyagent_router.selector import Capability
+
+    from pyagent_providers.base import ProviderProtocol
+    from pyagent_providers.registry import ProviderRegistry
 
 
 class RoutingStrategy(StrEnum):
@@ -64,9 +68,7 @@ class ProviderRouter:
         """
         candidates = self._registry.discover(required, healthy_only=True)
         if not candidates:
-            raise RuntimeError(
-                f"No healthy provider found matching capabilities={required}"
-            )
+            raise RuntimeError(f"No healthy provider found matching capabilities={required}")
 
         if self._strategy == RoutingStrategy.ROUND_ROBIN:
             return self._route_round_robin(candidates)
@@ -111,7 +113,9 @@ class ProviderRouter:
         task_text = self._extract_task(messages)
         cheapest_cost = float("inf")
         chosen_provider = candidates[0]
-        chosen_model = candidates[0].capabilities.models[0] if candidates[0].capabilities.models else ""
+        chosen_model = (
+            candidates[0].capabilities.models[0] if candidates[0].capabilities.models else ""
+        )
 
         for p in candidates:
             for model_name in p.capabilities.models:

@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import pytest
-
+from pyagent_providers.adapters.mock import MockProvider
 from pyagent_providers.base import HealthStatus
 from pyagent_providers.registry import ProviderRegistry
-from pyagent_providers.adapters.mock import MockProvider
 from pyagent_router.selector import Capability
 
 

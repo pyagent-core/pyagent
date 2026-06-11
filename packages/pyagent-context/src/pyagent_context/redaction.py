@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pyagent_context.item import ContextItem, Sensitivity, SENSITIVITY_ORDER
+from pyagent_context.item import SENSITIVITY_ORDER, ContextItem, Sensitivity
 from pyagent_context.ledger import ContextLedger
 
 

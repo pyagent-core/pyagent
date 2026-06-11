@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import pytest
 from fastapi import FastAPI
-from starlette.testclient import TestClient
-
 from pyagent_studio.web.app import create_app
+from starlette.testclient import TestClient
 
 
 @pytest.fixture
@@ -31,8 +30,17 @@ def test_app_factory_creates_app(app):
 def test_app_has_routes(app):
     """All expected routes are registered."""
     route_paths = [r.path for r in app.routes]
-    for path in ["/", "/agents", "/workflows", "/simulate", "/traces",
-                 "/governance", "/providers", "/diff", "/docs"]:
+    for path in [
+        "/",
+        "/agents",
+        "/workflows",
+        "/simulate",
+        "/traces",
+        "/governance",
+        "/providers",
+        "/diff",
+        "/docs",
+    ]:
         # Routers with prefix register as /prefix/ or /prefix
         matching = [r for r in route_paths if r.rstrip("/") == path.rstrip("/") or r == path]
         assert matching, f"Missing route: {path}"
@@ -182,8 +190,16 @@ def test_static_htmx_served(client):
 def test_base_template_sidebar(client):
     """All pages contain sidebar navigation links."""
     response = client.get("/")
-    for link in ["/agents", "/workflows", "/simulate", "/traces",
-                 "/governance", "/providers", "/diff", "/docs"]:
+    for link in [
+        "/agents",
+        "/workflows",
+        "/simulate",
+        "/traces",
+        "/governance",
+        "/providers",
+        "/diff",
+        "/docs",
+    ]:
         assert link in response.text, f"Sidebar missing link: {link}"
 
 
@@ -198,8 +214,8 @@ def test_traces_live_sse_endpoint_registered(app):
 
 def test_traces_bus_accessible():
     """get_trace_bus() returns a TraceEventBus instance."""
-    from pyagent_trace.events import TraceEventBus
     from pyagent_studio.web.routes.traces import get_trace_bus
+    from pyagent_trace.events import TraceEventBus
 
     bus = get_trace_bus()
     assert isinstance(bus, TraceEventBus)

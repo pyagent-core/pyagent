@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from pyagent_providers.base import ProviderProtocol
-from pyagent_providers.registry import ProviderRegistry
 from pyagent_router.estimator import CostEstimate, CostEstimator
+
+if TYPE_CHECKING:
+    from pyagent_providers.base import ProviderProtocol
+    from pyagent_providers.registry import ProviderRegistry
 
 
 @dataclass(frozen=True)

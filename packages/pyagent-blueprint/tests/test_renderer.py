@@ -7,7 +7,6 @@ from pathlib import Path
 from pyagent_blueprint.loader import load_blueprint
 from pyagent_blueprint.renderer import BlueprintRenderer
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 
 

@@ -14,12 +14,14 @@ def _make_ledger(n: int, tokens_per_item: int = 100) -> ContextLedger:
     ledger = ContextLedger()
     for i in range(n):
         content = f"Item {i}: " + "x" * (tokens_per_item * 4)
-        ledger.append(ContextItem(
-            content=content,
-            source="test",
-            timestamp=time.time() - (n - i),
-            token_estimate=tokens_per_item,
-        ))
+        ledger.append(
+            ContextItem(
+                content=content,
+                source="test",
+                timestamp=time.time() - (n - i),
+                token_estimate=tokens_per_item,
+            )
+        )
     return ledger
 
 
@@ -54,18 +56,22 @@ def test_fifo_compress() -> None:
 
 def test_fifo_preserves_verified() -> None:
     ledger = ContextLedger()
-    ledger.append(ContextItem(
-        content="Verified fact",
-        source="test",
-        trust_level=TrustLevel.VERIFIED,
-        token_estimate=100,
-    ))
-    for i in range(9):
-        ledger.append(ContextItem(
-            content=f"Inferred {i}",
+    ledger.append(
+        ContextItem(
+            content="Verified fact",
             source="test",
+            trust_level=TrustLevel.VERIFIED,
             token_estimate=100,
-        ))
+        )
+    )
+    for i in range(9):
+        ledger.append(
+            ContextItem(
+                content=f"Inferred {i}",
+                source="test",
+                token_estimate=100,
+            )
+        )
 
     compressor = ContextCompressor(
         policy=CompressionPolicy.FIFO,
@@ -79,17 +85,21 @@ def test_fifo_preserves_verified() -> None:
 
 def test_semantic_lossless() -> None:
     ledger = ContextLedger()
-    ledger.append(ContextItem(
-        content="First sentence. Second sentence. Third sentence.",
-        source="test",
-        token_estimate=50,
-    ))
-    ledger.append(ContextItem(
-        content="Verified content stays intact",
-        source="test",
-        trust_level=TrustLevel.VERIFIED,
-        token_estimate=50,
-    ))
+    ledger.append(
+        ContextItem(
+            content="First sentence. Second sentence. Third sentence.",
+            source="test",
+            token_estimate=50,
+        )
+    )
+    ledger.append(
+        ContextItem(
+            content="Verified content stays intact",
+            source="test",
+            trust_level=TrustLevel.VERIFIED,
+            token_estimate=50,
+        )
+    )
 
     compressor = ContextCompressor(
         policy=CompressionPolicy.SEMANTIC_LOSSLESS,

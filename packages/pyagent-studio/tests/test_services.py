@@ -7,17 +7,16 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from pyagent_studio.services.blueprint_service import BlueprintService
 from pyagent_studio.services.governance_service import GovernanceService
 from pyagent_studio.services.simulation_service import SimulationService
 from pyagent_studio.services.trace_service import TraceService
 
-
 FIXTURES = Path(__file__).parent.parent.parent / "pyagent-blueprint" / "tests" / "fixtures"
 
 
 # ── BlueprintService ─────────────────────────────────────────────────
+
 
 def test_blueprint_service_load() -> None:
     svc = BlueprintService()
@@ -58,6 +57,7 @@ def test_blueprint_service_discover() -> None:
 
 # ── SimulationService ────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_simulation_service_run() -> None:
     svc = BlueprintService()
@@ -83,10 +83,32 @@ async def test_simulation_service_run_all() -> None:
 
 # ── TraceService ─────────────────────────────────────────────────────
 
+
 def test_trace_service_load() -> None:
     with tempfile.NamedTemporaryFile(suffix=".jsonl", mode="w", delete=False) as f:
-        f.write(json.dumps({"event_type": "llm_call", "agent_name": "agent_1", "tokens": 100, "duration_ms": 50.0, "timestamp": "2025-01-01T00:00:00"}) + "\n")
-        f.write(json.dumps({"event_type": "pattern_start", "agent_name": "supervisor", "tokens": 0, "timestamp": "2025-01-01T00:00:01"}) + "\n")
+        f.write(
+            json.dumps(
+                {
+                    "event_type": "llm_call",
+                    "agent_name": "agent_1",
+                    "tokens": 100,
+                    "duration_ms": 50.0,
+                    "timestamp": "2025-01-01T00:00:00",
+                }
+            )
+            + "\n"
+        )
+        f.write(
+            json.dumps(
+                {
+                    "event_type": "pattern_start",
+                    "agent_name": "supervisor",
+                    "tokens": 0,
+                    "timestamp": "2025-01-01T00:00:01",
+                }
+            )
+            + "\n"
+        )
         f.flush()
 
         svc = TraceService()
@@ -112,7 +134,12 @@ def test_trace_service_query() -> None:
 
 def test_trace_service_summary() -> None:
     with tempfile.NamedTemporaryFile(suffix=".jsonl", mode="w", delete=False) as f:
-        f.write(json.dumps({"event_type": "llm_call", "agent_name": "a1", "tokens": 100, "duration_ms": 50}) + "\n")
+        f.write(
+            json.dumps(
+                {"event_type": "llm_call", "agent_name": "a1", "tokens": 100, "duration_ms": 50}
+            )
+            + "\n"
+        )
         f.flush()
 
         svc = TraceService()
@@ -129,6 +156,7 @@ def test_trace_service_missing_file() -> None:
 
 
 # ── GovernanceService ────────────────────────────────────────────────
+
 
 def test_governance_compliance() -> None:
     svc = BlueprintService()

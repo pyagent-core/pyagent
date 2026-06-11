@@ -7,9 +7,8 @@ import json
 from dataclasses import asdict
 
 from fastapi import APIRouter, Request
-from starlette.responses import StreamingResponse
-
 from pyagent_trace.events import TraceEvent, TraceEventBus
+from starlette.responses import StreamingResponse
 
 router = APIRouter()
 
@@ -44,7 +43,7 @@ async def traces_live_sse(request: Request):
                     event = await asyncio.wait_for(queue.get(), timeout=15.0)
                     data = json.dumps(asdict(event), default=str)
                     yield f"data: {data}\n\n"
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     yield ": keepalive\n\n"
         finally:
             _trace_bus.unsubscribe(sub_id)

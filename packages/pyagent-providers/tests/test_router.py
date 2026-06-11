@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_patterns.base import Message
 from pyagent_providers.adapters.mock import MockProvider
 from pyagent_providers.registry import ProviderRegistry
@@ -34,7 +33,9 @@ def capable_provider() -> MockProvider:
 
 
 @pytest.fixture
-async def registry(cheap_provider: MockProvider, capable_provider: MockProvider) -> ProviderRegistry:
+async def registry(
+    cheap_provider: MockProvider, capable_provider: MockProvider
+) -> ProviderRegistry:
     reg = ProviderRegistry()
     await reg.register(cheap_provider)
     await reg.register(capable_provider)
@@ -45,7 +46,7 @@ async def registry(cheap_provider: MockProvider, capable_provider: MockProvider)
 async def test_capability_first(registry: ProviderRegistry) -> None:
     router = ProviderRouter(registry, strategy=RoutingStrategy.CAPABILITY_FIRST)
     messages = [Message.user("Write a Python function")]
-    provider, model = await router.route(messages)
+    provider, _ = await router.route(messages)
     # The capable provider has more capabilities
     assert provider.name == "capable"
 
@@ -64,7 +65,7 @@ async def test_cost_first(registry: ProviderRegistry) -> None:
 async def test_latency_first(registry: ProviderRegistry) -> None:
     router = ProviderRouter(registry, strategy=RoutingStrategy.LATENCY_FIRST)
     messages = [Message.user("Quick question")]
-    provider, model = await router.route(messages)
+    provider, _ = await router.route(messages)
     # Cheap provider has smaller context = proxy for lower latency
     assert provider.name == "cheap"
 
@@ -89,7 +90,7 @@ async def test_route_with_required_capabilities(registry: ProviderRegistry) -> N
     messages = [Message.user("Analyse this image")]
 
     # Require VISION — only capable provider has it
-    provider, model = await router.route(messages, required={Capability.VISION})
+    provider, _ = await router.route(messages, required={Capability.VISION})
     assert provider.name == "capable"
 
 

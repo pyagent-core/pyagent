@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import math
 from collections import Counter
-from dataclasses import dataclass, field
-from typing import Protocol, runtime_checkable
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from pyagent_context.item import ContextItem
+if TYPE_CHECKING:
+    from pyagent_context.item import ContextItem
 
 
 @dataclass(frozen=True)
@@ -16,7 +17,7 @@ class SearchResult:
 
     Attributes:
         item: The matching context item.
-        score: Relevance score (0.0–1.0).
+        score: Relevance score (0.0-1.0).
     """
 
     item: ContextItem
@@ -60,18 +61,100 @@ class InMemorySemanticStore:
         self._items: dict[str, ContextItem] = {}
         self._tf_cache: dict[str, dict[str, float]] = {}
         self._stop_words = stop_words or {
-            "a", "an", "the", "is", "are", "was", "were", "be", "been",
-            "being", "have", "has", "had", "do", "does", "did", "will",
-            "would", "could", "should", "may", "might", "can", "shall",
-            "to", "of", "in", "for", "on", "with", "at", "by", "from",
-            "as", "into", "through", "during", "before", "after", "and",
-            "but", "or", "nor", "not", "so", "yet", "both", "either",
-            "neither", "each", "every", "all", "any", "few", "more",
-            "most", "other", "some", "such", "no", "only", "own", "same",
-            "than", "too", "very", "just", "because", "about", "between",
-            "it", "its", "this", "that", "these", "those", "i", "me",
-            "my", "we", "our", "you", "your", "he", "him", "his", "she",
-            "her", "they", "them", "their", "what", "which", "who",
+            "a",
+            "an",
+            "the",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "being",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "can",
+            "shall",
+            "to",
+            "of",
+            "in",
+            "for",
+            "on",
+            "with",
+            "at",
+            "by",
+            "from",
+            "as",
+            "into",
+            "through",
+            "during",
+            "before",
+            "after",
+            "and",
+            "but",
+            "or",
+            "nor",
+            "not",
+            "so",
+            "yet",
+            "both",
+            "either",
+            "neither",
+            "each",
+            "every",
+            "all",
+            "any",
+            "few",
+            "more",
+            "most",
+            "other",
+            "some",
+            "such",
+            "no",
+            "only",
+            "own",
+            "same",
+            "than",
+            "too",
+            "very",
+            "just",
+            "because",
+            "about",
+            "between",
+            "it",
+            "its",
+            "this",
+            "that",
+            "these",
+            "those",
+            "i",
+            "me",
+            "my",
+            "we",
+            "our",
+            "you",
+            "your",
+            "he",
+            "him",
+            "his",
+            "she",
+            "her",
+            "they",
+            "them",
+            "their",
+            "what",
+            "which",
+            "who",
         }
 
     def add(self, item: ContextItem) -> None:
@@ -118,7 +201,11 @@ class InMemorySemanticStore:
 
     def _tokenize(self, text: str) -> list[str]:
         words = text.lower().split()
-        return [w.strip(".,!?;:\"'()[]{}") for w in words if w.strip(".,!?;:\"'()[]{}") not in self._stop_words]
+        return [
+            w.strip(".,!?;:\"'()[]{}")
+            for w in words
+            if w.strip(".,!?;:\"'()[]{}") not in self._stop_words
+        ]
 
     def _compute_tf(self, text: str) -> dict[str, float]:
         tokens = self._tokenize(text)
@@ -146,8 +233,8 @@ class InMemorySemanticStore:
         if not common_keys:
             return 0.0
         dot = sum(a[k] * b[k] for k in common_keys)
-        mag_a = math.sqrt(sum(v ** 2 for v in a.values()))
-        mag_b = math.sqrt(sum(v ** 2 for v in b.values()))
+        mag_a = math.sqrt(sum(v**2 for v in a.values()))
+        mag_b = math.sqrt(sum(v**2 for v in b.values()))
         if mag_a == 0 or mag_b == 0:
             return 0.0
         return dot / (mag_a * mag_b)

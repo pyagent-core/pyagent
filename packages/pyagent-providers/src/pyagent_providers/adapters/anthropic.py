@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import anthropic
-
 from pyagent_patterns.base import Message, Role
-from pyagent_providers.base import HealthStatus, ProviderCapabilities
 from pyagent_router.selector import Capability
+
+from pyagent_providers.base import HealthStatus, ProviderCapabilities
 
 
 class AnthropicProvider:
@@ -90,9 +90,7 @@ class AnthropicProvider:
             "You are a helpful assistant.",
         )
         chat_msgs = [
-            {"role": m.role.value, "content": m.content}
-            for m in messages
-            if m.role != Role.SYSTEM
+            {"role": m.role.value, "content": m.content} for m in messages if m.role != Role.SYSTEM
         ]
         response = await self._client.messages.create(
             model=model or self._default_model,

@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from pyagent_patterns.base import Message
+
     from pyagent_trace.events import TraceEventBus
 
 

@@ -9,7 +9,6 @@ import pytest
 from pyagent_patterns.base import Message, Role
 from pyagent_trace.events import TraceEvent, TraceEventBus
 
-
 # --- TraceEvent dataclass ---
 
 

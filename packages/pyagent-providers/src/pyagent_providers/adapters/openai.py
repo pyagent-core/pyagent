@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-from openai import AsyncOpenAI
+from typing import TYPE_CHECKING
 
-from pyagent_patterns.base import Message, Role
-from pyagent_providers.base import HealthStatus, ProviderCapabilities
+from openai import AsyncOpenAI
 from pyagent_router.selector import Capability
+
+from pyagent_providers.base import HealthStatus, ProviderCapabilities
+
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Message
 
 
 class OpenAIProvider:

@@ -47,7 +47,9 @@ def test_dangling_provider_ref() -> None:
     )
     validator = BlueprintValidator()
     issues = validator.validate(spec)
-    errors = [i for i in issues if i.severity == IssueSeverity.ERROR and "Provider ref" in i.message]
+    errors = [
+        i for i in issues if i.severity == IssueSeverity.ERROR and "Provider ref" in i.message
+    ]
     assert len(errors) >= 1
 
 
@@ -77,5 +79,9 @@ def test_contract_dangling_workflow() -> None:
     )
     validator = BlueprintValidator()
     issues = validator.validate(spec)
-    warnings = [i for i in issues if i.severity == IssueSeverity.WARNING and "non-existent workflow" in i.message]
+    warnings = [
+        i
+        for i in issues
+        if i.severity == IssueSeverity.WARNING and "non-existent workflow" in i.message
+    ]
     assert len(warnings) >= 1

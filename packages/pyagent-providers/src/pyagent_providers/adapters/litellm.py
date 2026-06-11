@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-import litellm
+from typing import TYPE_CHECKING
 
-from pyagent_patterns.base import Message
-from pyagent_providers.base import HealthStatus, ProviderCapabilities
+import litellm
 from pyagent_router.selector import Capability
+
+from pyagent_providers.base import HealthStatus, ProviderCapabilities
+
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Message
 
 
 class LiteLLMProvider:
@@ -61,7 +65,7 @@ class LiteLLMProvider:
     async def health(self) -> HealthStatus:
         """Verify LiteLLM can reach at least one provider."""
         try:
-            response = await litellm.acompletion(
+            await litellm.acompletion(
                 model=self._default_model,
                 messages=[{"role": "user", "content": "ping"}],
                 max_tokens=1,

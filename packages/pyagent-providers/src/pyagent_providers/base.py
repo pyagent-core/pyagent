@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
-from pyagent_patterns.base import Message
 from pyagent_router.selector import Capability
+
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Message
 
 
 class HealthStatus(StrEnum):

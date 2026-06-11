@@ -18,6 +18,10 @@ class SLASpec(BaseModel):
 class ContractSpec(BaseModel):
     """Input/output contract for a workflow."""
 
-    input: dict[str, Any] = Field(default_factory=dict, description="Input schema (JSON Schema-like)")
-    output: dict[str, Any] = Field(default_factory=dict, description="Output schema (JSON Schema-like)")
+    input: dict[str, Any] = Field(
+        default_factory=dict, description="Input schema (JSON Schema-like)"
+    )
+    output: dict[str, Any] = Field(
+        default_factory=dict, description="Output schema (JSON Schema-like)"
+    )
     sla: SLASpec = Field(default_factory=SLASpec, description="SLA constraints")

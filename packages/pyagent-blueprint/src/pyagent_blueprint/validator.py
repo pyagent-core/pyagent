@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING
 
 from pyagent_patterns.registry import list_patterns
-from pyagent_blueprint.schema.spec import BlueprintSpec
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.schema.spec import BlueprintSpec
 
 
 class IssueSeverity(StrEnum):
@@ -69,19 +71,23 @@ class BlueprintValidator:
         for wf_name, wf_spec in spec.workflows.items():
             for role, ref in wf_spec.agents.items():
                 if isinstance(ref, str) and ref not in agent_names:
-                    issues.append(ValidationIssue(
-                        path=f"workflows.{wf_name}.agents.{role}",
-                        message=f"Agent ref '{ref}' not found in agents. Available: {sorted(agent_names)}",
-                        severity=IssueSeverity.ERROR,
-                    ))
+                    issues.append(
+                        ValidationIssue(
+                            path=f"workflows.{wf_name}.agents.{role}",
+                            message=f"Agent ref '{ref}' not found in agents. Available: {sorted(agent_names)}",
+                            severity=IssueSeverity.ERROR,
+                        )
+                    )
                 elif isinstance(ref, dict):
                     for sub_role, sub_ref in ref.items():
                         if isinstance(sub_ref, str) and sub_ref not in agent_names:
-                            issues.append(ValidationIssue(
-                                path=f"workflows.{wf_name}.agents.{role}.{sub_role}",
-                                message=f"Agent ref '{sub_ref}' not found in agents.",
-                                severity=IssueSeverity.ERROR,
-                            ))
+                            issues.append(
+                                ValidationIssue(
+                                    path=f"workflows.{wf_name}.agents.{role}.{sub_role}",
+                                    message=f"Agent ref '{sub_ref}' not found in agents.",
+                                    severity=IssueSeverity.ERROR,
+                                )
+                            )
         return issues
 
     def _check_provider_refs(self, spec: BlueprintSpec) -> list[ValidationIssue]:
@@ -91,11 +97,13 @@ class BlueprintValidator:
 
         for agent_name, agent_spec in spec.agents.items():
             if agent_spec.provider and agent_spec.provider not in provider_names:
-                issues.append(ValidationIssue(
-                    path=f"agents.{agent_name}.provider",
-                    message=f"Provider ref '{agent_spec.provider}' not found. Available: {sorted(provider_names)}",
-                    severity=IssueSeverity.ERROR,
-                ))
+                issues.append(
+                    ValidationIssue(
+                        path=f"agents.{agent_name}.provider",
+                        message=f"Provider ref '{agent_spec.provider}' not found. Available: {sorted(provider_names)}",
+                        severity=IssueSeverity.ERROR,
+                    )
+                )
         return issues
 
     def _check_pattern_names(self, spec: BlueprintSpec) -> list[ValidationIssue]:
@@ -105,11 +113,13 @@ class BlueprintValidator:
 
         for wf_name, wf_spec in spec.workflows.items():
             if wf_spec.pattern not in known:
-                issues.append(ValidationIssue(
-                    path=f"workflows.{wf_name}.pattern",
-                    message=f"Unknown pattern '{wf_spec.pattern}'. Known: {sorted(known)}",
-                    severity=IssueSeverity.ERROR,
-                ))
+                issues.append(
+                    ValidationIssue(
+                        path=f"workflows.{wf_name}.pattern",
+                        message=f"Unknown pattern '{wf_spec.pattern}'. Known: {sorted(known)}",
+                        severity=IssueSeverity.ERROR,
+                    )
+                )
         return issues
 
     def _check_contract_refs(self, spec: BlueprintSpec) -> list[ValidationIssue]:
@@ -119,11 +129,13 @@ class BlueprintValidator:
 
         for contract_name in spec.contracts:
             if contract_name not in wf_names:
-                issues.append(ValidationIssue(
-                    path=f"contracts.{contract_name}",
-                    message=f"Contract '{contract_name}' references non-existent workflow.",
-                    severity=IssueSeverity.WARNING,
-                ))
+                issues.append(
+                    ValidationIssue(
+                        path=f"contracts.{contract_name}",
+                        message=f"Contract '{contract_name}' references non-existent workflow.",
+                        severity=IssueSeverity.WARNING,
+                    )
+                )
         return issues
 
     def _check_sla_values(self, spec: BlueprintSpec) -> list[ValidationIssue]:
@@ -131,11 +143,13 @@ class BlueprintValidator:
         issues: list[ValidationIssue] = []
         for name, contract in spec.contracts.items():
             if contract.sla.latency_p95_ms < 100:
-                issues.append(ValidationIssue(
-                    path=f"contracts.{name}.sla.latency_p95_ms",
-                    message=f"Latency SLA {contract.sla.latency_p95_ms}ms is unrealistically low for LLM calls.",
-                    severity=IssueSeverity.WARNING,
-                ))
+                issues.append(
+                    ValidationIssue(
+                        path=f"contracts.{name}.sla.latency_p95_ms",
+                        message=f"Latency SLA {contract.sla.latency_p95_ms}ms is unrealistically low for LLM calls.",
+                        severity=IssueSeverity.WARNING,
+                    )
+                )
         return issues
 
     def _check_security(self, spec: BlueprintSpec) -> list[ValidationIssue]:
@@ -146,10 +160,12 @@ class BlueprintValidator:
         for agent_name, agent_spec in spec.agents.items():
             for pattern in key_patterns:
                 if pattern in agent_spec.prompt:
-                    issues.append(ValidationIssue(
-                        path=f"agents.{agent_name}.prompt",
-                        message=f"Possible hardcoded API key detected (contains '{pattern}').",
-                        severity=IssueSeverity.ERROR,
-                    ))
+                    issues.append(
+                        ValidationIssue(
+                            path=f"agents.{agent_name}.prompt",
+                            message=f"Possible hardcoded API key detected (contains '{pattern}').",
+                            severity=IssueSeverity.ERROR,
+                        )
+                    )
                     break
         return issues

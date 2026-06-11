@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-import os
-import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
-
 from pyagent_studio.cli import main
 
 # Use the existing fixture from pyagent-blueprint tests
-_FIXTURE_DIR = Path(__file__).resolve().parent.parent.parent / "pyagent-blueprint" / "tests" / "fixtures"
+_FIXTURE_DIR = (
+    Path(__file__).resolve().parent.parent.parent / "pyagent-blueprint" / "tests" / "fixtures"
+)
 _BLUEPRINT = str(_FIXTURE_DIR / "customer_support.yaml")
 
 
@@ -30,8 +29,17 @@ def test_cli_help(runner):
     result = runner.invoke(main, ["--help"])
     assert result.exit_code == 0
     for cmd in [
-        "apply", "get", "validate", "test", "diff", "simulate",
-        "render", "generate", "providers", "describe", "dashboard",
+        "apply",
+        "get",
+        "validate",
+        "test",
+        "diff",
+        "simulate",
+        "render",
+        "generate",
+        "providers",
+        "describe",
+        "dashboard",
     ]:
         assert cmd in result.output, f"Missing command: {cmd}"
 
@@ -212,26 +220,30 @@ def test_cli_generate_scaffold(runner):
 
 def test_cli_providers_list(runner):
     """providers list shows models."""
-    with patch("pyagent_studio.services.provider_service._HAS_LITELLM", True):
-        with patch("pyagent_studio.services.provider_service.litellm") as mock_litellm:
-            mock_litellm.model_list = ["gpt-4o", "claude-3"]
-            result = runner.invoke(main, ["providers", "list"])
-            assert result.exit_code == 0
-            assert "gpt-4o" in result.output
+    with (
+        patch("pyagent_studio.services.provider_service._HAS_LITELLM", True),
+        patch("pyagent_studio.services.provider_service.litellm") as mock_litellm,
+    ):
+        mock_litellm.model_list = ["gpt-4o", "claude-3"]
+        result = runner.invoke(main, ["providers", "list"])
+        assert result.exit_code == 0
+        assert "gpt-4o" in result.output
 
 
 def test_cli_providers_health(runner):
     """providers health runs health check."""
-    with patch("pyagent_studio.services.provider_service._HAS_LITELLM", True):
-        with patch("pyagent_studio.services.provider_service.litellm") as mock_litellm:
-            mock_response = MagicMock()
-            mock_response.choices = [MagicMock()]
-            mock_response.choices[0].message.content = "pong"
-            mock_litellm.acompletion = AsyncMock(return_value=mock_response)
+    with (
+        patch("pyagent_studio.services.provider_service._HAS_LITELLM", True),
+        patch("pyagent_studio.services.provider_service.litellm") as mock_litellm,
+    ):
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "pong"
+        mock_litellm.acompletion = AsyncMock(return_value=mock_response)
 
-            result = runner.invoke(main, ["providers", "health"])
-            assert result.exit_code == 0
-            assert "healthy" in result.output
+        result = runner.invoke(main, ["providers", "health"])
+        assert result.exit_code == 0
+        assert "healthy" in result.output
 
 
 # --- describe ---

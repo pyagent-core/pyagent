@@ -5,10 +5,8 @@ from __future__ import annotations
 import logging
 
 import pytest
-from pyagent_patterns.base import Agent, MockLLM
-from pyagent_blueprint import load_blueprint_from_str, BlueprintCompiler
-from pyagent_blueprint.runtime import RuntimeGraph
-
+from pyagent_blueprint import BlueprintCompiler, load_blueprint_from_str
+from pyagent_patterns.base import Agent
 
 SIMPLE_YAML = """\
 api_version: pyagent/v1
@@ -128,8 +126,8 @@ def test_runtime_graph_wire_cost_tracker():
 @pytest.mark.asyncio
 async def test_runtime_graph_run_with_hooks():
     """Full integration: compile → wire → run with trace events captured."""
-    from pyagent_trace.events import TraceEventBus
     from pyagent_trace import CostTracker
+    from pyagent_trace.events import TraceEventBus
 
     spec = load_blueprint_from_str(SIMPLE_YAML)
     graph = BlueprintCompiler().compile(spec)

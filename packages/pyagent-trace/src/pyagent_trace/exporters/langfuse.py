@@ -9,9 +9,10 @@ Maps pyagent events to Langfuse's native concepts:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pyagent_trace.events import TraceEvent
+if TYPE_CHECKING:
+    from pyagent_trace.events import TraceEvent
 
 try:
     from langfuse import Langfuse

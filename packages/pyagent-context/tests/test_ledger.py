@@ -8,7 +8,9 @@ from pyagent_context.item import ContextItem, TrustLevel
 from pyagent_context.ledger import ContextLedger
 
 
-def _make_item(content: str, source: str = "agent", trust: TrustLevel = TrustLevel.INFERRED, age: float = 0.0) -> ContextItem:
+def _make_item(
+    content: str, source: str = "agent", trust: TrustLevel = TrustLevel.INFERRED, age: float = 0.0
+) -> ContextItem:
     return ContextItem(
         content=content,
         source=source,
@@ -44,7 +46,7 @@ def test_query_by_trust() -> None:
 def test_query_by_age() -> None:
     ledger = ContextLedger()
     ledger.append(_make_item("old", age=7200))  # 2 hours ago
-    ledger.append(_make_item("new", age=60))     # 1 minute ago
+    ledger.append(_make_item("new", age=60))  # 1 minute ago
 
     results = ledger.query(max_age_seconds=3600)
     assert len(results) == 1

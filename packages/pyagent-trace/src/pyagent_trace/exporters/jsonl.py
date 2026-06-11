@@ -5,9 +5,10 @@ from __future__ import annotations
 import json
 from dataclasses import asdict
 from pathlib import Path
-from typing import IO
+from typing import IO, TYPE_CHECKING
 
-from pyagent_trace.events import TraceEvent
+if TYPE_CHECKING:
+    from pyagent_trace.events import TraceEvent
 
 
 class JsonlExporter:

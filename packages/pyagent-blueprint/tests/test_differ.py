@@ -62,7 +62,9 @@ def test_modified_prompt_warning() -> None:
 
     differ = BlueprintDiffer()
     changes = differ.diff(old, new)
-    prompt_changes = [c for c in changes if "prompt" in c.path and c.change_type == ChangeType.MODIFIED]
+    prompt_changes = [
+        c for c in changes if "prompt" in c.path and c.change_type == ChangeType.MODIFIED
+    ]
     assert len(prompt_changes) >= 1
     assert prompt_changes[0].severity == ChangeSeverity.WARNING
 

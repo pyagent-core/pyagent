@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pyagent_patterns.base import Message
-from pyagent_providers.base import HealthStatus, ProviderProtocol
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Message
+
+    from pyagent_providers.base import ProviderProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -105,9 +107,7 @@ class FallbackChain:
                 )
             except Exception as exc:
                 error_msg = f"{type(exc).__name__}: {exc}"
-                attempts.append(
-                    FallbackAttempt(provider.name, success=False, error=error_msg)
-                )
+                attempts.append(FallbackAttempt(provider.name, success=False, error=error_msg))
                 logger.warning("Provider %s failed: %s", provider.name, error_msg)
 
                 # Record failure on circuit breaker

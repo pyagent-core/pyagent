@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from pyagent_patterns.base import Message, MockLLM
-from pyagent_providers.base import HealthStatus, ProviderCapabilities
 from pyagent_router.selector import Capability
+
+from pyagent_providers.base import HealthStatus, ProviderCapabilities
 
 
 class MockProvider:

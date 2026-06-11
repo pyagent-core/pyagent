@@ -17,6 +17,7 @@ from pyagent_trace.exporters.jsonl import JsonlExporter
 
 try:
     import opentelemetry  # noqa: F401
+
     _HAS_OTEL = True
 except ImportError:
     _HAS_OTEL = False
@@ -180,9 +181,16 @@ def test_otel_exporter_maps_event_types():
     from pyagent_trace.exporters.otel import _SPAN_NAME_MAP
 
     for event_type in [
-        "pattern_start", "pattern_end", "agent_start", "agent_end",
-        "llm_call", "llm_response", "routing_decision", "compression",
-        "error", "cost_record",
+        "pattern_start",
+        "pattern_end",
+        "agent_start",
+        "agent_end",
+        "llm_call",
+        "llm_response",
+        "routing_decision",
+        "compression",
+        "error",
+        "cost_record",
     ]:
         assert event_type in _SPAN_NAME_MAP
 
@@ -232,9 +240,11 @@ def test_otel_exporter_missing_package():
     """OTelExporter raises ImportError if opentelemetry not installed."""
     from pyagent_trace.exporters.otel import OTelExporter
 
-    with patch("pyagent_trace.exporters.otel._HAS_OTEL", False):
-        with pytest.raises(ImportError, match="opentelemetry package not installed"):
-            OTelExporter()
+    with (
+        patch("pyagent_trace.exporters.otel._HAS_OTEL", False),
+        pytest.raises(ImportError, match="opentelemetry package not installed"),
+    ):
+        OTelExporter()
 
 
 # --- LangfuseExporter ---
@@ -273,19 +283,23 @@ def test_langfuse_exporter_creates_span():
     exporter = LangfuseExporter(client=mock_client)
 
     # Start a pattern first
-    exporter.export_event(_make_event(
-        event_type="pattern_start",
-        pattern_type="debate",
-        payload={"trace_id": "t1"},
-    ))
+    exporter.export_event(
+        _make_event(
+            event_type="pattern_start",
+            pattern_type="debate",
+            payload={"trace_id": "t1"},
+        )
+    )
 
     # Then start agent
-    exporter.export_event(_make_event(
-        event_type="agent_start",
-        agent_name="bull",
-        pattern_type="debate",
-        payload={"trace_id": "t1"},
-    ))
+    exporter.export_event(
+        _make_event(
+            event_type="agent_start",
+            agent_name="bull",
+            pattern_type="debate",
+            payload={"trace_id": "t1"},
+        )
+    )
 
     mock_trace_obj.span.assert_called_once()
 
@@ -301,26 +315,30 @@ def test_langfuse_exporter_creates_generation():
     exporter = LangfuseExporter(client=mock_client)
 
     # Start pattern
-    exporter.export_event(_make_event(
-        event_type="pattern_start",
-        pattern_type="debate",
-        payload={"trace_id": "t1"},
-    ))
+    exporter.export_event(
+        _make_event(
+            event_type="pattern_start",
+            pattern_type="debate",
+            payload={"trace_id": "t1"},
+        )
+    )
 
     # LLM call
-    exporter.export_event(_make_event(
-        event_type="llm_call",
-        agent_name="bull",
-        pattern_type="debate",
-        payload={
-            "trace_id": "t1",
-            "model": "gpt-4o",
-            "messages_in": [{"role": "user", "content": "test"}],
-            "response": "Response text",
-            "input_tokens": 100,
-            "output_tokens": 50,
-        },
-    ))
+    exporter.export_event(
+        _make_event(
+            event_type="llm_call",
+            agent_name="bull",
+            pattern_type="debate",
+            payload={
+                "trace_id": "t1",
+                "model": "gpt-4o",
+                "messages_in": [{"role": "user", "content": "test"}],
+                "response": "Response text",
+                "input_tokens": 100,
+                "output_tokens": 50,
+            },
+        )
+    )
 
     mock_trace_obj.generation.assert_called_once()
 
@@ -335,16 +353,20 @@ def test_langfuse_exporter_pattern_end():
 
     exporter = LangfuseExporter(client=mock_client)
 
-    exporter.export_event(_make_event(
-        event_type="pattern_start",
-        pattern_type="debate",
-        payload={"trace_id": "t1"},
-    ))
-    exporter.export_event(_make_event(
-        event_type="pattern_end",
-        pattern_type="debate",
-        payload={"trace_id": "t1"},
-    ))
+    exporter.export_event(
+        _make_event(
+            event_type="pattern_start",
+            pattern_type="debate",
+            payload={"trace_id": "t1"},
+        )
+    )
+    exporter.export_event(
+        _make_event(
+            event_type="pattern_end",
+            pattern_type="debate",
+            payload={"trace_id": "t1"},
+        )
+    )
 
     mock_trace_obj.update.assert_called_once()
     assert "t1" not in exporter._active_traces
@@ -362,21 +384,27 @@ def test_langfuse_exporter_agent_end():
 
     exporter = LangfuseExporter(client=mock_client)
 
-    exporter.export_event(_make_event(
-        event_type="pattern_start",
-        pattern_type="debate",
-        payload={"trace_id": "t1"},
-    ))
-    exporter.export_event(_make_event(
-        event_type="agent_start",
-        agent_name="bull",
-        payload={"trace_id": "t1"},
-    ))
-    exporter.export_event(_make_event(
-        event_type="agent_end",
-        agent_name="bull",
-        payload={"trace_id": "t1"},
-    ))
+    exporter.export_event(
+        _make_event(
+            event_type="pattern_start",
+            pattern_type="debate",
+            payload={"trace_id": "t1"},
+        )
+    )
+    exporter.export_event(
+        _make_event(
+            event_type="agent_start",
+            agent_name="bull",
+            payload={"trace_id": "t1"},
+        )
+    )
+    exporter.export_event(
+        _make_event(
+            event_type="agent_end",
+            agent_name="bull",
+            payload={"trace_id": "t1"},
+        )
+    )
 
     mock_span.end.assert_called_once()
     assert "bull" not in exporter._active_spans
@@ -392,16 +420,20 @@ def test_langfuse_exporter_cost_record():
 
     exporter = LangfuseExporter(client=mock_client)
 
-    exporter.export_event(_make_event(
-        event_type="pattern_start",
-        pattern_type="debate",
-        payload={"trace_id": "t1"},
-    ))
-    exporter.export_event(_make_event(
-        event_type="cost_record",
-        pattern_type="debate",
-        payload={"trace_id": "t1", "cost_usd": 0.005},
-    ))
+    exporter.export_event(
+        _make_event(
+            event_type="pattern_start",
+            pattern_type="debate",
+            payload={"trace_id": "t1"},
+        )
+    )
+    exporter.export_event(
+        _make_event(
+            event_type="cost_record",
+            pattern_type="debate",
+            payload={"trace_id": "t1", "cost_usd": 0.005},
+        )
+    )
 
     mock_trace_obj.update.assert_called_once()
 
@@ -432,9 +464,11 @@ def test_langfuse_exporter_missing_package():
     """LangfuseExporter raises ImportError if langfuse not installed."""
     from pyagent_trace.exporters.langfuse import LangfuseExporter
 
-    with patch("pyagent_trace.exporters.langfuse.Langfuse", None):
-        with pytest.raises(ImportError, match="langfuse package not installed"):
-            LangfuseExporter(public_key="pk", secret_key="sk")
+    with (
+        patch("pyagent_trace.exporters.langfuse.Langfuse", None),
+        pytest.raises(ImportError, match="langfuse package not installed"),
+    ):
+        LangfuseExporter(public_key="pk", secret_key="sk")
 
 
 def test_langfuse_exporter_unhandled_event_type():

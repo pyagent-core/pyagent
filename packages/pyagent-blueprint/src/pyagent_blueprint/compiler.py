@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.registry import get_pattern_class
+
 from pyagent_blueprint.runtime import RuntimeGraph
-from pyagent_blueprint.schema.spec import BlueprintSpec
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.schema.spec import BlueprintSpec
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +108,6 @@ class BlueprintCompiler:
         agent_map: dict[str, Agent],
     ) -> dict[str, Any]:
         """Look up pattern classes and wire agents."""
-        from pyagent_patterns.orchestration import Pipeline
 
         workflows: dict[str, Any] = {}
 
@@ -152,10 +154,7 @@ class BlueprintCompiler:
                 resolved[role] = agent_map[ref]
             elif isinstance(ref, dict):
                 # Nested refs (e.g., routes: {billing: billing_agent})
-                resolved[role] = {
-                    k: agent_map[v] if v in agent_map else v
-                    for k, v in ref.items()
-                }
+                resolved[role] = {k: agent_map.get(v, v) for k, v in ref.items()}
             else:
                 resolved[role] = ref
         return resolved

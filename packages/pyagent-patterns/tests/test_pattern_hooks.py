@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from pyagent_patterns.base import Agent, MockLLM, Message
+from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import Pipeline
 
 
@@ -11,10 +11,12 @@ from pyagent_patterns.orchestration import Pipeline
 async def test_pattern_run_without_hooks():
     """Backward compat: Pattern.run works identically when no hooks are wired."""
     llm = MockLLM(responses=["step1", "step2"])
-    pipeline = Pipeline(stages=[
-        Agent("a", llm),
-        Agent("b", llm),
-    ])
+    pipeline = Pipeline(
+        stages=[
+            Agent("a", llm),
+            Agent("b", llm),
+        ]
+    )
     result = await pipeline.run("test task")
     assert result.output
     assert result.metadata["pattern_type"] == "pipeline"
@@ -33,7 +35,7 @@ async def test_pattern_trace_hook_emits_events():
     pipeline = Pipeline(stages=[Agent("a", llm)])
     pipeline.set_trace_bus(bus)
 
-    result = await pipeline.run("test")
+    await pipeline.run("test")
 
     event_types = [e.event_type for e in events]
     assert "pattern_start" in event_types

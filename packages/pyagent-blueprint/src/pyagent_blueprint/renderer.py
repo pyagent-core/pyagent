@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from pyagent_blueprint.schema.spec import BlueprintSpec
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.schema.spec import BlueprintSpec
 
 
 class BlueprintRenderer:
@@ -25,13 +28,11 @@ class BlueprintRenderer:
             lines.append(f"    {name}[{label}]")
 
         # Workflow edges
-        for wf_name, wf_spec in spec.workflows.items():
+        for _, wf_spec in spec.workflows.items():
             agent_refs = self._extract_agent_refs(wf_spec.agents)
             if len(agent_refs) > 1:
                 for i in range(len(agent_refs) - 1):
-                    lines.append(
-                        f"    {agent_refs[i]} -->|{wf_spec.pattern}| {agent_refs[i + 1]}"
-                    )
+                    lines.append(f"    {agent_refs[i]} -->|{wf_spec.pattern}| {agent_refs[i + 1]}")
 
             # For supervisor-like patterns, show classifier → routes
             if "classifier" in wf_spec.agents and "routes" in wf_spec.agents:
@@ -113,7 +114,7 @@ class BlueprintRenderer:
     def _extract_agent_refs(agents: dict) -> list[str]:
         """Flatten agent refs from a workflow's agents dict."""
         refs: list[str] = []
-        for role, ref in agents.items():
+        for _, ref in agents.items():
             if isinstance(ref, str):
                 refs.append(ref)
             elif isinstance(ref, dict):

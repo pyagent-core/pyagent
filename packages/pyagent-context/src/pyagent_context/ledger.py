@@ -6,7 +6,8 @@ import time
 from typing import Any
 
 from pyagent_patterns.base import Message
-from pyagent_context.item import ContextItem, TrustLevel, TRUST_ORDER
+
+from pyagent_context.item import TRUST_ORDER, ContextItem, TrustLevel
 
 
 class ContextLedger:
@@ -62,7 +63,9 @@ class ContextLedger:
         now = time.time()
         results: list[ContextItem] = []
         for item in self._items:
-            if min_trust is not None and TRUST_ORDER.get(item.trust_level, 0) < TRUST_ORDER.get(min_trust, 0):
+            if min_trust is not None and TRUST_ORDER.get(item.trust_level, 0) < TRUST_ORDER.get(
+                min_trust, 0
+            ):
                 continue
             if max_age_seconds is not None and (now - item.timestamp) > max_age_seconds:
                 continue
@@ -89,10 +92,7 @@ class ContextLedger:
             List of ``Message`` objects.
         """
         if max_tokens is None:
-            return [
-                Message.assistant(item.content, name=item.source)
-                for item in self._items
-            ]
+            return [Message.assistant(item.content, name=item.source) for item in self._items]
 
         # Walk backward, accumulate until budget exhausted
         selected: list[ContextItem] = []

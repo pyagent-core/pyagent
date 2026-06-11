@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from pyagent_blueprint import BlueprintCompiler, RuntimeGraph
-from pyagent_blueprint.schema import BlueprintSpec
-from pyagent_patterns.base import Result
+from pyagent_blueprint import BlueprintCompiler
 
 if TYPE_CHECKING:
+    from pyagent_blueprint.schema import BlueprintSpec
     from pyagent_trace.events import TraceEventBus
 
 
@@ -86,7 +85,10 @@ class SimulationService:
                     timestamp=time.time(),
                     event_type="pattern_start",
                     pattern_type=workflow,
-                    payload={"task": task, "live": use_live if use_live is not None else self._use_live},
+                    payload={
+                        "task": task,
+                        "live": use_live if use_live is not None else self._use_live,
+                    },
                 )
             )
 

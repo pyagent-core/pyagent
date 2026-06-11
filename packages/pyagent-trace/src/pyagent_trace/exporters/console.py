@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import sys
-from typing import IO
+from typing import IO, TYPE_CHECKING
 
-from pyagent_trace.events import TraceEvent
+if TYPE_CHECKING:
+    from pyagent_trace.events import TraceEvent
 
 
 class ConsoleExporter:

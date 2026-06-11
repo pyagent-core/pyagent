@@ -258,11 +258,14 @@ class Agent:
                 content = compressed.compressed
                 # Emit compression trace event
                 if self._trace_bus is not None and compressed.savings_pct > 0:
-                    self._emit_trace("compression", {
-                        "original_tokens": compressed.original_tokens,
-                        "compressed_tokens": compressed.compressed_tokens,
-                        "savings_pct": compressed.savings_pct,
-                    })
+                    self._emit_trace(
+                        "compression",
+                        {
+                            "original_tokens": compressed.original_tokens,
+                            "compressed_tokens": compressed.compressed_tokens,
+                            "savings_pct": compressed.savings_pct,
+                        },
+                    )
             except Exception:
                 logger.debug("Agent '%s': compression failed, using original", self.name)
 
@@ -270,6 +273,7 @@ class Agent:
         if self._context_ledger is not None:
             try:
                 from pyagent_context.item import ContextItem, TrustLevel
+
                 self._context_ledger.append(
                     ContextItem(
                         content=content,
@@ -279,10 +283,13 @@ class Agent:
                 )
                 # Emit context_update trace event
                 if self._trace_bus is not None:
-                    self._emit_trace("context_update", {
-                        "source": self.name,
-                        "tokens": len(content) // 4,
-                    })
+                    self._emit_trace(
+                        "context_update",
+                        {
+                            "source": self.name,
+                            "tokens": len(content) // 4,
+                        },
+                    )
             except Exception:
                 logger.debug("Agent '%s': failed to write context", self.name)
 
@@ -290,11 +297,14 @@ class Agent:
 
         # 7. Trace: agent_end
         if self._trace_bus is not None:
-            self._emit_trace("agent_end", {
-                "duration_seconds": duration,
-                "output_tokens": len(content) // 4,
-                **compression_meta,
-            })
+            self._emit_trace(
+                "agent_end",
+                {
+                    "duration_seconds": duration,
+                    "output_tokens": len(content) // 4,
+                    **compression_meta,
+                },
+            )
 
         return Message.assistant(content, name=self.name, metadata=compression_meta)
 
@@ -302,6 +312,7 @@ class Agent:
         """Emit a trace event to the attached bus (no-op if bus is None)."""
         try:
             from pyagent_trace.events import TraceEvent
+
             self._trace_bus.emit(
                 TraceEvent(
                     timestamp=time.time(),
@@ -365,11 +376,14 @@ class Pattern(ABC):
 
         # Trace: pattern_end
         if self._trace_bus is not None:
-            self._emit_pattern_trace("pattern_end", {
-                "duration_seconds": result.duration_seconds,
-                "token_estimate": result.token_estimate,
-                "output_length": len(result.output),
-            })
+            self._emit_pattern_trace(
+                "pattern_end",
+                {
+                    "duration_seconds": result.duration_seconds,
+                    "token_estimate": result.token_estimate,
+                    "output_length": len(result.output),
+                },
+            )
 
         return result
 
@@ -377,6 +391,7 @@ class Pattern(ABC):
         """Emit a trace event to the attached bus."""
         try:
             from pyagent_trace.events import TraceEvent
+
             self._trace_bus.emit(
                 TraceEvent(
                     timestamp=time.time(),

@@ -27,18 +27,22 @@ def test_retrieval_ranks_by_relevance() -> None:
 def test_retrieval_ranks_by_trust() -> None:
     now = time.time()
     ledger = ContextLedger()
-    ledger.append(ContextItem(
-        content="Database connection pooling",
-        source="s",
-        trust_level=TrustLevel.INFERRED,
-        timestamp=now,
-    ))
-    ledger.append(ContextItem(
-        content="Database connection pooling",
-        source="s",
-        trust_level=TrustLevel.VERIFIED,
-        timestamp=now,
-    ))
+    ledger.append(
+        ContextItem(
+            content="Database connection pooling",
+            source="s",
+            trust_level=TrustLevel.INFERRED,
+            timestamp=now,
+        )
+    )
+    ledger.append(
+        ContextItem(
+            content="Database connection pooling",
+            source="s",
+            trust_level=TrustLevel.VERIFIED,
+            timestamp=now,
+        )
+    )
 
     retriever = TrustAwareRetriever(weight_trust=0.9, weight_relevance=0.05, weight_recency=0.05)
     results = retriever.retrieve(ledger, "database connection")
@@ -50,11 +54,13 @@ def test_retrieval_ranks_by_trust() -> None:
 
 def test_retrieval_excludes_expired() -> None:
     ledger = ContextLedger()
-    ledger.append(ContextItem(
-        content="expired item about Python",
-        source="s",
-        expires_at=time.time() - 10,
-    ))
+    ledger.append(
+        ContextItem(
+            content="expired item about Python",
+            source="s",
+            expires_at=time.time() - 10,
+        )
+    )
     ledger.append(ContextItem(content="active item about Python", source="s"))
 
     retriever = TrustAwareRetriever()

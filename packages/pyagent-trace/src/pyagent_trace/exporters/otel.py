@@ -5,9 +5,7 @@ Supports any OTLP-compatible backend: Jaeger, Grafana Tempo, Honeycomb, Datadog,
 
 from __future__ import annotations
 
-from typing import Any
-
-from pyagent_trace.events import TraceEvent
+from typing import TYPE_CHECKING, Any
 
 try:
     from opentelemetry import trace
@@ -18,6 +16,9 @@ except ImportError:
     trace = None  # type: ignore[assignment]
 
 from pyagent_trace.attributes import PyAgentAttributes
+
+if TYPE_CHECKING:
+    from pyagent_trace.events import TraceEvent
 
 _SPAN_NAME_MAP: dict[str, str] = {
     "pattern_start": "pyagent.pattern",

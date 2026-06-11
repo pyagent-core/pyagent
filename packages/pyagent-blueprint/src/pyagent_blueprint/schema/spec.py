@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel, Field
 
-from pyagent_blueprint.schema.agents import AgentSpec
-from pyagent_blueprint.schema.context import ContextConfigSpec
-from pyagent_blueprint.schema.contracts import ContractSpec
-from pyagent_blueprint.schema.metadata import MetadataSpec
-from pyagent_blueprint.schema.observability import ObservabilitySpec
-from pyagent_blueprint.schema.providers import ProviderBindingSpec
-from pyagent_blueprint.schema.workflows import WorkflowSpec
+if TYPE_CHECKING:
+    from pyagent_blueprint.schema.agents import AgentSpec
+    from pyagent_blueprint.schema.context import ContextConfigSpec
+    from pyagent_blueprint.schema.contracts import ContractSpec
+    from pyagent_blueprint.schema.metadata import MetadataSpec
+    from pyagent_blueprint.schema.observability import ObservabilitySpec
+    from pyagent_blueprint.schema.providers import ProviderBindingSpec
+    from pyagent_blueprint.schema.workflows import WorkflowSpec
 
 
 class BlueprintSpec(BaseModel):

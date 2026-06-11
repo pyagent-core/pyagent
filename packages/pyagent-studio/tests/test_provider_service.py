@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 
 # --- ProviderService ---
 
@@ -23,9 +21,11 @@ def test_provider_service_missing_litellm():
 @pytest.fixture
 def mock_litellm():
     """Patch litellm module for tests."""
-    with patch("pyagent_studio.services.provider_service._HAS_LITELLM", True):
-        with patch("pyagent_studio.services.provider_service.litellm") as mock:
-            yield mock
+    with (
+        patch("pyagent_studio.services.provider_service._HAS_LITELLM", True),
+        patch("pyagent_studio.services.provider_service.litellm") as mock,
+    ):
+        yield mock
 
 
 @pytest.fixture
@@ -245,8 +245,8 @@ def test_simulation_service_backward_compat():
 
 def test_simulation_service_event_bus_wired():
     """Events emitted during simulation when bus is provided."""
-    from pyagent_trace.events import TraceEvent, TraceEventBus
     from pyagent_studio.services.simulation_service import SimulationService
+    from pyagent_trace.events import TraceEvent, TraceEventBus
 
     bus = TraceEventBus()
     received: list[TraceEvent] = []

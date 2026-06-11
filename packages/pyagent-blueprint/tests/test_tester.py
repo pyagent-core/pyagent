@@ -5,10 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from pyagent_blueprint.loader import load_blueprint
 from pyagent_blueprint.tester import BlueprintTester
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

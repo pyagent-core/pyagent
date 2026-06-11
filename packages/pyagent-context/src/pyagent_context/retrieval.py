@@ -1,13 +1,16 @@
-"""TrustAwareRetriever: score candidates by trust × recency × relevance."""
+"""TrustAwareRetriever: score candidates by trust x recency x relevance."""
 
 from __future__ import annotations
 
 import math
 import time
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from pyagent_context.item import ContextItem, TRUST_ORDER
-from pyagent_context.ledger import ContextLedger
+from pyagent_context.item import TRUST_ORDER, ContextItem
+
+if TYPE_CHECKING:
+    from pyagent_context.ledger import ContextLedger
 
 
 @dataclass(frozen=True)
@@ -16,7 +19,7 @@ class ScoredItem:
 
     Attributes:
         item: The context item.
-        score: Composite score (0.0–1.0).
+        score: Composite score (0.0-1.0).
         trust_score: Trust component of the score.
         recency_score: Recency component of the score.
         relevance_score: Relevance component of the score.
@@ -92,9 +95,7 @@ class TrustAwareRetriever:
             relevance = self._keyword_relevance(item.content, query_words)
 
             score = (
-                self._w_trust * trust
-                + self._w_recency * recency
-                + self._w_relevance * relevance
+                self._w_trust * trust + self._w_recency * recency + self._w_relevance * relevance
             )
 
             if score >= min_score:

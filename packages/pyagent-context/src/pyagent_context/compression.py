@@ -3,22 +3,18 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 from pyagent_context.item import ContextItem, TrustLevel
 from pyagent_context.ledger import ContextLedger
-
-if TYPE_CHECKING:
-    pass
 
 
 class CompressionPolicy(StrEnum):
     """Available compression strategies."""
 
     NONE = "none"
-    FIFO = "fifo"                               # drop oldest items
-    SEMANTIC_LOSSLESS = "semantic_lossless"      # compress text, keep Knowledge block
-    SAWTOOTH = "sawtooth"                        # compress to floor, grow again
+    FIFO = "fifo"  # drop oldest items
+    SEMANTIC_LOSSLESS = "semantic_lossless"  # compress text, keep Knowledge block
+    SAWTOOTH = "sawtooth"  # compress to floor, grow again
 
 
 class ContextCompressor:

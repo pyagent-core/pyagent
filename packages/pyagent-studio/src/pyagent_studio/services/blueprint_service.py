@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pyagent_blueprint import (
     BlueprintCompiler,
@@ -11,9 +11,10 @@ from pyagent_blueprint import (
     RuntimeGraph,
     load_blueprint,
 )
-from pyagent_blueprint.loader import BlueprintLoadError
-from pyagent_blueprint.schema import BlueprintSpec
-from pyagent_blueprint.validator import ValidationIssue
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.schema import BlueprintSpec
+    from pyagent_blueprint.validator import ValidationIssue
 
 
 class BlueprintService:

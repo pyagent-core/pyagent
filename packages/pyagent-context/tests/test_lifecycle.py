@@ -26,19 +26,23 @@ def test_sweep_expired() -> None:
 def test_freshness_decay() -> None:
     ledger = ContextLedger()
     # Old item: 2 hours ago
-    ledger.append(ContextItem(
-        content="old item",
-        source="s",
-        timestamp=time.time() - 7200,
-        token_estimate=100,
-    ))
+    ledger.append(
+        ContextItem(
+            content="old item",
+            source="s",
+            timestamp=time.time() - 7200,
+            token_estimate=100,
+        )
+    )
     # New item: just now
-    ledger.append(ContextItem(
-        content="new item",
-        source="s",
-        timestamp=time.time(),
-        token_estimate=100,
-    ))
+    ledger.append(
+        ContextItem(
+            content="new item",
+            source="s",
+            timestamp=time.time(),
+            token_estimate=100,
+        )
+    )
 
     lifecycle = ContextLifecycle()
     decayed = lifecycle.apply_freshness_decay(ledger, half_life_seconds=3600)
@@ -53,21 +57,27 @@ def test_freshness_decay() -> None:
 def test_consolidation() -> None:
     ledger = ContextLedger()
     # Two similar items from same source
-    ledger.append(ContextItem(
-        content="Python asyncio patterns for concurrency",
-        source="researcher",
-        trust_level=TrustLevel.INFERRED,
-    ))
-    ledger.append(ContextItem(
-        content="Python asyncio patterns for parallel tasks",
-        source="researcher",
-        trust_level=TrustLevel.VERIFIED,
-    ))
+    ledger.append(
+        ContextItem(
+            content="Python asyncio patterns for concurrency",
+            source="researcher",
+            trust_level=TrustLevel.INFERRED,
+        )
+    )
+    ledger.append(
+        ContextItem(
+            content="Python asyncio patterns for parallel tasks",
+            source="researcher",
+            trust_level=TrustLevel.VERIFIED,
+        )
+    )
     # Different source
-    ledger.append(ContextItem(
-        content="JavaScript React hooks",
-        source="frontend_agent",
-    ))
+    ledger.append(
+        ContextItem(
+            content="JavaScript React hooks",
+            source="frontend_agent",
+        )
+    )
 
     lifecycle = ContextLifecycle(consolidation_threshold=0.4)
     consolidated = lifecycle.consolidate(ledger)

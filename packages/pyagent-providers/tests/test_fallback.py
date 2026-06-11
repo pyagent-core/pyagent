@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_patterns.base import Message
 from pyagent_providers.adapters.mock import MockProvider
-from pyagent_providers.base import HealthStatus
 from pyagent_providers.fallback import FallbackChain
 
 
@@ -87,7 +85,7 @@ async def test_circuit_breaker_skips_open(
     """When a circuit breaker is open, skip that provider."""
 
     class FakeCircuitBreaker:
-        class state:
+        class State:
             pass
 
     class OpenCB:

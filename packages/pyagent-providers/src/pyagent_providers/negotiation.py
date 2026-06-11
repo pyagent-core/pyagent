@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from pyagent_providers.base import ProviderProtocol
-from pyagent_providers.registry import ProviderRegistry
-from pyagent_router.selector import Capability
+if TYPE_CHECKING:
+    from pyagent_router.selector import Capability
+
+    from pyagent_providers.base import ProviderProtocol
+    from pyagent_providers.registry import ProviderRegistry
 
 
 @dataclass(frozen=True)
@@ -16,7 +19,7 @@ class NegotiationResult:
     Attributes:
         provider: The best-matched provider.
         model: Recommended model from that provider.
-        match_score: How well the provider matches (0.0–1.0).
+        match_score: How well the provider matches (0.0-1.0).
         matched_capabilities: Which requested capabilities the provider satisfies.
         missing_capabilities: Which requested capabilities the provider lacks.
     """

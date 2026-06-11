@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pyagent_patterns.base import Message
-from pyagent_providers.base import HealthStatus, ProviderCapabilities, ProviderProtocol
+if TYPE_CHECKING:
+    from pyagent_patterns.base import Message
+
+    from pyagent_providers.base import HealthStatus, ProviderCapabilities, ProviderProtocol
 
 
 class TracedProvider:
@@ -37,33 +39,42 @@ class TracedProvider:
     async def complete(self, messages: list[Message], model: str | None = None) -> str:
         """Delegate to wrapped provider and emit trace events."""
         start = time.time()
-        self._emit("provider_call_start", {
-            "provider": self.name,
-            "model": model or "default",
-            "input_messages": len(messages),
-        })
+        self._emit(
+            "provider_call_start",
+            {
+                "provider": self.name,
+                "model": model or "default",
+                "input_messages": len(messages),
+            },
+        )
 
         try:
             result = await self._provider.complete(messages, model)
         except Exception as exc:
-            self._emit("provider_call_error", {
-                "provider": self.name,
-                "error": str(exc),
-                "duration_seconds": time.time() - start,
-            })
+            self._emit(
+                "provider_call_error",
+                {
+                    "provider": self.name,
+                    "error": str(exc),
+                    "duration_seconds": time.time() - start,
+                },
+            )
             raise
 
         duration = time.time() - start
         input_tokens = sum(len(m.content) for m in messages) // 4
         output_tokens = len(result) // 4
 
-        self._emit("provider_call_end", {
-            "provider": self.name,
-            "model": model or "default",
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "duration_seconds": duration,
-        })
+        self._emit(
+            "provider_call_end",
+            {
+                "provider": self.name,
+                "model": model or "default",
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "duration_seconds": duration,
+            },
+        )
 
         return result
 
@@ -75,6 +86,7 @@ class TracedProvider:
         """Emit a trace event to the bus."""
         try:
             from pyagent_trace.events import TraceEvent
+
             self._trace_bus.emit(
                 TraceEvent(
                     timestamp=time.time(),

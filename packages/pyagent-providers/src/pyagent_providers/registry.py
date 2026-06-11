@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pyagent_providers.base import HealthStatus, ProviderInfo, ProviderProtocol
-from pyagent_router.selector import Capability
+
+if TYPE_CHECKING:
+    from pyagent_router.selector import Capability
 
 
 class ProviderRegistry:
@@ -103,7 +104,9 @@ class ProviderRegistry:
         for p in self._providers.values():
             if healthy_only and self._health_cache.get(p.name) == HealthStatus.UNHEALTHY:
                 continue
-            if required_capabilities and not required_capabilities.issubset(p.capabilities.capabilities):
+            if required_capabilities and not required_capabilities.issubset(
+                p.capabilities.capabilities
+            ):
                 continue
             results.append(p)
         return results
@@ -122,7 +125,9 @@ class ProviderRegistry:
             Mapping of provider name → health status.
         """
         targets = (
-            {name: self._providers[name]} if name and name in self._providers else dict(self._providers)
+            {name: self._providers[name]}
+            if name and name in self._providers
+            else dict(self._providers)
         )
 
         async def _check(n: str, p: ProviderProtocol) -> tuple[str, HealthStatus]:

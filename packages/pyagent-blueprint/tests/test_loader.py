@@ -7,9 +7,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from pyagent_blueprint.loader import BlueprintLoadError, load_blueprint, load_blueprint_from_str
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_providers.adapters.mock import MockProvider
 from pyagent_providers.negotiation import CapabilityNegotiator
 from pyagent_providers.registry import ProviderRegistry
@@ -25,7 +24,12 @@ async def registry() -> ProviderRegistry:
         MockProvider(
             name="pro",
             models=["pro-small", "pro-large"],
-            capabilities={Capability.GENERAL, Capability.CODE, Capability.REASONING, Capability.VISION},
+            capabilities={
+                Capability.GENERAL,
+                Capability.CODE,
+                Capability.REASONING,
+                Capability.VISION,
+            },
             max_context=200_000,
         )
     )
@@ -43,9 +47,7 @@ async def registry() -> ProviderRegistry:
 @pytest.mark.asyncio
 async def test_negotiate_best_match(registry: ProviderRegistry) -> None:
     negotiator = CapabilityNegotiator(registry)
-    result = negotiator.negotiate(
-        required_capabilities={Capability.CODE, Capability.REASONING}
-    )
+    result = negotiator.negotiate(required_capabilities={Capability.CODE, Capability.REASONING})
     assert result is not None
     assert result.provider.name == "pro"
     assert result.match_score > 0.5
@@ -57,9 +59,7 @@ async def test_negotiate_best_match(registry: ProviderRegistry) -> None:
 @pytest.mark.asyncio
 async def test_negotiate_partial_match(registry: ProviderRegistry) -> None:
     negotiator = CapabilityNegotiator(registry)
-    result = negotiator.negotiate(
-        required_capabilities={Capability.CODE, Capability.CREATIVE}
-    )
+    result = negotiator.negotiate(required_capabilities={Capability.CODE, Capability.CREATIVE})
     # Neither provider has both — pro has CODE but not CREATIVE
     assert result is not None
     # Pro should rank highest because it has CODE + more extras
@@ -98,9 +98,7 @@ async def test_negotiate_no_requirements(registry: ProviderRegistry) -> None:
 @pytest.mark.asyncio
 async def test_negotiate_all(registry: ProviderRegistry) -> None:
     negotiator = CapabilityNegotiator(registry)
-    results = negotiator.negotiate_all(
-        required_capabilities={Capability.GENERAL}
-    )
+    results = negotiator.negotiate_all(required_capabilities={Capability.GENERAL})
     assert len(results) == 3  # all three have GENERAL
     # Ranked by score descending
     assert results[0].match_score >= results[1].match_score

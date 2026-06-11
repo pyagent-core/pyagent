@@ -11,13 +11,18 @@ from enum import StrEnum
 class TrustLevel(StrEnum):
     """Trust classification for context items."""
 
-    VERIFIED = "verified"       # from trusted source, validated
-    INFERRED = "inferred"       # LLM-generated, not validated
-    USER_PROVIDED = "user"      # direct user input
-    EXTERNAL = "external"       # from tool/API call
+    VERIFIED = "verified"  # from trusted source, validated
+    INFERRED = "inferred"  # LLM-generated, not validated
+    USER_PROVIDED = "user"  # direct user input
+    EXTERNAL = "external"  # from tool/API call
 
     def __ge__(self, other: TrustLevel) -> bool:
-        order = {TrustLevel.INFERRED: 0, TrustLevel.EXTERNAL: 1, TrustLevel.USER_PROVIDED: 2, TrustLevel.VERIFIED: 3}
+        order = {
+            TrustLevel.INFERRED: 0,
+            TrustLevel.EXTERNAL: 1,
+            TrustLevel.USER_PROVIDED: 2,
+            TrustLevel.VERIFIED: 3,
+        }
         return order.get(self, 0) >= order.get(other, 0)
 
     def __gt__(self, other: TrustLevel) -> bool:

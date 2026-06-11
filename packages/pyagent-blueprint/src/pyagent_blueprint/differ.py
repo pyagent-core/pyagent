@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pyagent_blueprint.schema.spec import BlueprintSpec
+if TYPE_CHECKING:
+    from pyagent_blueprint.schema.spec import BlueprintSpec
 
 
 class ChangeType(StrEnum):
@@ -104,31 +105,37 @@ class BlueprintDiffer:
             new_val = new.get(key)
 
             if key not in old:
-                changes.append(Change(
-                    path=path,
-                    change_type=ChangeType.ADDED,
-                    old_value=None,
-                    new_value=new_val,
-                    severity=self._classify_severity(key, ChangeType.ADDED),
-                ))
+                changes.append(
+                    Change(
+                        path=path,
+                        change_type=ChangeType.ADDED,
+                        old_value=None,
+                        new_value=new_val,
+                        severity=self._classify_severity(key, ChangeType.ADDED),
+                    )
+                )
             elif key not in new:
-                changes.append(Change(
-                    path=path,
-                    change_type=ChangeType.REMOVED,
-                    old_value=old_val,
-                    new_value=None,
-                    severity=self._classify_severity(key, ChangeType.REMOVED),
-                ))
+                changes.append(
+                    Change(
+                        path=path,
+                        change_type=ChangeType.REMOVED,
+                        old_value=old_val,
+                        new_value=None,
+                        severity=self._classify_severity(key, ChangeType.REMOVED),
+                    )
+                )
             elif isinstance(old_val, dict) and isinstance(new_val, dict):
                 self._diff_dicts(old_val, new_val, path, changes)
             elif old_val != new_val:
-                changes.append(Change(
-                    path=path,
-                    change_type=ChangeType.MODIFIED,
-                    old_value=old_val,
-                    new_value=new_val,
-                    severity=self._classify_severity(key, ChangeType.MODIFIED),
-                ))
+                changes.append(
+                    Change(
+                        path=path,
+                        change_type=ChangeType.MODIFIED,
+                        old_value=old_val,
+                        new_value=new_val,
+                        severity=self._classify_severity(key, ChangeType.MODIFIED),
+                    )
+                )
 
     @staticmethod
     def _classify_severity(field_name: str, change_type: ChangeType) -> ChangeSeverity:

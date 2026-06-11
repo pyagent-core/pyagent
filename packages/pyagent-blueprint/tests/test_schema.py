@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import pytest
-from pydantic import ValidationError
-
 from pyagent_blueprint.schema import (
     AgentSpec,
     BlueprintSpec,
@@ -13,6 +11,7 @@ from pyagent_blueprint.schema import (
     ProviderBindingSpec,
     WorkflowSpec,
 )
+from pydantic import ValidationError
 
 
 def test_valid_spec_roundtrip() -> None:
@@ -20,7 +19,9 @@ def test_valid_spec_roundtrip() -> None:
         metadata=MetadataSpec(name="test", version="1.0.0"),
         providers={"primary": ProviderBindingSpec(model="gpt-4o")},
         agents={"greeter": AgentSpec(prompt="Say hello", provider="primary")},
-        workflows={"main": WorkflowSpec(pattern="pipeline", agents={"stages": {"greeter": "greeter"}})},
+        workflows={
+            "main": WorkflowSpec(pattern="pipeline", agents={"stages": {"greeter": "greeter"}})
+        },
     )
     dumped = spec.model_dump()
     restored = BlueprintSpec(**dumped)
