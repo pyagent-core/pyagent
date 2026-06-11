@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyagent-all"
-version = "0.1.0"
+version = "0.2.3"
 description = "Meta-package: installs all PyAgent packages (patterns, router, compress, trace, providers, context, blueprint, studio)"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,14 +22,14 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "pyagent-patterns>=0.1.0",
-    "pyagent-router>=0.1.0",
-    "pyagent-compress>=0.1.0",
-    "pyagent-trace>=0.1.0",
-    "pyagent-providers>=0.1.0",
-    "pyagent-context>=0.1.0",
-    "pyagent-blueprint>=0.1.0",
-    "pyagent-studio>=0.2.0",
+    "pyagent-patterns>=0.2.3",
+    "pyagent-router>=0.2.3",
+    "pyagent-compress>=0.2.3",
+    "pyagent-trace>=0.2.3",
+    "pyagent-providers>=0.2.3",
+    "pyagent-context>=0.2.3",
+    "pyagent-blueprint>=0.2.3",
+    "pyagent-studio>=0.2.3",
     "litellm>=1.40",
     "fastapi>=0.115",
     "uvicorn>=0.30",
