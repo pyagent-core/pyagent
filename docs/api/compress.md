@@ -14,7 +14,7 @@
 
 ::: pyagent_compress.budget.AgentBudget
 
-::: pyagent_compress.budget.BudgetExceeded
+::: pyagent_compress.budget.BudgetExceededError
 
 ::: pyagent_compress.middleware.CompressMiddleware
 
