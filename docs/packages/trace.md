@@ -37,6 +37,96 @@ flowchart LR
 
 ---
 
+## TraceEventBus — Pub/Sub Event System
+
+`TraceEventBus` is the lightweight event contract between trace producers (agents, patterns, providers) and consumers (exporters, Studio, custom callbacks). Producers emit `TraceEvent` objects; consumers subscribe to receive them.
+
+```python
+import time
+from pyagent_trace.events import TraceEvent, TraceEventBus
+
+bus = TraceEventBus()
+
+# Subscribe a callback — receives every event
+sub_id = bus.subscribe(lambda e: print(f"[{e.event_type}] {e.agent_name}"))
+
+# Subscribe to specific event types only
+bus.subscribe_filter(
+    {"agent_start", "agent_end", "llm_call"},
+    lambda e: print(f"Agent event: {e.payload}"),
+)
+
+# Emit an event
+bus.emit(TraceEvent(
+    timestamp=time.time(),
+    event_type="agent_start",
+    agent_name="analyst",
+    pattern_type="pipeline",
+    payload={"model": "claude-sonnet-4-20250514"},
+))
+
+bus.unsubscribe(sub_id)
+```
+
+### Built-in Exporters
+
+Wire exporters to a bus — one bus can have multiple exporters simultaneously:
+
+```python
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.exporters import ConsoleExporter, JsonlExporter
+from pyagent_trace.exporters.langfuse import LangfuseExporter
+
+bus = TraceEventBus()
+
+# Development: print to stdout
+bus.subscribe(ConsoleExporter().export_event)
+
+# Persistence: write every event to JSONL (viewable in Studio)
+bus.subscribe(JsonlExporter("traces/run_001.jsonl").export_event)
+
+# Production: send to Langfuse for LLM observability
+bus.subscribe(
+    LangfuseExporter(
+        public_key="pk-lf-...",
+        secret_key="sk-lf-...",
+        host="https://cloud.langfuse.com",   # or self-hosted
+    ).export_event
+)
+```
+
+### Agent Hook Integration
+
+Attach a bus to any agent — it emits `agent_start`, `agent_end`, `compression`, and `cost_record` events automatically:
+
+```python
+from pyagent_patterns.base import Agent
+from pyagent_providers import AnthropicLLM
+from pyagent_trace import CostTracker
+
+bus = TraceEventBus()
+bus.subscribe(ConsoleExporter().export_event)
+
+tracker = CostTracker(event_bus=bus)
+
+agent = (
+    Agent("analyst", AnthropicLLM("claude-sonnet-4-20250514"),
+          system_prompt="Analyse the document.")
+    .set_trace_bus(bus)          # emits agent_start / agent_end
+    .set_cost_tracker(tracker)   # emits cost_record after each LLM call
+)
+
+result = asyncio.run(agent.run("Summarise Q3 earnings"))
+# Console output:
+# [agent_start] agent=analyst
+# [cost_record] agent=analyst tokens=... cost=...
+# [agent_end]   agent=analyst duration_ms=...
+```
+
+→ See the full [Hooks Guide](../guides/hooks.md) for all four hook types (trace, context, compress, cost).
+
+---
+
 ## Quick Start — Decorator Tracing
 
 The simplest integration: inherit from a traced variant of any pattern class.
@@ -100,15 +190,20 @@ pip install pyagent-trace[langfuse]
 ```
 
 ```python
-from pyagent_trace.exporters.langfuse import configure_langfuse
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.exporters.langfuse import LangfuseExporter
 
-configure_langfuse(
-    public_key="pk-lf-...",
-    secret_key="sk-lf-...",
-    host="https://cloud.langfuse.com",   # or self-hosted
+bus = TraceEventBus()
+bus.subscribe(
+    LangfuseExporter(
+        public_key="pk-lf-...",
+        secret_key="sk-lf-...",
+        host="https://cloud.langfuse.com",   # or self-hosted
+    ).export_event
 )
 
-# Now every LLM call is logged to Langfuse with cost, latency, prompt, response
+# Wire bus to agents or patterns, then run
+# Every agent_start/end and llm_call event flows to Langfuse as a span/generation
 result = asyncio.run(pipeline.run("Analyse this document"))
 # Visit Langfuse dashboard to see full trace tree with token costs
 ```

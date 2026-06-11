@@ -297,6 +297,53 @@ asyncio.run(stream())
 
 ---
 
+## TracedProvider — Observability Without Code Changes
+
+`TracedProvider` wraps any `ProviderProtocol` to emit trace events for every LLM call — without modifying agent code or the underlying provider.
+
+```python
+import asyncio
+from pyagent_providers import AnthropicLLM
+from pyagent_providers.traced import TracedProvider
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.exporters import ConsoleExporter, JsonlExporter
+
+bus = TraceEventBus()
+bus.subscribe(ConsoleExporter().export_event)
+bus.subscribe(JsonlExporter("traces/run.jsonl").export_event)
+
+# Wrap any existing provider — no changes to agent code
+traced = TracedProvider(AnthropicLLM("claude-sonnet-4-20250514"), trace_bus=bus)
+
+from pyagent_patterns.base import Agent
+agent = Agent("analyst", llm=traced, system_prompt="Analyse this document.")
+
+result = asyncio.run(agent.run("Tesla Q3 2025 earnings"))
+# Bus receives: provider_call_start → provider_call_end (or provider_call_error)
+# Console: [provider_call_start] agent=analyst model=claude-sonnet-4-20250514
+#          [provider_call_end]   agent=analyst latency_ms=342 tokens=...
+```
+
+`TracedProvider` implements `ProviderProtocol` and works anywhere a provider is expected:
+
+```python
+# In a FallbackChain
+from pyagent_providers import FallbackChain
+
+chain = FallbackChain([
+    TracedProvider(AnthropicLLM("claude-sonnet-4-20250514"), trace_bus=bus),
+    TracedProvider(OpenAILLM("gpt-4o"), trace_bus=bus),
+])
+
+# In a ProviderRegistry
+registry = ProviderRegistry()
+registry.register("primary", TracedProvider(AnthropicLLM("claude-haiku-3-5-20241022"), trace_bus=bus))
+```
+
+→ See the full [Hooks Guide](../guides/hooks.md) for `agent.set_trace_bus()` and other hook types.
+
+---
+
 ## Provider Comparison
 
 | Provider | Best For | Relative Cost | Context Window |

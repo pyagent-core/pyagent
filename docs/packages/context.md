@@ -222,6 +222,43 @@ result = asyncio.run(agent.run_messages([*context_messages, query]))
 print(result.output)
 ```
 
+### Hook Integration — Automatic Context Wiring
+
+The hook system wires a `ContextLedger` directly into an agent: the agent reads context before each LLM call and writes its output back to the ledger automatically — no manual `to_messages()` needed.
+
+```python
+import asyncio
+from pyagent_context.ledger import ContextLedger
+from pyagent_context.item import ContextItem, TrustLevel
+from pyagent_patterns.base import Agent
+from pyagent_providers import AnthropicLLM
+
+ledger = ContextLedger()
+ledger.add("User is CFO at a 500-person SaaS company", source="crm", trust_level=TrustLevel.VERIFIED)
+ledger.add("User asked about churn forecasting last week", source="history", trust_level=TrustLevel.VERIFIED)
+
+agent = (
+    Agent("advisor", AnthropicLLM("claude-sonnet-4-20250514"),
+          system_prompt="You are a financial advisor. Use the provided context.")
+    .set_context(ledger)   # reads ledger before LLM call; writes output back after
+)
+
+result = asyncio.run(agent.run("What's the best way to reduce churn in our enterprise tier?"))
+print(result.output)
+print(f"Ledger now has {len(ledger)} items")  # original 2 + agent output = 3
+```
+
+To wire context on all agents in a blueprint at once:
+
+```python
+from pyagent_blueprint import load_blueprint, BlueprintCompiler
+
+graph = BlueprintCompiler().compile(load_blueprint("blueprint.yaml"))
+graph.wire_context(ledger)   # sets context hook on every agent in the graph
+```
+
+→ See the full [Hooks Guide](../guides/hooks.md) for all four hook types.
+
 ---
 
 ## SemanticMemory (ChromaDB)

@@ -168,6 +168,47 @@ pipeline = Pipeline(stages=compressed_agents)
 
 ---
 
+## Hook Integration — Agent-Level Compression
+
+The hook system lets you attach a compressor directly to an agent instead of wrapping it in middleware. The agent automatically compresses its output before returning, and emits a `compression` trace event when a `TraceEventBus` is also wired.
+
+```python
+import asyncio
+from pyagent_compress import MessageCompressor
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.exporters import ConsoleExporter
+from pyagent_patterns.base import Agent
+from pyagent_providers import AnthropicLLM
+
+bus = TraceEventBus()
+bus.subscribe(ConsoleExporter().export_event)
+
+compressor = MessageCompressor(target_ratio=0.5)
+
+agent = (
+    Agent("analyst", AnthropicLLM("claude-sonnet-4-20250514"),
+          system_prompt="Provide a detailed financial analysis.")
+    .set_compressor(compressor)
+    .set_trace_bus(bus)          # optional: emits compression event to bus
+)
+
+result = asyncio.run(agent.run("Tesla Q3 2025 earnings — summarise key risks"))
+# Output is compressed before being returned; trace event includes savings_pct
+```
+
+Hook vs. middleware — when to use each:
+
+| Approach | When | API |
+|----------|------|-----|
+| `agent.set_compressor()` | Single agent, fluent wiring, hook pipeline | `Agent.set_compressor(compressor)` |
+| `CompressMiddleware.wrap()` | Existing Pipeline/FanOut, wrap multiple agents at once | `middleware.wrap(agent)` |
+
+Both are compatible — you can mix them in the same workflow.
+
+→ See the full [Hooks Guide](../guides/hooks.md) for all four hook types.
+
+---
+
 ## AgentPruner
 
 Detect low-contribution agents in a multi-agent workflow and remove them to save cost in future runs.

@@ -112,6 +112,13 @@ nav:
     - Hooks: guides/hooks.md
     - Blueprint: guides/blueprint.md
     - Studio: guides/studio.md
+  - Packages:
+    - Compress: packages/compress.md
+    - Trace: packages/trace.md
+    - Context: packages/context.md
+    - Providers: packages/providers.md
+    - Blueprint: packages/blueprint.md
+    - Studio: packages/studio.md
   - Cookbook:
     - Code Review Agent: cookbook/code-review.md
     - Research Agent: cookbook/research.md
