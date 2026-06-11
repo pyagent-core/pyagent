@@ -133,7 +133,5 @@ nav:
     - pyagent-context: api/context.md
     - pyagent-blueprint: api/blueprint.md
     - pyagent-studio: api/studio.md
-  - Research:
-    - Blueprint & Studio Papers: research/blueprint-studio-papers.md
   - Benchmarks: benchmarks.md
   - Contributing: contributing.md
