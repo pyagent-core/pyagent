@@ -242,14 +242,138 @@ pyagent-blueprint diff v1.yaml v2.yaml
 pyagent-blueprint generate --pattern supervisor --agents "classifier,billing,tech" --name my-system
 ```
 
+## Observability Configuration — Tracing & Cost Budgets
+
+The `observability` section of a blueprint declares tracing and cost budget settings. These are validated by the schema and compiled into configuration objects that consumers wire at runtime.
+
+```yaml
+observability:
+  tracing:
+    enabled: true          # Enable trace event emission
+    exporter: langfuse     # Preferred exporter backend (console, jsonl, otel, langfuse)
+  cost_budget:
+    daily_usd: 100.0       # Daily cost ceiling in USD
+    alert_threshold: 0.8   # Alert when 80% of budget consumed
+```
+
+**Schema classes** (defined in `pyagent_blueprint.schema.observability`):
+
+| Class | Fields | Description |
+|-------|--------|-------------|
+| `TracingConfig` | `enabled`, `exporter` | Whether tracing is active and which exporter to use |
+| `CostBudgetConfig` | `daily_usd`, `alert_threshold` | Daily cost limits and alert thresholds |
+| `ObservabilitySpec` | `tracing`, `cost_budget` | Top-level observability container |
+
+After compilation, these settings are available on the `RuntimeGraph` but are **not automatically wired** — consumers must manually set up the `TraceEventBus` and exporters. The compiler will emit warnings if `observability` is declared but the consumer has not wired tracing hooks.
+
+## Context Configuration — Memory, Compression & Redaction
+
+The `context` section declares memory, compression, and redaction settings for agents:
+
+```yaml
+context:
+  memory:
+    backend: sqlite             # json or sqlite
+    working_max_tokens: 128000  # WorkingMemory token limit
+    session_path: session.db    # SessionMemory persistence path
+  compression:
+    policy: semantic_lossless   # none, fifo, semantic_lossless, sawtooth
+    target_ratio: 0.6           # Target compression ratio (0.0–1.0)
+  redaction:
+    max_sensitivity: internal   # Filter out PII and confidential items
+```
+
+**Schema classes** (defined in `pyagent_blueprint.schema.context`):
+
+| Class | Fields | Description |
+|-------|--------|-------------|
+| `MemoryConfig` | `backend`, `working_max_tokens`, `session_path` | Memory tier configuration |
+| `CompressionConfig` | `policy`, `target_ratio` | Context compression policy and target |
+| `RedactionConfig` | `max_sensitivity` | Sensitivity ceiling for LLM-bound context |
+| `ContextConfigSpec` | `memory`, `compression`, `redaction` | Top-level context container |
+
+Like observability, context configuration is compiled but **manually wired** by the consumer. The compiler warns if context settings are declared but not connected to agents.
+
+## RuntimeGraph — The Compiled Output
+
+`BlueprintCompiler.compile()` produces a `RuntimeGraph` containing:
+
+- **Resolved providers** — `ProviderProtocol` instances from the `ProviderRegistry`
+- **Instantiated agents** — `Agent` objects with LLM callables, system prompts, and metadata
+- **Wired workflows** — Named patterns (`Pipeline`, `Supervisor`, etc.) assembled from agents
+- **Metadata** — Blueprint name, version, description for traceability
+
+```python
+graph = compiler.compile(spec)
+
+# Run a named workflow
+result = await graph.run("support", "I can't see my invoice")
+
+# Inspect the graph structure
+print(graph.describe())
+# {
+#     "metadata": {"name": "customer-support", "version": "1.0.0"},
+#     "workflows": {
+#         "support": {
+#             "pattern_type": "Supervisor",
+#             "agents": ["classifier", "billing", "tech"],
+#         }
+#     },
+#     "providers": ["primary", "fallback"],
+#     "observability": {"tracing": {"enabled": true}},
+#     "context": {"compression": {"policy": "semantic_lossless"}},
+# }
+```
+
+## Compiler Warnings
+
+The `BlueprintCompiler` performs static analysis during compilation and emits warnings for common misconfigurations:
+
+| Warning | Trigger | Severity |
+|---------|---------|----------|
+| Dangling agent ref | Workflow references an undefined agent | ERROR |
+| Dangling provider ref | Agent references an undefined provider | ERROR |
+| Unknown pattern | Workflow uses a pattern not in the registry | ERROR |
+| Unwired observability | `observability.tracing.enabled: true` but no `TraceEventBus` wired | WARNING |
+| Unwired context | `context.memory` or `context.compression` declared but not connected | WARNING |
+| Unrealistic SLA | Contract SLA values outside reasonable bounds | WARNING |
+| Hardcoded secrets | API keys detected in agent prompts | WARNING |
+
+Warnings for unwired observability and context are especially important: they alert consumers that configuration was **declared** in the blueprint but was never **connected** at runtime. This helps catch integration oversights without breaking backward compatibility.
+
 ## Integration
 
-Blueprint uses all pyagent packages:
-- **pyagent-patterns**: Pattern registry for workflow compilation (18 patterns)
-- **pyagent-router**: CostEstimator, DifficultyScorer for routing strategies
-- **pyagent-providers**: ProviderRegistry for real provider resolution
-- **pyagent-context**: ContextConfigSpec drives memory + compression setup
+Blueprint is the integration hub of the PyAgent ecosystem:
+
+| Dependency | How It's Used |
+|------------|--------------|
+| **pyagent-patterns** | Pattern registry for workflow compilation (18 built-in patterns + custom) |
+| **pyagent-router** | `CostEstimator` and `DifficultyScorer` for routing-aware blueprints |
+| **pyagent-providers** | `ProviderRegistry` for resolving named providers to `ProviderProtocol` instances |
+| **pyagent-context** | `ContextConfigSpec` drives memory, compression, and redaction configuration |
+| **pyagent-trace** | `ObservabilitySpec` configures tracing and cost budgets (wired manually) |
+| **pyagent-studio** | Studio loads, validates, and simulates blueprints through its service layer |
+
+### The Blueprint → Runtime Flow
+
+```mermaid
+flowchart LR
+    YAML[Blueprint YAML] -->|load_blueprint| Spec[BlueprintSpec]
+    Spec -->|validate| V[BlueprintValidator]
+    Spec -->|compile| C[BlueprintCompiler]
+    C -->|resolve providers| PR[ProviderRegistry]
+    C -->|instantiate agents| AG[Agent instances]
+    C -->|wire patterns| PT[Pattern instances]
+    C -->|produce| RG[RuntimeGraph]
+    RG -->|run workflow| R[Result]
+```
+
+1. **Load** — `load_blueprint("file.yaml")` parses YAML and produces a `BlueprintSpec` (Pydantic model)
+2. **Validate** — `BlueprintValidator.validate(spec)` runs static checks (dangling refs, security, SLA)
+3. **Compile** — `BlueprintCompiler.compile(spec)` resolves providers, instantiates agents, wires patterns
+4. **Wire hooks** — Consumer manually connects `TraceEventBus`, `ContextLedger`, `CompressMiddleware` to agents
+5. **Run** — `graph.run("workflow_name", "input")` executes the pattern and returns a `Result`
 
 ## Full Documentation
 
-See [pyagent.dev](https://pyagent.dev) for full API reference and integration guides.
+See [pyagent.org](https://pyagent.org) for full API reference and integration guides.

@@ -24,6 +24,7 @@ classifiers = [
 dependencies = [
     "pyagent-blueprint>=0.1.0",
     "pyagent-trace>=0.1.0",
+    "pyagent-providers>=0.1.0",
     "click>=8.1",
     "rich>=13.0",
     "litellm>=1.40",

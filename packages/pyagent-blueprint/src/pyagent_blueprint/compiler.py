@@ -57,7 +57,12 @@ class BlueprintCompiler:
         workflows = self._build_workflows(spec, agent_map)
 
         metadata = spec.metadata.model_dump() if spec.metadata else {}
-        return RuntimeGraph(workflows=workflows, metadata=metadata)
+        graph = RuntimeGraph(workflows=workflows, agents=agent_map, metadata=metadata)
+
+        # Step 5: Emit warnings for declared-but-unwired config
+        self._warn_unwired(spec)
+
+        return graph
 
     def _resolve_providers(self, spec: BlueprintSpec) -> dict[str, Any]:
         """Map provider names to LLMCallable instances."""
@@ -194,3 +199,33 @@ class BlueprintCompiler:
         except TypeError:
             # Try with agents as a list
             return pattern_cls(agents=list(agents.values()), **config)
+
+    @staticmethod
+    def _warn_unwired(spec: BlueprintSpec) -> None:
+        """Emit warnings for blueprint config that requires manual wiring."""
+        if spec.observability and spec.observability.tracing.enabled:
+            logger.warning(
+                "Blueprint declares observability.tracing.enabled=True but no trace_bus "
+                "was wired. Call graph.wire_trace(bus) on the compiled RuntimeGraph."
+            )
+        if spec.observability and spec.observability.cost_budget is not None:
+            logger.warning(
+                "Blueprint declares observability.cost_budget but cost tracking "
+                "must be manually wired via graph.wire_cost_tracker(tracker)."
+            )
+        if spec.context and spec.context.compression.policy != "none":
+            logger.warning(
+                "Blueprint declares context.compression.policy='%s' but compression "
+                "must be manually wired via graph.wire_compressor(compressor).",
+                spec.context.compression.policy,
+            )
+        if spec.context and spec.context.memory.semantic_enabled:
+            logger.warning(
+                "Blueprint declares context.memory.semantic_enabled=True but memory "
+                "must be manually wired via graph.wire_context(ledger)."
+            )
+        if spec.context and spec.context.redaction is not None:
+            logger.warning(
+                "Blueprint declares context.redaction but redaction "
+                "must be applied manually before sending messages to agents."
+            )

@@ -37,7 +37,7 @@ git push -u origin main
 
 Do this **once per package** before the first publish.
 
-For each of the 5 packages, go to:
+For each package, go to:
 ```
 https://pypi.org/manage/account/publishing/
 ```
@@ -52,7 +52,8 @@ Fill in:
 | Workflow filename | `publish.yml` |
 | Environment name | `pypi` |
 
-Repeat for: `pyagent-compress`, `pyagent-router`, `pyagent-trace`, `pyagent-all`
+Repeat for: `pyagent-compress`, `pyagent-router`, `pyagent-trace`, `pyagent-context`,
+`pyagent-providers`, `pyagent-blueprint`, `pyagent-studio`, `pyagent-all`
 
 ---
 
@@ -67,7 +68,7 @@ Repeat for: `pyagent-compress`, `pyagent-router`, `pyagent-trace`, `pyagent-all`
 ## 4 — Release a new version
 
 ### a) Bump versions
-Update `version = "..."` in all 5 `packages/*/pyproject.toml` files (and the
+Update `version = "..."` in all `packages/*/pyproject.toml` files (and the
 inter-package dependency pins if you're bumping a major version).
 
 ### b) Update CHANGELOG.md
@@ -86,8 +87,13 @@ Pushing the tag triggers `.github/workflows/publish.yml` automatically.
 ### d) Watch CI
 Check `https://github.com/pyagent-core/pyagent/actions` — the **Publish to PyPI**
 workflow will:
-1. Build all 5 packages (`uv build --package ...`)
-2. Publish them to PyPI in dependency order (patterns → compress/router/trace → all)
+1. Build all 9 packages (`uv build --package ...`)
+2. Publish them to PyPI in dependency order:
+   - Tier 1: patterns, compress, router, trace, context (no inter-deps)
+   - Tier 2: providers (depends on patterns + router)
+   - Tier 3: blueprint (depends on providers + context)
+   - Tier 4: studio (depends on blueprint + trace)
+   - Meta: pyagent-all (depends on everything)
 
 ---
 
@@ -99,6 +105,10 @@ https://pypi.org/project/pyagent-patterns/
 https://pypi.org/project/pyagent-compress/
 https://pypi.org/project/pyagent-router/
 https://pypi.org/project/pyagent-trace/
+https://pypi.org/project/pyagent-context/
+https://pypi.org/project/pyagent-providers/
+https://pypi.org/project/pyagent-blueprint/
+https://pypi.org/project/pyagent-studio/
 https://pypi.org/project/pyagent-all/
 ```
 

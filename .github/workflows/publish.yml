@@ -14,8 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          force-js-actions-to-node24: true
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -76,56 +74,56 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-patterns/
-          skip_existing: true
+          skip-existing: true
 
       - name: Publish pyagent-compress
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-compress/
-          skip_existing: true
+          skip-existing: true
 
       - name: Publish pyagent-router
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-router/
-          skip_existing: true
+          skip-existing: true
 
       - name: Publish pyagent-trace
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-trace/
-          skip_existing: true
+          skip-existing: true
 
       - name: Publish pyagent-context
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-context/
-          skip_existing: true
+          skip-existing: true
 
       # Tier 2 — depends on patterns + router
       - name: Publish pyagent-providers
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-providers/
-          skip_existing: true
+          skip-existing: true
 
       # Tier 3 — depends on providers + context
       - name: Publish pyagent-blueprint
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-blueprint/
-          skip_existing: true
+          skip-existing: true
 
       # Tier 4 — depends on blueprint + trace
       - name: Publish pyagent-studio
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-studio/
-          skip_existing: true
+          skip-existing: true
 
       # Meta-package last — depends on everything
       - name: Publish pyagent-all
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-all/
-          skip_existing: true
+          skip-existing: true

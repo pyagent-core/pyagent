@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from pyagent_compress.budget import BudgetExceeded, TokenBudget
+from pyagent_compress.budget import BudgetExceededError, TokenBudget
 from pyagent_compress.compressor import MessageCompressor
 from pyagent_compress.middleware import CompressMiddleware
 from pyagent_compress.pruner import AgentPruner, InteractionPruner
@@ -83,7 +83,7 @@ def test_token_budget_tracking():
 def test_token_budget_strict_raises():
     budget = TokenBudget(workflow_limit=100, per_agent_limit=50, strict=True)
     budget.consume("agent_a", 40)
-    with pytest.raises(BudgetExceeded):
+    with pytest.raises(BudgetExceededError):
         budget.consume("agent_a", 20)  # Exceeds per-agent limit of 50
 
 

@@ -64,9 +64,10 @@ class CrossReflection(Pattern):
             )
             review_result = await self._reviewer.run([review_prompt])
             messages.append(review_result)
+
             review_text = review_result.content
 
-            if self._stop_phrase in review_result.content:
+            if self._stop_phrase in review_text:
                 break
 
         return Result(

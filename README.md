@@ -1,50 +1,31 @@
 # PyAgent
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![PyPI version](https://img.shields.io/pypi/v/pyagent-patterns.svg)](https://pypi.org/project/pyagent-patterns/)
-[![Downloads](https://img.shields.io/pypi/dm/pyagent-patterns)](https://pypi.org/project/pyagent-patterns/)
-
 **18 reusable multi-agent orchestration patterns for LLMs** — with difficulty-aware routing, inter-agent compression, and OpenTelemetry tracing.
 
-Existing frameworks give you primitives. PyAgent gives you **named, tested, composable patterns** — a shared vocabulary for multi-agent systems that your whole team can reason about.
+Existing frameworks give you primitives. PyAgent gives you named, tested, composable patterns — a shared vocabulary for multi-agent systems that your whole team can reason about.
 
----
-
-## Why PyAgent?
-
-| Feature | LangGraph | CrewAI | AutoGen | **PyAgent** |
-|---|---|---|---|---|
-| Named pattern library | ❌ | ❌ | ❌ | ✅ 18 patterns |
-| Pattern composition | ❌ | ❌ | ❌ | ✅ |
-| Difficulty-aware routing | ❌ | ❌ | ❌ | ✅ |
-| Inter-agent compression | ❌ | ❌ | ❌ | ✅ |
-| Pattern-aware OTel tracing | ❌ | ❌ | ❌ | ✅ |
-| Zero mandatory deps | ❌ | ❌ | ❌ | ✅ |
-
----
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
 ## Packages
 
-| Package | What it does | Install |
-|---|---|---|
-| **pyagent-patterns** | 18 patterns + guardrails + recovery + advisor | `pip install pyagent-patterns` |
-| **pyagent-router** | Difficulty scoring + cost estimation + model selection | `pip install pyagent-router` |
-| **pyagent-compress** | Message compression + agent pruning + token budgets | `pip install pyagent-compress` |
-| **pyagent-trace** | OTel spans + cost tracking + record/replay | `pip install pyagent-trace` |
-| **pyagent-context** | Three-tier memory with trust-aware context ledger | `pip install pyagent-context` |
-| **pyagent-providers** | Multi-provider abstraction with capability negotiation + fallback chains | `pip install pyagent-providers` |
-| **pyagent-blueprint** | Declarative YAML specs — validate, compile, test, diff, render | `pip install pyagent-blueprint` |
-| **pyagent-studio** | CLI + web control plane (dashboard, simulate, govern) | `pip install pyagent-studio` |
-| **pyagent-all** | All packages above | `pip install pyagent-all` |
-
----
+| Package | Description | Install |
+|---------|-------------|---------|
+| **pyagent-patterns** | 18 multi-agent orchestration patterns + composites + guardrails + recovery | `pip install pyagent-patterns` |
+| **pyagent-router** | Difficulty scoring, cost estimation, model selection, routing middleware | `pip install pyagent-router` |
+| **pyagent-compress** | Inter-agent message compression, agent pruning, interaction pruning, token budgets | `pip install pyagent-compress` |
+| **pyagent-trace** | TraceEventBus pub/sub, OpenTelemetry spans, Langfuse export, cost tracking, record/replay | `pip install pyagent-trace` |
+| **pyagent-providers** | Multi-provider abstraction, registry, routing strategies, fallback chains, capability negotiation | `pip install pyagent-providers` |
+| **pyagent-context** | Structured context with trust/sensitivity metadata, three-tier memory, compression, retrieval | `pip install pyagent-context` |
+| **pyagent-blueprint** | Declarative YAML specs, Pydantic validation, compile to RuntimeGraph, contract testing, diff, CLI | `pip install pyagent-blueprint` |
+| **pyagent-studio** | CLI + web control plane for designing, simulating, debugging, and governing agent blueprints | `pip install pyagent-studio` |
+| **pyagent-all** | Meta-package: installs everything above | `pip install pyagent-all` |
 
 ## Table of Contents
 
 - [Connecting your LLM](#connecting-your-llm)
 - [Core concepts](#core-concepts)
-- [Pattern catalog](#pattern-catalog)
+- [Pattern catalog](#pattern-catalog-18-patterns-across-4-tiers)
   - [Tier 1 — Orchestration](#tier-1--orchestration)
   - [Tier 2 — Resolution](#tier-2--resolution)
   - [Tier 3 — Structural](#tier-3--structural)
@@ -54,16 +35,15 @@ Existing frameworks give you primitives. PyAgent gives you **named, tested, comp
 - [pyagent-router](#pyagent-router)
 - [pyagent-compress](#pyagent-compress)
 - [pyagent-trace](#pyagent-trace)
-- [pyagent-context](#pyagent-context)
-- [pyagent-providers](#pyagent-providers)
-- [pyagent-blueprint](#pyagent-blueprint)
-- [pyagent-studio](#pyagent-studio)
 - [Guardrails](#guardrails)
 - [Recovery](#recovery)
+- [pyagent-providers](#pyagent-providers)
+- [pyagent-context](#pyagent-context)
+- [pyagent-blueprint](#pyagent-blueprint)
+- [pyagent-studio](#pyagent-studio)
+- [End-to-end integration](#end-to-end-integration)
 - [When to use which pattern](#when-to-use-which-pattern)
 - [Contributing](#contributing)
-
----
 
 ## Connecting your LLM
 
@@ -94,9 +74,9 @@ class OpenAILLM:
         )
         return response.choices[0].message.content or ""
 
-llm = OpenAILLM("gpt-4o-mini")   # fast, cheap
-llm = OpenAILLM("gpt-4o")        # capable
-llm = OpenAILLM("o3-mini")       # reasoning
+llm = OpenAILLM("gpt-4o-mini")    # fast, cheap
+llm = OpenAILLM("gpt-4o")         # capable
+llm = OpenAILLM("o3-mini")        # reasoning
 ```
 
 ### Anthropic
@@ -118,16 +98,19 @@ class AnthropicLLM:
         )
         chat_msgs = [
             {"role": m.role.value, "content": m.content}
-            for m in messages if m.role != Role.SYSTEM
+            for m in messages
+            if m.role != Role.SYSTEM
         ]
         response = await self._client.messages.create(
-            model=self._model, max_tokens=4096,
-            system=system, messages=chat_msgs,
+            model=self._model,
+            max_tokens=4096,
+            system=system,
+            messages=chat_msgs,
         )
         return response.content[0].text
 
-llm = AnthropicLLM("claude-haiku-3-5-20241022")   # fast, cheap
-llm = AnthropicLLM("claude-sonnet-4-20250514")    # balanced
+llm = AnthropicLLM("claude-haiku-3-5-20241022")    # fast, cheap
+llm = AnthropicLLM("claude-sonnet-4-20250514")     # balanced
 ```
 
 ### Google Gemini
@@ -148,14 +131,17 @@ class GeminiLLM:
         model = genai.GenerativeModel(self._model_name, system_instruction=system)
         history = [
             {"role": "user" if m.role == Role.USER else "model", "parts": [m.content]}
-            for m in messages[:-1] if m.role != Role.SYSTEM
+            for m in messages[:-1]
+            if m.role != Role.SYSTEM
         ]
         last = next(m.content for m in reversed(messages) if m.role == Role.USER)
-        response = await asyncio.to_thread(model.start_chat(history=history).send_message, last)
+        response = await asyncio.to_thread(
+            model.start_chat(history=history).send_message, last
+        )
         return response.text
 
-llm = GeminiLLM("gemini-2.5-flash")   # fast, cheap
-llm = GeminiLLM("gemini-2.5-pro")     # capable
+llm = GeminiLLM("gemini-2.5-flash")    # fast, cheap
+llm = GeminiLLM("gemini-2.5-pro")      # capable
 ```
 
 ### LangChain (any provider)
@@ -166,6 +152,7 @@ from pyagent_patterns.base import Message, Role
 
 class LangChainLLM:
     """Wraps any LangChain BaseChatModel — OpenAI, Anthropic, Gemini, Ollama, Bedrock..."""
+
     def __init__(self, chat_model):
         self._model = chat_model
 
@@ -183,7 +170,7 @@ from langchain_ollama import ChatOllama
 llm = LangChainLLM(ChatOpenAI(model="gpt-4o-mini"))
 llm = LangChainLLM(ChatAnthropic(model="claude-sonnet-4-20250514"))
 llm = LangChainLLM(ChatGoogleGenerativeAI(model="gemini-2.5-flash"))
-llm = LangChainLLM(ChatOllama(model="llama3.2"))          # local
+llm = LangChainLLM(ChatOllama(model="llama3.2"))  # local
 ```
 
 ### LiteLLM (100+ providers)
@@ -206,9 +193,9 @@ class LiteLLM:
 llm = LiteLLM("gpt-4o-mini")
 llm = LiteLLM("anthropic/claude-sonnet-4-20250514")
 llm = LiteLLM("gemini/gemini-2.5-flash")
-llm = LiteLLM("ollama/llama3.2")                          # local
-llm = LiteLLM("bedrock/anthropic.claude-3-5-sonnet")      # AWS Bedrock
-llm = LiteLLM("azure/gpt-4o")                            # Azure OpenAI
+llm = LiteLLM("ollama/llama3.2")                       # local
+llm = LiteLLM("bedrock/anthropic.claude-3-5-sonnet")    # AWS Bedrock
+llm = LiteLLM("azure/gpt-4o")                          # Azure OpenAI
 ```
 
 ### Testing without API calls
@@ -225,8 +212,6 @@ llm = MockLLM(responses=["response"], delay=0.1)
 # Echo mode — repeats last user message
 llm = MockLLM()
 ```
-
----
 
 ## Core concepts
 
@@ -246,29 +231,25 @@ agent = Agent(
 result: Result = asyncio.run(pattern.run("Your task here"))
 
 # Result fields
-result.output            # str — final text output
-result.messages          # list[Message] — all messages generated
-result.metadata          # dict — pattern-specific data (rounds, route, scores, trace, etc.)
-result.duration_seconds  # float — wall-clock time
-result.token_estimate    # int — rough total token count
-result.cost_estimate     # float — rough cost in USD
+result.output              # str — final text output
+result.messages            # list[Message] — all messages generated
+result.metadata            # dict — pattern-specific data (rounds, route, scores, trace, etc.)
+result.duration_seconds    # float — wall-clock time
+result.token_estimate      # int — rough total token count
+result.cost_estimate       # float — rough cost in USD
 
 # Pass an existing context to chain patterns
 ctx = Context(task="original task", metadata={"session_id": "abc123"})
 result = asyncio.run(pattern.run("follow-up task", context=ctx))
 ```
 
----
-
-## Pattern catalog
+## Pattern catalog (18 patterns across 4 tiers)
 
 ### Tier 1 — Orchestration
 
 #### 1. Pipeline
 
-Sequential chain — each agent's output is the next agent's input.  
-**Best for:** ETL, document processing, multi-step transformation.  
-**LLM calls:** N (one per stage).
+Sequential chain — each agent's output is the next agent's input. Best for: ETL, document processing, multi-step transformation. LLM calls: N (one per stage).
 
 ```python
 import asyncio
@@ -295,39 +276,35 @@ print(result.output)
 async def stream_example():
     async for chunk in pipeline.stream("Process this document"):
         print(chunk)  # "[Stage 1/3 — extractor] Revenue: $25.2B..."
+
 asyncio.run(stream_example())
 ```
 
----
-
 #### 2. Supervisor
 
-Classify → route → collect. A coordinator dispatches to the right specialist.  
-**Best for:** Customer support bots, multi-domain Q&A, triage systems.  
-**LLM calls:** 2–3 (classify + specialist + optional formatter).
+Classify → route → collect. A coordinator dispatches to the right specialist. Best for: Customer support bots, multi-domain Q&A, triage systems. LLM calls: 2–3 (classify + specialist + optional formatter).
 
 ```python
 from pyagent_patterns.orchestration import Supervisor
 
 supervisor = Supervisor(
     classifier=Agent(
-        "router",
-        AnthropicLLM("claude-haiku-3-5-20241022"),   # cheap — classification is a simple task
+        "router", AnthropicLLM("claude-haiku-3-5-20241022"),  # cheap — classification is a simple task
         system_prompt="Classify into exactly one of: billing, technical, returns, general. "
                       "Respond with ONLY the category name, nothing else.",
     ),
     routes={
-        "billing":   Agent("billing_agent",   AnthropicLLM("claude-sonnet-4-20250514"),
-                           system_prompt="Handle billing disputes, refunds, and subscription questions. "
-                                         "Always acknowledge frustration and offer concrete next steps."),
+        "billing": Agent("billing_agent", AnthropicLLM("claude-sonnet-4-20250514"),
+                         system_prompt="Handle billing disputes, refunds, and subscription questions. "
+                                       "Always acknowledge frustration and offer concrete next steps."),
         "technical": Agent("technical_agent", OpenAILLM("gpt-4o"),
                            system_prompt="Handle technical troubleshooting and API issues. "
                                          "Provide step-by-step debugging instructions."),
-        "returns":   Agent("returns_agent",   AnthropicLLM("claude-sonnet-4-20250514"),
-                           system_prompt="Handle return requests. Explain the return policy clearly "
-                                         "and initiate the process where applicable."),
-        "general":   Agent("general_agent",   AnthropicLLM("claude-haiku-3-5-20241022"),
-                           system_prompt="Handle general inquiries warmly and helpfully."),
+        "returns": Agent("returns_agent", AnthropicLLM("claude-sonnet-4-20250514"),
+                         system_prompt="Handle return requests. Explain the return policy clearly "
+                                       "and initiate the process where applicable."),
+        "general": Agent("general_agent", AnthropicLLM("claude-haiku-3-5-20241022"),
+                         system_prompt="Handle general inquiries warmly and helpfully."),
     },
     formatter=Agent(
         "formatter", AnthropicLLM("claude-haiku-3-5-20241022"),
@@ -341,23 +318,19 @@ print(result.output)
 # metadata: {"route_key": "billing", "classifier_output": "billing"}
 ```
 
----
-
 #### 3. Fan-Out / Fan-In
 
-Parallel execution across N agents, all receiving the same task, results aggregated.  
-**Best for:** Multi-perspective analysis, parallel research, ensemble approaches.  
-**LLM calls:** N (parallel) + 1 aggregator. Wall-clock time: max(agent latencies) + aggregator.
+Parallel execution across N agents, all receiving the same task, results aggregated. Best for: Multi-perspective analysis, parallel research, ensemble approaches. LLM calls: N (parallel) + 1 aggregator. Wall-clock time: max(agent latencies) + aggregator.
 
 ```python
 from pyagent_patterns.orchestration import FanOutFanIn
 
 analysis = FanOutFanIn(
     agents=[
-        Agent("bull",    GeminiLLM("gemini-2.5-flash"),
+        Agent("bull", GeminiLLM("gemini-2.5-flash"),
               system_prompt="Argue the strongest possible bullish investment case. Cite revenue growth, "
                             "market share, and competitive moats. Use specific data points."),
-        Agent("bear",    GeminiLLM("gemini-2.5-flash"),
+        Agent("bear", GeminiLLM("gemini-2.5-flash"),
               system_prompt="Argue the strongest possible bearish case. Address valuation, competitive "
                             "threats, macro risks, and execution risks with data."),
         Agent("neutral", GeminiLLM("gemini-2.5-flash"),
@@ -365,7 +338,7 @@ analysis = FanOutFanIn(
                             "identify the key swing factors, and assign probability weights."),
     ],
     aggregator=Agent(
-        "analyst", GeminiLLM("gemini-2.5-pro"),          # upgrade aggregator for quality synthesis
+        "analyst", GeminiLLM("gemini-2.5-pro"),  # upgrade aggregator for quality synthesis
         system_prompt="Synthesise all three perspectives into a structured investment memo: "
                       "Executive Summary, Bull Case, Bear Case, Key Risks, Verdict.",
     ),
@@ -379,16 +352,13 @@ print(result.output)
 async def stream_fan_out():
     async for chunk in analysis.stream("Evaluate Nvidia investment thesis"):
         print(chunk)  # "[bull] Strong revenue growth driven by data center..."
+
 asyncio.run(stream_fan_out())
 ```
 
----
-
 #### 4. Hierarchical
 
-Manager → Team Leads → Workers. Multi-level delegation and synthesis.  
-**Best for:** Complex projects with defined sub-teams, enterprise workflows.  
-**LLM calls:** 1 manager + T leads + W workers (teams run in parallel).
+Manager → Team Leads → Workers. Multi-level delegation and synthesis. Best for: Complex projects with defined sub-teams, enterprise workflows. LLM calls: 1 manager + T leads + W workers (teams run in parallel).
 
 ```python
 from pyagent_patterns.orchestration import Hierarchical
@@ -398,8 +368,8 @@ from langchain_anthropic import ChatAnthropic
 
 # Mix providers across the hierarchy
 manager_llm = LangChainLLM(ChatOpenAI(model="gpt-4o"))
-lead_llm    = LangChainLLM(ChatOpenAI(model="gpt-4o-mini"))
-worker_llm  = LangChainLLM(ChatAnthropic(model="claude-haiku-3-5-20241022"))
+lead_llm = LangChainLLM(ChatOpenAI(model="gpt-4o-mini"))
+worker_llm = LangChainLLM(ChatAnthropic(model="claude-haiku-3-5-20241022"))
 
 hierarchical = Hierarchical(
     manager=Agent(
@@ -414,12 +384,12 @@ hierarchical = Hierarchical(
                        system_prompt="Lead the backend design. Coordinate worker outputs into a "
                                      "cohesive backend architecture document."),
             workers=[
-                Agent("api_engineer",  worker_llm, system_prompt="Design the REST API endpoints, "
-                                                                   "request/response schemas, and auth."),
-                Agent("db_engineer",   worker_llm, system_prompt="Design database schema, indexes, "
-                                                                   "migrations, and query patterns."),
-                Agent("infra_engineer",worker_llm, system_prompt="Design the deployment architecture, "
-                                                                   "scaling strategy, and monitoring."),
+                Agent("api_engineer", worker_llm,
+                      system_prompt="Design the REST API endpoints, request/response schemas, and auth."),
+                Agent("db_engineer", worker_llm,
+                      system_prompt="Design database schema, indexes, migrations, and query patterns."),
+                Agent("infra_engineer", worker_llm,
+                      system_prompt="Design the deployment architecture, scaling strategy, and monitoring."),
             ],
         ),
         Team(
@@ -428,10 +398,10 @@ hierarchical = Hierarchical(
                        system_prompt="Lead the frontend design. Coordinate worker outputs into a "
                                      "cohesive frontend spec."),
             workers=[
-                Agent("ui_engineer",   worker_llm, system_prompt="Design the component architecture "
-                                                                   "and state management approach."),
-                Agent("ux_researcher", worker_llm, system_prompt="Define user flows, accessibility "
-                                                                   "requirements, and success metrics."),
+                Agent("ui_engineer", worker_llm,
+                      system_prompt="Design the component architecture and state management approach."),
+                Agent("ux_researcher", worker_llm,
+                      system_prompt="Define user flows, accessibility requirements, and success metrics."),
             ],
         ),
     ],
@@ -443,13 +413,9 @@ result = asyncio.run(hierarchical.run(
 # metadata: {"teams": 2, "total_workers": 5, "team_names": ["Backend", "Frontend"]}
 ```
 
----
-
 #### 5. Orchestrator-Workers
 
-Orchestrator plans dynamically at runtime, assigns to the right workers for this specific task.  
-**Best for:** Open-ended goals where subtasks aren't known upfront.  
-**LLM calls:** 1 planning + N workers (dynamic) + 1 synthesis.
+Orchestrator plans dynamically at runtime, assigns to the right workers for this specific task. Best for: Open-ended goals where subtasks aren't known upfront. LLM calls: 1 planning + N workers (dynamic) + 1 synthesis.
 
 ```python
 from pyagent_patterns.orchestration import OrchestratorWorkers
@@ -463,15 +429,15 @@ orchestrator_workers = OrchestratorWorkers(
                       "Then synthesise all worker outputs into a final deliverable.",
     ),
     workers=[
-        Agent("researcher",  OpenAILLM("gpt-4o-mini"),
+        Agent("researcher", OpenAILLM("gpt-4o-mini"),
               system_prompt="Research topics thoroughly. Find recent, credible information."),
-        Agent("coder",       OpenAILLM("gpt-4o-mini"),
+        Agent("coder", OpenAILLM("gpt-4o-mini"),
               system_prompt="Write clean, idiomatic Python with type hints, docstrings, and error handling."),
-        Agent("tester",      OpenAILLM("gpt-4o-mini"),
+        Agent("tester", OpenAILLM("gpt-4o-mini"),
               system_prompt="Write comprehensive pytest test suites. Cover happy path, edge cases, and errors."),
-        Agent("doc_writer",  OpenAILLM("gpt-4o-mini"),
+        Agent("doc_writer", OpenAILLM("gpt-4o-mini"),
               system_prompt="Write clear technical documentation. Include usage examples and gotchas."),
-        Agent("reviewer",    OpenAILLM("gpt-4o"),
+        Agent("reviewer", OpenAILLM("gpt-4o"),
               system_prompt="Review code and documentation for correctness, completeness, and quality."),
     ],
 )
@@ -483,15 +449,11 @@ result = asyncio.run(orchestrator_workers.run(
 # metadata: {"assignments": [...], "workers_used": 4}
 ```
 
----
-
 ### Tier 2 — Resolution
 
 #### 6. Self-Reflection
 
-Generate → critique → refine loop. Stops early when critic approves.  
-**Best for:** Code generation, essay writing, any task where quality > speed.  
-**LLM calls:** 2 per round × 1–N rounds.
+Generate → critique → refine loop. Stops early when critic approves. Best for: Code generation, essay writing, any task where quality > speed. LLM calls: 2 per round × 1–N rounds.
 
 ```python
 from pyagent_patterns.resolution import SelfReflection
@@ -503,7 +465,7 @@ self_reflection = SelfReflection(
                       "error handling. Consider edge cases upfront.",
     ),
     critic=Agent(
-        "reviewer", OpenAILLM("gpt-4o"),          # stronger model catches more issues
+        "reviewer", OpenAILLM("gpt-4o"),  # stronger model catches more issues
         system_prompt="Review code strictly for: (1) correctness with edge cases, (2) proper error "
                       "handling, (3) type hints throughout, (4) clear docstrings, (5) PEP 8 compliance. "
                       "Be specific about any issues. If the code is production-ready, respond with 'APPROVED'.",
@@ -520,13 +482,9 @@ print(result.output)
 # metadata: {"rounds": 2, "max_rounds": 3, "early_stop": True}
 ```
 
----
-
 #### 7. Cross-Reflection
 
-Generator produces; independent peer reviewer critiques; generator revises.  
-**Best for:** Peer review workflows, editor/writer pipelines, reducing bias.  
-**LLM calls:** 3 minimum (generate + review + revise per round).
+Generator produces; independent peer reviewer critiques; generator revises. Best for: Peer review workflows, editor/writer pipelines, reducing bias. LLM calls: 3 minimum (generate + review + revise per round).
 
 ```python
 from pyagent_patterns.resolution import CrossReflection
@@ -538,7 +496,7 @@ cross_reflection = CrossReflection(
                       "Be precise with terminology, use concrete examples, and avoid hand-waving.",
     ),
     reviewer=Agent(
-        "editor", OpenAILLM("gpt-4o"),              # different provider = independent perspective
+        "editor", OpenAILLM("gpt-4o"),  # different provider = independent perspective
         system_prompt="Review for: (1) technical accuracy — every claim must be verifiable, "
                       "(2) clarity — would a senior engineer unfamiliar with this topic follow along, "
                       "(3) concrete examples — are there enough working examples, "
@@ -556,13 +514,9 @@ result = asyncio.run(cross_reflection.run(
 # metadata: {"rounds": 2, "generator": "author", "reviewer": "editor"}
 ```
 
----
-
 #### 8. Debate
 
-Adversarial argumentation across rounds, resolved by a judge.  
-**Best for:** High-stakes decisions, architecture choices, investment analysis.  
-**LLM calls:** D debaters × R rounds + 1 judge.
+Adversarial argumentation across rounds, resolved by a judge. Best for: High-stakes decisions, architecture choices, investment analysis. LLM calls: D debaters × R rounds + 1 judge.
 
 ```python
 from pyagent_patterns.resolution import Debate
@@ -573,7 +527,7 @@ debate = Debate(
               system_prompt="Argue strongly for building in-house. Focus on: control, customisation, "
                             "long-term cost, competitive differentiation, and talent development. "
                             "Use specific technical and strategic arguments. Counter your opponent directly."),
-        Agent("buy_advocate",   GeminiLLM("gemini-2.5-flash"),
+        Agent("buy_advocate", GeminiLLM("gemini-2.5-flash"),
               system_prompt="Argue strongly for a vendor solution. Focus on: time-to-market, "
                             "reliability, team focus, total cost of ownership, and vendor innovation pace. "
                             "Use ROI calculations and risk arguments. Counter your opponent directly."),
@@ -597,13 +551,9 @@ print(result.output)
 # debate_log contains every argument from every round, useful for audit trails
 ```
 
----
-
 #### 9. Voting
 
-N agents answer independently in parallel; majority or weighted vote wins.  
-**Best for:** Fault tolerance, ensemble confidence, reducing variance.  
-**LLM calls:** N agents (all in parallel).
+N agents answer independently in parallel; majority or weighted vote wins. Best for: Fault tolerance, ensemble confidence, reducing variance. LLM calls: N agents (all in parallel).
 
 ```python
 from pyagent_patterns.resolution import Voting
@@ -612,36 +562,36 @@ from pyagent_patterns.resolution.voting import VotingStrategy
 # Multi-provider ensemble — different providers make different mistakes
 voting = Voting(
     voters=[
-        Agent("openai_voter",    LiteLLM("gpt-4o"),
+        Agent("openai_voter", LiteLLM("gpt-4o"),
               system_prompt="Answer with a single word or short phrase first, then explain your reasoning."),
         Agent("anthropic_voter", LiteLLM("anthropic/claude-sonnet-4-20250514"),
               system_prompt="Answer with a single word or short phrase first, then explain your reasoning."),
-        Agent("gemini_voter",    LiteLLM("gemini/gemini-2.5-pro"),
+        Agent("gemini_voter", LiteLLM("gemini/gemini-2.5-pro"),
               system_prompt="Answer with a single word or short phrase first, then explain your reasoning."),
     ],
     strategy=VotingStrategy.MAJORITY,
-    normalize=True,   # asks each voter for a concise answer first, then explanation
+    normalize=True,  # asks each voter for a concise answer first, then explanation
 )
 
 result = asyncio.run(voting.run(
     "For a new Python microservice handling 50k RPS with complex relational data, "
     "which database: PostgreSQL, MongoDB, or Cassandra?"
 ))
-print(result.output)            # "PostgreSQL"
-print(result.metadata["tally"]) # {"PostgreSQL": 2, "Cassandra": 1}
+print(result.output)              # "PostgreSQL"
+print(result.metadata["tally"])   # {"PostgreSQL": 2, "Cassandra": 1}
 
 # Weighted voting — trust more capable models more
 weighted_voting = Voting(
     voters=[
-        Agent("junior_model",    OpenAILLM("gpt-4o-mini"),
+        Agent("junior_model", OpenAILLM("gpt-4o-mini"),
               system_prompt="Answer concisely, one word or phrase first."),
-        Agent("senior_model",    OpenAILLM("gpt-4o"),
+        Agent("senior_model", OpenAILLM("gpt-4o"),
               system_prompt="Answer concisely, one word or phrase first."),
         Agent("principal_model", OpenAILLM("o3-mini"),
               system_prompt="Answer concisely, one word or phrase first."),
     ],
     strategy=VotingStrategy.WEIGHTED,
-    weights=[0.5, 1.0, 2.0],    # principal's vote counts 4× junior's
+    weights=[0.5, 1.0, 2.0],  # principal's vote counts 4× junior's
     normalize=True,
 )
 
@@ -649,13 +599,9 @@ result = asyncio.run(weighted_voting.run("Is eventual consistency safe for a pay
 # metadata: {"strategy": "weighted", "votes": [...], "tally": {...}, "winner": "..."}
 ```
 
----
-
 #### 10. Evaluator-Optimizer
 
-Generator produces; evaluator scores against explicit criteria; generator revises until threshold.  
-**Best for:** Content with explicit quality bars — reports, documentation, APIs.  
-**LLM calls:** 2 per round (generate + evaluate) × rounds.
+Generator produces; evaluator scores against explicit criteria; generator revises until threshold. Best for: Content with explicit quality bars — reports, documentation, APIs. LLM calls: 2 per round (generate + evaluate) × rounds.
 
 ```python
 from pyagent_patterns.resolution import EvaluatorOptimizer
@@ -666,7 +612,7 @@ evaluator_optimizer = EvaluatorOptimizer(
         system_prompt="Write accurate, well-structured technical guides.",
     ),
     evaluator=Agent(
-        "evaluator", AnthropicLLM("claude-sonnet-4-20250514"),   # different provider reduces bias
+        "evaluator", AnthropicLLM("claude-sonnet-4-20250514"),  # different provider reduces bias
         system_prompt="Evaluate strictly against the provided criteria. "
                       "Format your response as:\nSCORE: N\nFEEDBACK: [specific, actionable notes]",
     ),
@@ -678,7 +624,7 @@ evaluator_optimizer = EvaluatorOptimizer(
         "appropriate depth for senior engineers — no hand-waving",
     ],
     max_rounds=3,
-    pass_threshold=8,    # score out of 10
+    pass_threshold=8,  # score out of 10
 )
 
 result = asyncio.run(evaluator_optimizer.run(
@@ -688,16 +634,11 @@ result = asyncio.run(evaluator_optimizer.run(
 # metadata: {"rounds": 2, "scores": [5, 9], "final_score": 9, "passed": True, "criteria": [...]}
 ```
 
----
-
 ### Tier 3 — Structural
 
 #### 11. Role-Based
 
-Agents with distinct roles collaborate in structured turn-taking rounds.  
-**Most common pattern in production systems (46.8% per arxiv:2511.08475).**  
-**Best for:** Team simulation, product design reviews, collaborative content.  
-**LLM calls:** N agents × rounds.
+Agents with distinct roles collaborate in structured turn-taking rounds. Most common pattern in production systems (46.8% per arxiv:2511.08475). Best for: Team simulation, product design reviews, collaborative content. LLM calls: N agents × rounds.
 
 ```python
 from pyagent_patterns.structural import RoleBased
@@ -709,18 +650,18 @@ role_based = RoleBased(
         Agent("product_manager", llm,
               system_prompt="You are a senior PM. Focus on user value, business impact, and prioritisation. "
                             "Push back on scope creep. Always ask 'what problem does this solve?'"),
-        Agent("designer",        llm,
+        Agent("designer", llm,
               system_prompt="You are a principal UX designer. Focus on usability, accessibility (WCAG 2.1 AA), "
                             "and reducing cognitive load. Reference real user research where applicable."),
-        Agent("engineer",        llm,
+        Agent("engineer", llm,
               system_prompt="You are a principal engineer. Focus on feasibility, technical debt, "
                             "scalability concerns, and realistic effort estimates."),
-        Agent("data_scientist",  llm,
+        Agent("data_scientist", llm,
               system_prompt="You are a data scientist. Focus on measurability, experimentation design, "
                             "statistical validity, and defining success metrics upfront."),
     ],
     rounds=2,
-    shared_context=True,    # all agents see the full conversation history
+    shared_context=True,  # all agents see the full conversation history
 )
 
 result = asyncio.run(role_based.run(
@@ -730,36 +671,32 @@ result = asyncio.run(role_based.run(
 # metadata: {"rounds": 2, "roles": ["product_manager", ...], "shared_context": True}
 ```
 
----
-
 #### 12. Layered
 
-Agents in hierarchical abstraction layers — lower layers gather, upper layers synthesise.  
-**Best for:** Multi-level analysis, data pipelines, progressive summarisation.  
-**LLM calls:** Sum of agents across all layers (parallel within each layer).
+Agents in hierarchical abstraction layers — lower layers gather, upper layers synthesise. Best for: Multi-level analysis, data pipelines, progressive summarisation. LLM calls: Sum of agents across all layers (parallel within each layer).
 
 ```python
 from pyagent_patterns.structural import Layered
 from pyagent_patterns.structural.layered import Layer
 
 flash = GeminiLLM("gemini-2.5-flash")
-pro   = GeminiLLM("gemini-2.5-pro")
+pro = GeminiLLM("gemini-2.5-pro")
 
 layered = Layered(layers=[
     Layer("Collection", agents=[
-        Agent("sales_collector",   flash,
+        Agent("sales_collector", flash,
               system_prompt="Extract only sales KPIs: revenue, volume, churn rate, NPS, ARR."),
-        Agent("ops_collector",     flash,
+        Agent("ops_collector", flash,
               system_prompt="Extract only operational KPIs: p99 latency, uptime, error rate, deploy freq."),
         Agent("finance_collector", flash,
               system_prompt="Extract only financial KPIs: burn rate, runway, CAC, LTV, gross margin."),
-        Agent("people_collector",  flash,
+        Agent("people_collector", flash,
               system_prompt="Extract only people KPIs: headcount, attrition, open reqs, engagement."),
     ]),
     Layer("Analysis", agents=[
-        Agent("trend_analyst",  flash,
+        Agent("trend_analyst", flash,
               system_prompt="Identify trends, anomalies, and meaningful correlations across all data provided."),
-        Agent("risk_analyst",   flash,
+        Agent("risk_analyst", flash,
               system_prompt="Identify the top 3 risks and 3 opportunities visible in the data."),
     ]),
     Layer("Synthesis", agents=[
@@ -776,12 +713,9 @@ result = asyncio.run(layered.run(
 #             "agents_per_layer": [4, 2, 1]}
 ```
 
----
-
 #### 13. Topology
 
-Explicit control over agent communication structure: Chain, Star, or Mesh.  
-**Best for:** When you need precise control over information flow and cost.
+Explicit control over agent communication structure: Chain, Star, or Mesh. Best for: When you need precise control over information flow and cost.
 
 ```python
 from pyagent_patterns.structural import Topology
@@ -790,10 +724,14 @@ from pyagent_patterns.structural.topology import TopologyType
 llm = LangChainLLM(ChatOpenAI(model="gpt-4o-mini"))
 
 code_reviewers = [
-    Agent("syntax_reviewer",   llm, system_prompt="Review code for syntax errors, naming conventions, and PEP 8."),
-    Agent("logic_reviewer",    llm, system_prompt="Review code for logical errors, off-by-one errors, and edge cases."),
-    Agent("security_reviewer", llm, system_prompt="Review code for injection vulnerabilities, auth issues, and data exposure."),
-    Agent("performance_reviewer", llm, system_prompt="Review code for N+1 queries, memory leaks, and unnecessary allocations."),
+    Agent("syntax_reviewer", llm,
+          system_prompt="Review code for syntax errors, naming conventions, and PEP 8."),
+    Agent("logic_reviewer", llm,
+          system_prompt="Review code for logical errors, off-by-one errors, and edge cases."),
+    Agent("security_reviewer", llm,
+          system_prompt="Review code for injection vulnerabilities, auth issues, and data exposure."),
+    Agent("performance_reviewer", llm,
+          system_prompt="Review code for N+1 queries, memory leaks, and unnecessary allocations."),
 ]
 
 # Chain: A → B → C → D (4 calls, fully sequential, each builds on previous)
@@ -810,13 +748,9 @@ result = asyncio.run(star.run("Review this authentication middleware for product
 # metadata: {"topology": "star"}
 ```
 
----
-
 #### 14. Blackboard
 
-Agents read from and write to a shared key-value store. No direct agent-to-agent coupling.  
-**Best for:** Long pipelines where agents build incrementally on each other's partial results.  
-**LLM calls:** N agents × rounds.
+Agents read from and write to a shared key-value store. No direct agent-to-agent coupling. Best for: Long pipelines where agents build incrementally on each other's partial results. LLM calls: N agents × rounds.
 
 ```python
 from pyagent_patterns.structural import Blackboard
@@ -848,7 +782,7 @@ blackboard = Blackboard(
             writes=["relationships"],
         ),
         BlackboardAgent(
-            Agent("report_writer", OpenAILLM("gpt-4o"),   # upgrade for final synthesis
+            Agent("report_writer", OpenAILLM("gpt-4o"),  # upgrade for final synthesis
                   system_prompt="Write a structured intelligence brief using all available data. "
                                 "Include: Key Entities, Sentiment Summary, Relationship Map, Implications."),
             reads=["entity_list", "sentiment", "relationships"],
@@ -866,31 +800,24 @@ print(result.metadata["final_state"]["final_report"])
 # metadata: {"rounds": 1, "final_state": {"entity_list": ..., "sentiment": ..., ...}}
 ```
 
----
-
 ### Tier 4 — Advanced
 
 #### 15. Talker-Reasoner
 
-Fast cheap talker (System 1) handles routine queries; slow expensive reasoner (System 2) handles complex ones.  
-**Based on:** Kahneman's dual-process theory + DeepMind 2024 paper.  
-**Best for:** Chat interfaces with mixed query complexity. Significant cost savings at scale.  
-**LLM calls:** 1 (easy) or 2–3 (complex).
+Fast cheap talker (System 1) handles routine queries; slow expensive reasoner (System 2) handles complex ones. Based on: Kahneman's dual-process theory + DeepMind 2024 paper. Best for: Chat interfaces with mixed query complexity. Significant cost savings at scale. LLM calls: 1 (easy) or 2–3 (complex).
 
 ```python
 from pyagent_patterns.advanced import TalkerReasoner
 
 talker_reasoner = TalkerReasoner(
     talker=Agent(
-        "fast_responder",
-        LiteLLM("gpt-4o-mini"),                  # ~$0.000015/call
+        "fast_responder", LiteLLM("gpt-4o-mini"),  # ~$0.000015/call
         system_prompt="Answer questions concisely and directly. "
                       "If the question requires deep analysis, complex reasoning, or you are uncertain, "
                       "respond with 'ESCALATE' as the first word.",
     ),
     reasoner=Agent(
-        "deep_thinker",
-        LiteLLM("o3-mini"),                      # ~$0.003/call — only used when needed
+        "deep_thinker", LiteLLM("o3-mini"),  # ~$0.003/call — only used when needed
         system_prompt="Reason step by step. Show your work. Consider multiple approaches before answering. "
                       "Be thorough and precise.",
     ),
@@ -909,64 +836,54 @@ result = asyncio.run(talker_reasoner.run(
 print(result.metadata)  # {"system": "reasoner", "escalated": True}
 
 # Optional: add an explicit classifier agent for precise routing
-from pyagent_patterns.advanced import TalkerReasoner
-
 talker_reasoner_with_classifier = TalkerReasoner(
-    talker=Agent("fast",       LiteLLM("gpt-4o-mini"),  system_prompt="Answer concisely."),
-    reasoner=Agent("deep",     LiteLLM("o3-mini"),      system_prompt="Reason step by step."),
+    talker=Agent("fast", LiteLLM("gpt-4o-mini"), system_prompt="Answer concisely."),
+    reasoner=Agent("deep", LiteLLM("o3-mini"), system_prompt="Reason step by step."),
     classifier=Agent("router", LiteLLM("gpt-4o-mini"),
                      system_prompt="Classify as SIMPLE or COMPLEX. Respond with ONLY one word."),
 )
 ```
 
----
-
 #### 16. Swarm
 
-Decentralised agents interact with random neighbours each round. No central controller.  
-**Best for:** Exploring diverse solution spaces, creative brainstorming, emergent consensus.  
-**LLM calls:** N agents × rounds.
+Decentralised agents interact with random neighbours each round. No central controller. Best for: Exploring diverse solution spaces, creative brainstorming, emergent consensus. LLM calls: N agents × rounds.
 
 ```python
 from pyagent_patterns.advanced import Swarm
 
 swarm = Swarm(
     agents=[
-        Agent("pragmatist",       GeminiLLM("gemini-2.5-flash"),
+        Agent("pragmatist", GeminiLLM("gemini-2.5-flash"),
               system_prompt="Favour practical, proven solutions with low operational risk. "
                             "Be skeptical of new technology."),
-        Agent("innovator",        GeminiLLM("gemini-2.5-flash"),
+        Agent("innovator", GeminiLLM("gemini-2.5-flash"),
               system_prompt="Favour novel approaches and cutting-edge technology. "
                             "Be willing to accept short-term complexity for long-term gains."),
-        Agent("minimalist",       GeminiLLM("gemini-2.5-flash"),
+        Agent("minimalist", GeminiLLM("gemini-2.5-flash"),
               system_prompt="Favour the simplest possible solution. Aggressively question complexity. "
                             "Prefer boring technology."),
-        Agent("scale_advocate",   GeminiLLM("gemini-2.5-flash"),
+        Agent("scale_advocate", GeminiLLM("gemini-2.5-flash"),
               system_prompt="Favour solutions that can scale to 100x current load without rearchitecting."),
-        Agent("cost_optimizer",   GeminiLLM("gemini-2.5-flash"),
+        Agent("cost_optimizer", GeminiLLM("gemini-2.5-flash"),
               system_prompt="Favour solutions that minimise infrastructure and operational costs. "
                             "Always ask: what's the monthly bill at scale?"),
     ],
     rounds=3,
-    neighbor_count=2,      # each agent interacts with 2 random peers per round
-    aggregation="vote",    # "vote" = majority consensus, "last" = all final states concatenated
+    neighbor_count=2,    # each agent interacts with 2 random peers per round
+    aggregation="vote",  # "vote" = majority consensus, "last" = all final states concatenated
 )
 
 result = asyncio.run(swarm.run(
     "What storage technology should we use for our ML feature store? "
     "We need point lookups <5ms, batch writes of 10M records/day, and historical time-travel."
 ))
-print(result.output)   # winning consensus answer
+print(result.output)  # winning consensus answer
 # metadata: {"agents": 5, "rounds": 3, "aggregation": "vote", "final_states": {...}}
 ```
 
----
-
 #### 17. Human-in-the-Loop
 
-Agent processes task; human approval gate before output proceeds.  
-**Best for:** Safety-critical tasks, compliance workflows, high-stakes content generation.  
-**LLM calls:** 1 + optional revision calls.
+Agent processes task; human approval gate before output proceeds. Best for: Safety-critical tasks, compliance workflows, high-stakes content generation. LLM calls: 1 + optional revision calls.
 
 ```python
 from pyagent_patterns.advanced import HumanInTheLoop
@@ -1010,7 +927,7 @@ hitl = HumanInTheLoop(
         system_prompt="Draft professional, empathetic customer-facing emails. "
                       "Be solution-focused. Never over-promise.",
     ),
-    review_fn=policy_check,   # swap for terminal_review in interactive contexts
+    review_fn=policy_check,  # swap for terminal_review in interactive contexts
     max_revisions=3,
 )
 
@@ -1020,13 +937,9 @@ result = asyncio.run(hitl.run(
 # metadata: {"approved": True, "revisions": 0, "human_modified": False}
 ```
 
----
-
 #### 18. ReAct
 
-Reason → Act → Observe cycle with tool use. Continues until task is solved or max steps reached.  
-**Best for:** Any task requiring external data — search, code execution, APIs, databases.  
-**LLM calls:** 1 per step × max_steps.
+Reason → Act → Observe cycle with tool use. Continues until task is solved or max steps reached. Best for: Any task requiring external data — search, code execution, APIs, databases. LLM calls: 1 per step × max_steps.
 
 ```python
 import httpx
@@ -1035,7 +948,6 @@ from pyagent_patterns.advanced import ReAct
 # Define tool functions (sync — ReAct handles them synchronously)
 def web_search(query: str) -> str:
     """Search the web. Returns top 3 result snippets."""
-    # Replace with Brave Search, SerpAPI, Tavily, or Exa
     response = httpx.get(
         "https://api.search.brave.com/res/v1/web/search",
         params={"q": query, "count": 3},
@@ -1047,25 +959,33 @@ def web_search(query: str) -> str:
 
 def run_python(code: str) -> str:
     """Execute Python code. Returns stdout or error message."""
-    import subprocess, textwrap
+    import subprocess
+    import textwrap
+
     result = subprocess.run(
         ["python3", "-c", textwrap.dedent(code)],
-        capture_output=True, text=True, timeout=15,
+        capture_output=True,
+        text=True,
+        timeout=15,
     )
     return result.stdout.strip() or result.stderr.strip()
 
 def get_stock_quote(ticker: str) -> str:
     """Get current stock price and key metrics for a ticker."""
-    response = httpx.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}", timeout=10)
+    response = httpx.get(
+        f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}", timeout=10
+    )
     data = response.json()["chart"]["result"][0]["meta"]
-    return (f"{ticker}: ${data['regularMarketPrice']:.2f} "
-            f"(P/E: {data.get('trailingPE', 'N/A')}, "
-            f"Mkt Cap: ${data.get('marketCap', 0)/1e9:.1f}B)")
+    return (
+        f"{ticker}: ${data['regularMarketPrice']:.2f} "
+        f"(P/E: {data.get('trailingPE', 'N/A')}, "
+        f"Mkt Cap: ${data.get('marketCap', 0)/1e9:.1f}B)"
+    )
 
 def query_database(sql: str) -> str:
     """Query the internal analytics database."""
-    # Replace with your actual DB connection
     import sqlite3
+
     conn = sqlite3.connect("analytics.db")
     cursor = conn.execute(sql)
     rows = cursor.fetchmany(10)
@@ -1074,14 +994,14 @@ def query_database(sql: str) -> str:
 
 react = ReAct(
     agent=Agent(
-        "research_analyst", OpenAILLM("gpt-4o"),   # tool use benefits from a capable model
+        "research_analyst", OpenAILLM("gpt-4o"),  # tool use benefits from a capable model
         system_prompt="You are a financial research analyst with access to web search, "
                       "Python execution, stock data, and database queries.",
     ),
     tools={
-        "web_search":     web_search,
-        "run_python":     run_python,
-        "get_stock":      get_stock_quote,
+        "web_search": web_search,
+        "run_python": run_python,
+        "get_stock": get_stock_quote,
         "query_database": query_database,
     },
     max_steps=8,
@@ -1097,8 +1017,6 @@ print(result.output)
 #             "trace": [{"step": 1, "response": "Thought: ...", "action": "get_stock", ...}, ...]}
 ```
 
----
-
 ## Pattern composition
 
 Every pattern implements the same base class, so any pattern can be used anywhere an `Agent` is expected.
@@ -1109,32 +1027,36 @@ from pyagent_patterns.resolution import SelfReflection
 
 # Nested: FanOut of Pipelines, then wrapped in SelfReflection
 web_pipeline = Pipeline(stages=[
-    Agent("web_searcher",  OpenAILLM("gpt-4o-mini"), system_prompt="Search the web for relevant sources."),
-    Agent("web_extractor", OpenAILLM("gpt-4o-mini"), system_prompt="Extract key claims and data points."),
+    Agent("web_searcher", OpenAILLM("gpt-4o-mini"),
+          system_prompt="Search the web for relevant sources."),
+    Agent("web_extractor", OpenAILLM("gpt-4o-mini"),
+          system_prompt="Extract key claims and data points."),
 ])
 
 db_pipeline = Pipeline(stages=[
-    Agent("db_querier",   AnthropicLLM("claude-haiku-3-5-20241022"), system_prompt="Query internal knowledge base."),
-    Agent("db_formatter", AnthropicLLM("claude-haiku-3-5-20241022"), system_prompt="Format results clearly."),
+    Agent("db_querier", AnthropicLLM("claude-haiku-3-5-20241022"),
+          system_prompt="Query internal knowledge base."),
+    Agent("db_formatter", AnthropicLLM("claude-haiku-3-5-20241022"),
+          system_prompt="Format results clearly."),
 ])
 
 research_phase = FanOutFanIn(
-    agents=[web_pipeline, db_pipeline],    # patterns used as agents
-    aggregator=Agent("synthesiser", OpenAILLM("gpt-4o"), system_prompt="Synthesise all sources."),
+    agents=[web_pipeline, db_pipeline],  # patterns used as agents
+    aggregator=Agent("synthesiser", OpenAILLM("gpt-4o"),
+                     system_prompt="Synthesise all sources."),
 )
 
 # Wrap the entire research phase with self-reflection quality control
 final = SelfReflection(
-    agent=research_phase,                  # SelfReflection wrapping a FanOut of Pipelines
-    critic=Agent("critic", OpenAILLM("gpt-4o"), system_prompt="Check for gaps and inaccuracies. "
-                                                                "If complete, respond with 'APPROVED'."),
+    agent=research_phase,  # SelfReflection wrapping a FanOut of Pipelines
+    critic=Agent("critic", OpenAILLM("gpt-4o"),
+                 system_prompt="Check for gaps and inaccuracies. "
+                               "If complete, respond with 'APPROVED'."),
     max_rounds=2,
 )
 
 result = asyncio.run(final.run("What are the latest advances in long-context LLM architectures?"))
 ```
-
----
 
 ## Pattern Advisor
 
@@ -1150,35 +1072,33 @@ rec = advisor.recommend(
     "Write and iteratively refine a technical guide on distributed transactions",
     Constraints(quality=Quality.HIGH)
 )
-print(rec.pattern)               # "self_reflection"
-print(rec.reason)                # "High quality creative/code task → generate-critique-refine loop"
-print(rec.estimated_calls)       # 4
-print(rec.estimated_cost_range)  # "$0.004-0.012"
-print(rec.alternatives)          # ["cross_reflection", "evaluator_optimizer"]
+print(rec.pattern)              # "self_reflection"
+print(rec.reason)               # "High quality creative/code task → generate-critique-refine loop"
+print(rec.estimated_calls)      # 4
+print(rec.estimated_cost_range) # "$0.004-0.012"
+print(rec.alternatives)         # ["cross_reflection", "evaluator_optimizer"]
 
 # Cost-sensitive routing
 rec = advisor.recommend(
     "Answer user support questions",
     Constraints(max_cost_usd=0.005)
 )
-print(rec.pattern)   # "talker_reasoner"
+print(rec.pattern)  # "talker_reasoner"
 
 # Fault-tolerant consensus
 rec = advisor.recommend(
     "Medical diagnosis assistance",
     Constraints(quality=Quality.CRITICAL, fault_tolerant=True)
 )
-print(rec.pattern)   # "voting"
+print(rec.pattern)  # "voting"
 
 # Multi-step team coordination
 rec = advisor.recommend(
     "Coordinate a team to build and document a feature",
     Constraints(multi_step=True, quality=Quality.HIGH)
 )
-print(rec.pattern)   # "hierarchical"
+print(rec.pattern)  # "hierarchical"
 ```
-
----
 
 ## pyagent-router
 
@@ -1187,8 +1107,7 @@ pip install pyagent-router
 ```
 
 Difficulty-aware model selection. Picks the cheapest model whose capability range covers the task.
-
-**Supported models out of the box:** `gpt-4.1-nano`, `gpt-4o-mini`, `gpt-4.1-mini`, `gpt-4o`, `gpt-4.1`, `claude-sonnet-4`, `claude-haiku-3.5`, `gemini-2.5-flash`, `gemini-2.5-pro`, `o3-mini`, `o3`.
+Supported models out of the box: `gpt-4.1-nano`, `gpt-4o-mini`, `gpt-4.1-mini`, `gpt-4o`, `gpt-4.1`, `claude-sonnet-4`, `claude-haiku-3.5`, `gemini-2.5-flash`, `gemini-2.5-pro`, `o3-mini`, `o3`.
 
 ### ModelSelector — pick the right model automatically
 
@@ -1200,17 +1119,17 @@ selector = ModelSelector()
 
 # Basic selection
 result = selector.select("What is the capital of France?")
-print(result.model)           # "gpt-4.1-nano"
-print(result.reason)          # "Difficulty 1/10 (easy) → gpt-4.1-nano (cheapest at $0.000001)"
-print(result.alternatives)    # ["gpt-4o-mini", "gpt-4.1-mini"]
-print(result.cost_estimate.total_cost)   # 0.0000012
+print(result.model)                    # "gpt-4.1-nano"
+print(result.reason)                   # "Difficulty 1/10 (easy) → gpt-4.1-nano (cheapest at $0.000001)"
+print(result.alternatives)             # ["gpt-4o-mini", "gpt-4.1-mini"]
+print(result.cost_estimate.total_cost) # 0.0000012
 
 # With capability filter
 result = selector.select(
     "Prove that the halting problem is undecidable",
     required_capability=Capability.REASONING,
 )
-print(result.model)    # "o3-mini"
+print(result.model)  # "o3-mini"
 
 # Integrate with your LLM adapters for automatic routing
 def make_llm_for_task(task: str) -> object:
@@ -1225,8 +1144,8 @@ def make_llm_for_task(task: str) -> object:
         return OpenAILLM(model)
 
 # Use in a pipeline where different tasks get different models
-llm = make_llm_for_task("What is 2+2?")       # → gpt-4.1-nano
-llm = make_llm_for_task("Design a distributed rate limiter for 10M RPS")  # → o3-mini
+llm = make_llm_for_task("What is 2+2?")                                   # → gpt-4.1-nano
+llm = make_llm_for_task("Design a distributed rate limiter for 10M RPS")   # → o3-mini
 ```
 
 ### RouterMiddleware — wrap agents with automatic routing
@@ -1237,18 +1156,18 @@ from pyagent_router.selector import Capability
 
 # Registry of all available models
 model_registry = {
-    "gpt-4.1-nano":    OpenAILLM("gpt-4.1-nano"),
-    "gpt-4o-mini":     OpenAILLM("gpt-4o-mini"),
-    "gpt-4o":          OpenAILLM("gpt-4o"),
+    "gpt-4.1-nano": OpenAILLM("gpt-4.1-nano"),
+    "gpt-4o-mini": OpenAILLM("gpt-4o-mini"),
+    "gpt-4o": OpenAILLM("gpt-4o"),
     "claude-haiku-3.5": AnthropicLLM("claude-haiku-3-5-20241022"),
-    "claude-sonnet-4":  AnthropicLLM("claude-sonnet-4-20250514"),
+    "claude-sonnet-4": AnthropicLLM("claude-sonnet-4-20250514"),
     "gemini-2.5-flash": GeminiLLM("gemini-2.5-flash"),
-    "o3-mini":         OpenAILLM("o3-mini"),
+    "o3-mini": OpenAILLM("o3-mini"),
 }
 
 middleware = RouterMiddleware(
     model_registry=model_registry,
-    required_capability=Capability.CODE,   # optional: only consider code-capable models
+    required_capability=Capability.CODE,  # optional: only consider code-capable models
 )
 
 # Wrap individual agents
@@ -1258,15 +1177,15 @@ routed_agent = middleware.wrap(agent)
 # Now every call automatically selects the cheapest appropriate model
 # Easy task → gpt-4.1-nano; hard task → o3-mini
 result = await routed_agent.run([Message.user("Write a hello world function")])
-print(result.metadata["routed_model"])     # "gpt-4.1-nano"
-print(result.metadata["difficulty"])       # 1
-print(result.metadata["estimated_cost"])   # 0.000001
-print(result.metadata["reason"])           # "Difficulty 1/10 → gpt-4.1-nano ..."
+print(result.metadata["routed_model"])   # "gpt-4.1-nano"
+print(result.metadata["difficulty"])     # 1
+print(result.metadata["estimated_cost"]) # 0.000001
+print(result.metadata["reason"])         # "Difficulty 1/10 → gpt-4.1-nano ..."
 
 # Wrap all agents in a pattern at once
 pipeline = Pipeline(stages=[
-    Agent("planner",  OpenAILLM("gpt-4o"),      system_prompt="Plan the approach."),
-    Agent("executor", OpenAILLM("gpt-4o-mini"),  system_prompt="Execute the plan."),
+    Agent("planner", OpenAILLM("gpt-4o"), system_prompt="Plan the approach."),
+    Agent("executor", OpenAILLM("gpt-4o-mini"), system_prompt="Execute the plan."),
 ])
 pipeline._stages = middleware.wrap_all(pipeline._stages)
 ```
@@ -1279,14 +1198,14 @@ from pyagent_router import DifficultyScorer
 scorer = DifficultyScorer()
 
 easy = scorer.score("What does HTTP 404 mean?")
-print(easy.score, easy.category, easy.is_easy)    # 1, "easy", True
-print(easy.signals)                                # {"length": 0.02, "keywords": 0.0, ...}
+print(easy.score, easy.category, easy.is_easy)  # 1, "easy", True
+print(easy.signals)  # {"length": 0.02, "keywords": 0.0, ...}
 
 hard = scorer.score(
     "Design a Byzantine fault-tolerant consensus algorithm for a financial system "
     "that must process 1M transactions per second with sub-100ms finality"
 )
-print(hard.score, hard.category, hard.is_hard)    # 9, "hard", True
+print(hard.score, hard.category, hard.is_hard)  # 9, "hard", True
 
 # Add custom signals for domain-specific difficulty
 def has_regulatory_requirement(task: str) -> float:
@@ -1295,7 +1214,7 @@ def has_regulatory_requirement(task: str) -> float:
 
 custom_scorer = DifficultyScorer(custom_signals={"regulatory": has_regulatory_requirement})
 result = custom_scorer.score("Build a HIPAA-compliant patient data API")
-print(result.score)   # boosted by regulatory signal
+print(result.score)  # boosted by regulatory signal
 ```
 
 ### CostEstimator — compare costs across models
@@ -1309,12 +1228,12 @@ estimator = CostEstimator()
 task = "Explain the CAP theorem with three concrete examples"
 estimates = estimator.compare(task)
 for est in estimates[:5]:
-    print(f"{est.model:25s}  ${est.total_cost:.7f}  ({est.input_tokens} in, {est.output_tokens} out)")
-# gpt-4.1-nano              $0.0000011  (45 in, 22 out)
-# gpt-4o-mini               $0.0000034  (45 in, 22 out)
-# gemini-2.5-flash          $0.0000034  (45 in, 22 out)
-# gpt-4.1-mini              $0.0000090  (45 in, 22 out)
-# claude-haiku-3.5          $0.0000180  (45 in, 22 out)
+    print(f"{est.model:25s} ${est.total_cost:.7f} ({est.input_tokens} in, {est.output_tokens} out)")
+# gpt-4.1-nano              $0.0000011 (45 in, 22 out)
+# gpt-4o-mini               $0.0000034 (45 in, 22 out)
+# gemini-2.5-flash           $0.0000034 (45 in, 22 out)
+# gpt-4.1-mini              $0.0000090 (45 in, 22 out)
+# claude-haiku-3.5           $0.0000180 (45 in, 22 out)
 
 # Estimate a specific model
 est = estimator.estimate_from_text("gpt-4o", task)
@@ -1322,11 +1241,10 @@ print(f"gpt-4o: ${est.total_cost:.6f} ({est.input_tokens} tokens)")
 
 # Add custom model pricing
 from pyagent_router.estimator import ModelPricing
+
 custom_pricing = {**estimator._pricing, "my-custom-model": ModelPricing(0.50, 2.00)}
 custom_estimator = CostEstimator(pricing=custom_pricing)
 ```
-
----
 
 ## pyagent-compress
 
@@ -1348,25 +1266,29 @@ compressor = MessageCompressor(target_ratio=0.5)
 compressor = MessageCompressor(
     target_ratio=0.3,
     min_sentence_length=20,   # drop very short sentences
-    remove_filler=True,        # strip "let me think", "basically", "in other words", etc.
+    remove_filler=True,       # strip "let me think", "basically", "in other words", etc.
 )
 
 verbose_output = """
-Let me think about this carefully. Okay so basically what we have here is a situation
-where the system needs to handle concurrent writes. In other words, we need to think
-about race conditions. I believe that the most important thing is to use transactions.
-The system should implement SERIALIZABLE isolation level because it ensures that all
-transactions are executed as if they were serial. Studies show that this prevents 100%
-of dirty reads. The database must also use row-level locking. Additionally, we need
-retry logic for deadlock situations, with exponential backoff starting at 10ms.
-Finally, the application should use connection pooling with a maximum of 20 connections.
+Let me think about this carefully. Okay so basically what we have here is a
+situation where the system needs to handle concurrent writes. In other words, we
+need to think about race conditions.
+
+I believe that the most important thing is to use transactions. The system should
+implement SERIALIZABLE isolation level because it ensures that all transactions
+are executed as if they were serial. Studies show that this prevents 100% of dirty reads.
+The database must also use row-level locking.
+
+Additionally, we need retry logic for deadlock situations, with exponential backoff
+starting at 10ms. Finally, the application should use connection pooling with a
+maximum of 20 connections.
 """
 
 result = compressor.compress(verbose_output)
-print(result.compressed)         # key sentences, filler removed
+print(result.compressed)           # key sentences, filler removed
 print(f"Saved: {result.savings_pct:.0%}")  # e.g. "Saved: 47%"
-print(result.original_tokens)    # 120
-print(result.compressed_tokens)  # 64
+print(result.original_tokens)      # 120
+print(result.compressed_tokens)    # 64
 ```
 
 ### CompressMiddleware — wrap agents with automatic compression
@@ -1379,9 +1301,10 @@ compressor = MessageCompressor(target_ratio=0.4)
 middleware = CompressMiddleware(compressor=compressor)
 
 pipeline = Pipeline(stages=[
-    middleware.wrap(Agent("researcher", llm, system_prompt="Research thoroughly. "
-                                                            "Include all relevant details.")),
-    middleware.wrap(Agent("analyst",    llm, system_prompt="Analyse the research findings.")),
+    middleware.wrap(Agent("researcher", llm,
+                         system_prompt="Research thoroughly. Include all relevant details.")),
+    middleware.wrap(Agent("analyst", llm,
+                         system_prompt="Analyse the research findings.")),
     # Final stage: no compression — we want the full output
     Agent("writer", OpenAILLM("gpt-4o"), system_prompt="Write the final report."),
 ])
@@ -1405,26 +1328,26 @@ from pyagent_compress import TokenBudget, CompressMiddleware
 budget = TokenBudget(
     workflow_limit=50_000,
     per_agent_limit=10_000,
-    strict=True,    # raises BudgetExceeded if exceeded; False = track only
+    strict=True,  # raises BudgetExceeded if exceeded; False = track only
 )
 
 middleware = CompressMiddleware(budget=budget)
 
 # Custom per-agent limits
-budget.register_agent("researcher", limit=15_000)   # researcher gets more budget
-budget.register_agent("writer",     limit=5_000)    # writer gets less
+budget.register_agent("researcher", limit=15_000)  # researcher gets more budget
+budget.register_agent("writer", limit=5_000)        # writer gets less
 
-print(budget.remaining())                  # 50000 (workflow remaining)
-print(budget.remaining("researcher"))      # 15000 (researcher remaining)
+print(budget.remaining())              # 50000 (workflow remaining)
+print(budget.remaining("researcher"))  # 15000 (researcher remaining)
 
 # After running some agents:
-print(budget.total_used)                   # tokens consumed so far
-print(budget.workflow_utilization)         # 0.34 → 34% of budget used
+print(budget.total_used)               # tokens consumed so far
+print(budget.workflow_utilization)     # 0.34 → 34% of budget used
 print(budget.summary())
 # {
-#   "workflow": {"limit": 50000, "used": 17000, "remaining": 33000, "utilization": 0.34},
-#   "researcher": {"limit": 15000, "used": 12000, "remaining": 3000, "utilization": 0.80},
-#   ...
+#     "workflow": {"limit": 50000, "used": 17000, "remaining": 33000, "utilization": 0.34},
+#     "researcher": {"limit": 15000, "used": 12000, "remaining": 3000, "utilization": 0.80},
+#     ...
 # }
 ```
 
@@ -1435,8 +1358,8 @@ from pyagent_compress import AgentPruner, InteractionPruner
 
 # Detect agents that are repeating others rather than adding value
 pruner = AgentPruner(
-    min_contribution=0.3,   # agents scoring below 0.3 should be pruned
-    window_size=5,          # look at last 5 messages per agent
+    min_contribution=0.3,  # agents scoring below 0.3 should be pruned
+    window_size=5,         # look at last 5 messages per agent
 )
 
 # After running a multi-agent pattern:
@@ -1449,19 +1372,17 @@ for score in scores:
 # analyst_3: 0.61 (unique info: 0.54, messages: 3)
 
 agents_to_prune = pruner.should_prune(scores)
-print(f"Prune: {agents_to_prune}")   # ["analyst_2"]
+print(f"Prune: {agents_to_prune}")  # ["analyst_2"]
 
 # Detect early consensus to skip remaining rounds
 interaction_pruner = InteractionPruner(
-    consensus_threshold=0.7,   # 70% similarity = consensus reached
-    min_rounds=1,              # always run at least 1 round
+    consensus_threshold=0.7,  # 70% similarity = consensus reached
+    min_rounds=1,             # always run at least 1 round
 )
 
 if interaction_pruner.has_consensus(current_round_outputs, current_round=2):
     print("Consensus reached — skipping remaining rounds")
 ```
-
----
 
 ## pyagent-trace
 
@@ -1520,13 +1441,13 @@ from pyagent_trace import CostTracker
 tracker = CostTracker()
 
 # Record costs manually or integrate with your routing middleware
-tracker.record("pipeline",   "extractor",  "gpt-4o-mini",     500, 200, 0.00019)
-tracker.record("pipeline",   "analyst",    "gpt-4o",          800, 400, 0.00600)
-tracker.record("supervisor", "classifier", "claude-haiku-3.5", 200,  50, 0.00018)
+tracker.record("pipeline", "extractor", "gpt-4o-mini", 500, 200, 0.00019)
+tracker.record("pipeline", "analyst", "gpt-4o", 800, 400, 0.00600)
+tracker.record("supervisor", "classifier", "claude-haiku-3.5", 200, 50, 0.00018)
 tracker.record("supervisor", "specialist", "claude-sonnet-4", 1200, 600, 0.01260)
 
-print(f"Total: ${tracker.total_cost:.5f}")     # $0.01897
-print(f"Tokens: {tracker.total_tokens}")       # 3950
+print(f"Total: ${tracker.total_cost:.5f}")  # $0.01897
+print(f"Tokens: {tracker.total_tokens}")    # 3950
 
 # Breakdowns
 print(tracker.by_pattern())  # {"pipeline": 0.00619, "supervisor": 0.01278}
@@ -1535,12 +1456,12 @@ print(tracker.by_model())    # {"gpt-4o-mini": 0.00019, "gpt-4o": 0.00600, ...}
 
 print(tracker.summary())
 # {
-#   "total_cost_usd": 0.01897,
-#   "total_tokens": 3950,
-#   "entries": 4,
-#   "by_pattern": {...},
-#   "by_agent": {...},
-#   "by_model": {...}
+#     "total_cost_usd": 0.01897,
+#     "total_tokens": 3950,
+#     "entries": 4,
+#     "by_pattern": {...},
+#     "by_agent": {...},
+#     "by_model": {...}
 # }
 ```
 
@@ -1617,308 +1538,6 @@ emitter.set_compression_info(
 span.end()
 ```
 
----
-
-## pyagent-context
-
-```bash
-pip install pyagent-context                   # Core (working + session + semantic memory)
-pip install pyagent-context[compress]         # + ContextCompressor with pyagent-compress
-pip install pyagent-context[chromadb]         # + ChromaDB semantic memory backend
-```
-
-Replaces flat `list[Message]` with structured context that tracks *who* said *what*, *when*, and *how much to trust it*. Adds trust levels, sensitivity tiers, TTL expiry, compression, and three memory tiers.
-
-### ContextItem + ContextLedger
-
-```python
-import time
-from pyagent_context import ContextItem, ContextLedger, TrustLevel, Sensitivity
-
-item = ContextItem(
-    content="Revenue grew 15% YoY to $25.2B",
-    source="analyst",
-    trust_level=TrustLevel.VERIFIED,       # verified | inferred | user | external
-    sensitivity=Sensitivity.INTERNAL,       # public | internal | confidential | restricted
-    expires_at=time.time() + 3600,
-)
-
-ledger = ContextLedger()
-ledger.add("User asked about Q3 earnings", "user", TrustLevel.USER_PROVIDED)
-ledger.add("Revenue: $25.2B (+8% YoY)", "analyst", TrustLevel.VERIFIED)
-
-# Query by trust, age, or source
-verified = ledger.query(min_trust=TrustLevel.VERIFIED)
-recent   = ledger.query(max_age_seconds=300)
-
-# Convert to Messages for pattern consumption (budget-constrained)
-messages = ledger.to_messages(max_tokens=2000)
-```
-
-### Three-Tier Memory
-
-```python
-from pyagent_context import WorkingMemory, SessionMemory, InMemorySemanticStore
-
-# WorkingMemory: bounded in-flight context
-wm = WorkingMemory(max_items=50, max_tokens=10_000)
-evicted = wm.add(item)
-print(f"{wm.utilization:.0%}")   # "42%"
-
-# SessionMemory: persist across turns (JSON or SQLite backend)
-session = SessionMemory("user-123", backend="sqlite", storage_path=".sessions")
-session.add(item)
-session.save()
-
-# SemanticMemory: TF-IDF vector search over long-term context
-store = InMemorySemanticStore()
-store.add(ContextItem(content="Python FastAPI async REST API design", source="docs"))
-results = store.search("Python async web", top_k=3)
-```
-
-### ContextCompressor, TrustAwareRetriever, ContextRedactor
-
-```python
-from pyagent_context import ContextCompressor, CompressionPolicy, TrustAwareRetriever, ContextRedactor
-
-# FIFO / SAWTOOTH / SEMANTIC_LOSSLESS compression policies
-compressor = ContextCompressor(policy=CompressionPolicy.SEMANTIC_LOSSLESS,
-                                threshold_tokens=8_000, floor_tokens=4_000)
-if compressor.should_compress(ledger):
-    ledger = compressor.compress(ledger)
-
-# Trust × recency × relevance scoring
-retriever = TrustAwareRetriever(weight_trust=0.3, weight_recency=0.3, weight_relevance=0.4)
-results = retriever.retrieve(ledger, "Q3 earnings revenue growth", top_k=5)
-
-# Redact items above a sensitivity threshold before passing to agents
-redactor = ContextRedactor(max_sensitivity=Sensitivity.INTERNAL, redaction_text="[REDACTED]")
-safe_ledger = redactor.redact_ledger(ledger)
-```
-
----
-
-## pyagent-providers
-
-```bash
-pip install pyagent-providers                  # Core (includes MockProvider)
-pip install pyagent-providers[openai]          # + OpenAI adapter
-pip install pyagent-providers[anthropic]       # + Anthropic adapter
-pip install pyagent-providers[litellm]         # + LiteLLM (100+ models)
-pip install pyagent-providers[all]             # All adapters
-```
-
-Multi-provider abstraction layer. Providers satisfy the `LLMCallable` interface so they are drop-in replacements for `Agent.llm`.
-
-### ProviderRegistry + ProviderRouter
-
-```python
-import asyncio
-from pyagent_providers import ProviderRegistry, ProviderRouter, RoutingStrategy
-from pyagent_providers.adapters.openai import OpenAIProvider
-from pyagent_providers.adapters.anthropic import AnthropicProvider
-from pyagent_router.selector import Capability
-
-registry = ProviderRegistry()
-asyncio.run(registry.register(OpenAIProvider(default_model="gpt-4o-mini")))
-asyncio.run(registry.register(AnthropicProvider(default_model="claude-sonnet-4-20250514")))
-
-# Discover by capability
-coders = registry.discover({Capability.CODE})
-
-# Health check all providers
-statuses = asyncio.run(registry.check_health())
-
-# Route by strategy: CAPABILITY_FIRST | COST_FIRST | LATENCY_FIRST | ROUND_ROBIN
-router = ProviderRouter(registry, strategy=RoutingStrategy.COST_FIRST)
-provider, model = asyncio.run(router.route([Message.user("What is 2+2?")]))
-print(f"{provider.name}/{model}")   # picks cheapest model
-```
-
-### FallbackChain + CapabilityNegotiator + CostOptimizer
-
-```python
-from pyagent_providers import FallbackChain, CapabilityNegotiator, CostOptimizer
-
-# Try providers in order — fall through on failure
-chain = FallbackChain(providers=[primary_openai, fallback_anthropic, emergency_litellm])
-result = asyncio.run(chain.complete([Message.user("Important task")]))
-print(result.provider_name)   # which provider answered
-
-# Find best provider by capability + context window
-negotiator = CapabilityNegotiator(registry)
-match = negotiator.negotiate(required_capabilities={Capability.CODE, Capability.REASONING},
-                              min_context=100_000)
-print(f"{match.provider.name}: {match.match_score:.0%}")
-
-# Find cheapest provider for a task
-optimizer = CostOptimizer(registry)
-cheapest = optimizer.cheapest("Simple greeting task")
-print(f"{cheapest.provider_name}/{cheapest.model}: ${cheapest.estimate.total_cost:.7f}")
-```
-
----
-
-## pyagent-blueprint
-
-```bash
-pip install pyagent-blueprint
-```
-
-Define your entire agent system as a versioned YAML file. Validate, compile, test, diff, and render it — without running any LLM calls.
-
-### Blueprint YAML
-
-```yaml
-api_version: pyagent/v1
-metadata:
-  name: customer-support
-  version: 1.0.0
-  owner: platform-team
-
-providers:
-  primary:
-    model: gpt-4.1-mini
-  fallback:
-    model: gpt-4.1-nano
-
-agents:
-  classifier:
-    prompt: "Classify into: billing, tech, general"
-    provider: primary
-  billing:
-    prompt: "Handle billing inquiries"
-    provider: primary
-    guardrails: [pii_redact]
-  tech:
-    prompt: "Handle technical support"
-    provider: primary
-
-workflows:
-  support:
-    pattern: supervisor
-    agents:
-      classifier: classifier
-      routes:
-        billing: billing
-        tech: tech
-    recovery:
-      max_retries: 2
-      timeout_seconds: 30
-
-contracts:
-  support:
-    output:
-      type: string
-    sla:
-      latency_p95_ms: 5000
-      cost_max_usd: 0.05
-```
-
-### Loader, Compiler, Validator, Renderer, Differ, Tester
-
-```python
-import asyncio
-from pyagent_blueprint import (
-    load_blueprint, BlueprintCompiler, BlueprintValidator,
-    BlueprintRenderer, BlueprintDiffer, BlueprintTester,
-)
-
-spec = load_blueprint("blueprint.yaml")
-
-# Compile to executable RuntimeGraph
-graph = BlueprintCompiler().compile(spec)
-result = asyncio.run(graph.run("support", "I can't see my invoice"))
-
-# Static analysis — dangling refs, hardcoded API keys, unrealistic SLAs
-issues = BlueprintValidator().validate(spec)
-for issue in issues:
-    print(f"[{issue.severity}] {issue.path}: {issue.message}")
-
-# Render Mermaid diagram or Markdown docs
-print(BlueprintRenderer().to_mermaid(spec))
-
-# Semantic diff (BREAKING / WARNING / INFO)
-changes = BlueprintDiffer().diff(old_spec, new_spec)
-
-# Contract conformance tests with MockLLM
-results = asyncio.run(BlueprintTester().test(spec))
-```
-
-### CLI
-
-```bash
-pyagent-blueprint validate blueprint.yaml
-pyagent-blueprint compile blueprint.yaml
-pyagent-blueprint render blueprint.yaml --format mermaid
-pyagent-blueprint test blueprint.yaml
-pyagent-blueprint diff v1.yaml v2.yaml
-pyagent-blueprint generate --pattern supervisor --agents "classifier,billing,tech" --name my-system
-```
-
----
-
-## pyagent-studio
-
-```bash
-pip install pyagent-studio
-```
-
-The Kubernetes Dashboard for Agent Systems — CLI + web control plane for designing, simulating, debugging, and governing multi-agent blueprints.
-
-### CLI
-
-```bash
-pyagent apply blueprint.yaml                                    # load, validate, summarize
-pyagent get agents blueprint.yaml                               # list agents
-pyagent simulate blueprint.yaml support "Help with billing"     # MockLLM simulation
-pyagent simulate blueprint.yaml support "Help with billing" --live  # real LLMs
-pyagent diff v1.yaml v2.yaml                                    # semantic diff
-pyagent dashboard                                               # launch web UI
-```
-
-### Web Dashboard (FastAPI + HTMX)
-
-| Page | Description |
-|---|---|
-| Overview `/` | Blueprint summary, card grid, validation status |
-| Agents `/agents` | Agent table with prompts, providers, guardrails |
-| Workflows `/workflows` | Workflow table with Mermaid DAG diagrams |
-| Simulate `/simulate` | Run workflows with MockLLM or live LLMs |
-| Traces `/traces` | Live SSE trace stream + historical JSONL viewer |
-| Governance `/governance` | Compliance score, validation issues |
-| Providers `/providers` | LLM model list, health checks |
-| Diff `/diff` | Semantic diff between blueprint versions |
-| Docs `/docs` | Auto-rendered blueprint documentation |
-
-### Services API
-
-```python
-from pyagent_studio import BlueprintService, SimulationService, GovernanceService, ProviderService
-import asyncio
-
-# Load and validate
-svc = BlueprintService()
-spec = svc.load("blueprint.yaml")
-issues = svc.validate()
-print(svc.summary())
-
-# Simulate a workflow
-sim = SimulationService()
-result = asyncio.run(sim.run(spec, "support", "I can't see my invoice"))
-print(result.output)
-
-# Governance compliance report
-gov = GovernanceService()
-report = gov.check_compliance(spec)
-print(gov.format_report(report))
-
-# Provider health check
-asyncio.run(ProviderService().health_check())
-```
-
----
-
 ## Guardrails
 
 Four insertion points: input validation, inter-agent, tool-call, and output validation.
@@ -1927,13 +1546,13 @@ Four insertion points: input validation, inter-agent, tool-call, and output vali
 from pyagent_patterns.guardrails import GuardrailChain, PIIGuard, LengthGuard, ContentGuard
 
 # PIIGuard: detect and redact personal data
-pii_guard = PIIGuard(redact=True)   # redact=False raises instead of redacting
+pii_guard = PIIGuard(redact=True)  # redact=False raises instead of redacting
 result = pii_guard.check("Contact john.doe@example.com or call 555-123-4567")
 # result.passed = True, result.sanitized_content = "Contact [REDACTED-EMAIL] or call [REDACTED-PHONE]"
 # Detects: email, phone, SSN, credit card numbers
 
 # LengthGuard: enforce output length limits
-length_guard = LengthGuard(max_chars=5000, truncate=True)   # truncate=False rejects instead
+length_guard = LengthGuard(max_chars=5000, truncate=True)  # truncate=False rejects instead
 result = length_guard.check("x" * 6000)
 # result.passed = True, result.sanitized_content = "x" * 5000 + "... [truncated]"
 
@@ -1953,15 +1572,12 @@ chain = GuardrailChain([
 # Apply to any agent output before passing to the next stage
 agent_output = "Here is the analysis for john@company.com: ..."
 result = chain.check(agent_output)
-
 if result.passed:
     safe_output = result.sanitized_content or agent_output
     # proceed with safe_output
 else:
     print(f"Guardrail blocked: {result.message}")
 ```
-
----
 
 ## Recovery
 
@@ -1973,7 +1589,8 @@ from pyagent_patterns.recovery import BoundedExecution, CircuitBreaker
 # BoundedExecution: retry → fallback → graceful degradation
 bounded = BoundedExecution(
     pattern=Pipeline(stages=[
-        Agent("primary", OpenAILLM("gpt-4o"), system_prompt="Handle this task thoroughly."),
+        Agent("primary", OpenAILLM("gpt-4o"),
+              system_prompt="Handle this task thoroughly."),
     ]),
     fallback=Pipeline(stages=[
         Agent("backup", AnthropicLLM("claude-haiku-3-5-20241022"),
@@ -1985,20 +1602,21 @@ bounded = BoundedExecution(
 )
 
 result = asyncio.run(bounded.run("Complex analysis task"))
-print(result.metadata["recovery_level"])   # 0 = primary succeeded
-                                           # 1 = fallback used
-                                           # 2 = graceful degradation
+print(result.metadata["recovery_level"])
+# 0 = primary succeeded
+# 1 = fallback used
+# 2 = graceful degradation
 
 # CircuitBreaker: prevent cascading failures
 circuit = CircuitBreaker(
-    failure_threshold=3,           # open after 3 consecutive failures
-    reset_timeout_seconds=60.0,    # try again after 60s
+    failure_threshold=3,            # open after 3 consecutive failures
+    reset_timeout_seconds=60.0,     # try again after 60s
     fallback_result="[Service temporarily unavailable. Please try again in a moment.]",
 )
 
 # Wraps pattern execution with circuit protection
 result = asyncio.run(circuit.execute(my_pattern, "task"))
-print(circuit.state)    # CircuitState.CLOSED | OPEN | HALF_OPEN
+print(circuit.state)  # CircuitState.CLOSED | OPEN | HALF_OPEN
 
 # Combine both for full resilience
 resilient_pattern = BoundedExecution(
@@ -2011,59 +1629,347 @@ resilient_pattern = BoundedExecution(
 result = asyncio.run(circuit.execute(resilient_pattern, "Handle this production request"))
 ```
 
----
+## pyagent-providers
+
+Multi-provider abstraction layer for LLM applications. Register, route, negotiate, and optimize across providers.
+
+```python
+from pyagent_providers import ProviderRegistry, ProviderRouter, FallbackChain, MockProvider
+
+# Registry of named providers
+registry = ProviderRegistry()
+registry.register("primary", MockProvider(name="gpt-4o", model="gpt-4o"))
+registry.register("fallback", MockProvider(name="gpt-mini", model="gpt-4o-mini"))
+
+# Router: pick provider by strategy (capability_first, cost_first, latency_first, round_robin)
+router = ProviderRouter(registry, strategy="cost_first")
+result = await router.route(messages)
+
+# FallbackChain: try primary, fall back to secondary on failure
+chain = FallbackChain(providers=[
+    registry.get("primary"),
+    registry.get("fallback"),
+])
+result = await chain.complete(messages)
+
+# CapabilityNegotiator: find providers matching requirements
+from pyagent_providers import CapabilityNegotiator
+negotiator = CapabilityNegotiator(registry)
+matches = negotiator.find(required=["function_calling", "streaming"])
+
+# CostOptimizer: rank providers by cost for a workload
+from pyagent_providers import CostOptimizer
+optimizer = CostOptimizer(registry)
+ranked = optimizer.rank_by_cost(prompt_tokens=1000, completion_tokens=500)
+```
+
+`ProviderProtocol` implements `__call__`, so any provider works as an `Agent`'s `llm` parameter:
+
+```python
+from pyagent_patterns.base import Agent
+agent = Agent("analyst", llm=registry.get("primary"), system_prompt="Analyse data.")
+```
+
+## pyagent-context
+
+Structured context memory with trust metadata, three-tier storage, compression, and retrieval.
+
+```python
+from pyagent_context import ContextItem, ContextLedger, TrustLevel, Sensitivity
+from pyagent_context import WorkingMemory, SessionMemory, InMemorySemanticStore
+from pyagent_context import ContextCompressor, TrustAwareRetriever, ContextRedactor
+
+# ContextItem: atomic unit of context with trust and sensitivity
+item = ContextItem(
+    content="Revenue was $25.2B in Q3 2025",
+    source="database",
+    trust=TrustLevel.VERIFIED,
+    sensitivity=Sensitivity.INTERNAL,
+)
+
+# ContextLedger: append-only log with token-budgeted message conversion
+ledger = ContextLedger()
+ledger.append(item)
+messages = ledger.to_messages(budget=4000)  # high-trust items prioritized
+
+# Three-tier memory
+working = WorkingMemory(max_items=20, max_tokens=8000)  # current turn
+session = SessionMemory(backend="sqlite", path="session.db")  # cross-turn persistence
+semantic = InMemorySemanticStore()  # TF-IDF similarity search
+semantic.add(item)
+results = semantic.search("billing question", top_k=3)
+
+# Context compression (4 policies: none, fifo, semantic_lossless, sawtooth)
+compressor = ContextCompressor(policy="semantic_lossless")
+compressed = compressor.compress(ledger.items(), target_tokens=4000)
+
+# Trust-aware retrieval (composite score: trust + recency + relevance)
+retriever = TrustAwareRetriever()
+results = retriever.retrieve(ledger.items(), query="billing", top_k=5)
+
+# Redaction: filter by sensitivity before sending to LLM
+redactor = ContextRedactor(max_sensitivity=Sensitivity.INTERNAL)
+safe_items = redactor.redact(ledger.items())  # PII items excluded
+```
+
+## pyagent-blueprint
+
+Declarative YAML specs for multi-agent systems — validate, compile, test, diff, render, and scaffold.
+
+```yaml
+# blueprint.yaml
+api_version: pyagent/v1
+metadata:
+  name: customer-support
+  version: 1.0.0
+
+providers:
+  primary: { model: gpt-4.1-mini }
+  fallback: { model: gpt-4.1-nano }
+
+context:
+  memory: { working_max_tokens: 128000 }
+  compression: { policy: semantic_lossless, target_ratio: 0.6 }
+
+agents:
+  classifier:
+    prompt: "Classify into: billing, tech, general"
+    provider: primary
+  billing:
+    prompt: "Handle billing inquiries"
+    provider: primary
+    guardrails: [pii_redact]
+
+workflows:
+  support:
+    pattern: supervisor
+    agents:
+      classifier: classifier
+      routes: { billing: billing }
+
+contracts:
+  support:
+    input: { type: string, max_tokens: 2000 }
+    output: { type: string }
+    sla: { latency_p95_ms: 5000, cost_max_usd: 0.05 }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }
+```
+
+```python
+from pyagent_blueprint import (
+    load_blueprint, BlueprintCompiler, BlueprintValidator,
+    BlueprintRenderer, BlueprintDiffer, BlueprintTester, BlueprintGenerator,
+)
+
+# Load → Validate → Compile → Run
+spec = load_blueprint("blueprint.yaml")
+issues = BlueprintValidator().validate(spec)        # static analysis
+graph = BlueprintCompiler().compile(spec)            # YAML → RuntimeGraph
+result = await graph.run("support", "I can't see my invoice")
+
+# Render documentation
+print(BlueprintRenderer().to_mermaid(spec))          # Mermaid flowchart
+print(BlueprintRenderer().to_markdown(spec))         # full Markdown doc
+
+# Semantic diff between versions
+changes = BlueprintDiffer().diff(old_spec, new_spec)
+print(BlueprintDiffer().summary(changes))            # BREAKING / WARNING / INFO
+
+# Contract conformance tests
+results = await BlueprintTester().test(spec)
+
+# Generate scaffold
+yaml_str = BlueprintGenerator().generate(pattern="supervisor", agents=["a", "b", "c"])
+```
+
+**CLI**: `pyagent-blueprint validate|compile|render|test|diff|generate`
+
+## pyagent-studio
+
+CLI + web control plane for designing, simulating, debugging, and governing agent blueprints.
+
+```bash
+# CLI commands
+pyagent apply blueprint.yaml                    # load, validate, summarize
+pyagent simulate blueprint.yaml support "Help"  # run with MockLLM
+pyagent simulate blueprint.yaml support "Help" --live  # run with real LLMs
+pyagent dashboard                               # launch web UI
+```
+
+**Web dashboard** (FastAPI + HTMX + Pico CSS — zero JS build step):
+
+| Page | Description |
+|------|-------------|
+| **Overview** | Blueprint summary, validation status, quick actions |
+| **Agents** | Agent table with prompts, providers, guardrails |
+| **Workflows** | Workflow DAGs with Mermaid diagrams |
+| **Simulate** | Run workflows with MockLLM or live providers |
+| **Traces** | Live SSE trace stream + historical JSONL viewer |
+| **Governance** | Compliance score, validation issues, blueprint diff |
+| **Providers** | LLM model catalog, health checks |
+
+**Headless services** for scripting and CI:
+
+```python
+from pyagent_studio import BlueprintService, SimulationService, GovernanceService, TraceService
+
+svc = BlueprintService()
+spec = svc.load("blueprint.yaml")
+issues = svc.validate()
+
+sim = SimulationService()
+result = await sim.run(spec, "support", "Help me with billing")
+
+gov = GovernanceService()
+report = gov.check_compliance(spec)
+print(gov.format_report(report))
+
+traces = TraceService()
+spans = traces.load("traces/run.jsonl")
+print(traces.summary())
+```
+
+## End-to-End Integration
+
+All PyAgent packages are designed to work together in a layered architecture:
+
+```mermaid
+flowchart TD
+    BP[Blueprint YAML] -->|load & validate| BC[BlueprintCompiler]
+    BC -->|compile| RG[RuntimeGraph]
+    RG -->|contains| P[Patterns]
+    P -->|orchestrate| A[Agents]
+    A -->|call| PR[Providers]
+
+    A -->|read/write| CL[ContextLedger]
+    CL -->|tier 1| WM[WorkingMemory]
+    CL -->|tier 2| SM[SessionMemory]
+    CL -->|tier 3| SEM[SemanticMemory]
+
+    A -->|output| CM[Compressor]
+    CM -->|compressed| A
+
+    A -.->|emit events| TB[TraceEventBus]
+    P -.->|emit events| TB
+    PR -.->|emit events| TB
+    CM -.->|emit events| TB
+
+    TB -->|export| EX1[ConsoleExporter]
+    TB -->|export| EX2[JsonlExporter]
+    TB -->|export| EX3[OTelExporter]
+    TB -->|export| EX4[LangfuseExporter]
+
+    TB -->|feed| ST[Studio Dashboard]
+```
+
+**The consumer workflow:**
+
+1. **Specify** — Define your agent system in a YAML blueprint (agents, workflows, providers, contracts, observability, context)
+2. **Compile** — `BlueprintCompiler` transforms the spec into a `RuntimeGraph` of executable patterns
+3. **Orchestrate** — Use design patterns (Pipeline, Supervisor, Debate, etc.) to structure agent collaboration
+4. **Provide** — Integrate LLM providers with `ProviderRegistry`, `FallbackChain`, and `CostOptimizer`
+5. **Trace** — Attach a `TraceEventBus` to agents and patterns; events propagate to exporters and Studio
+6. **Compress** — Wrap agents with `CompressMiddleware`; enforce `TokenBudget` limits across workflows
+7. **Remember** — Use `ContextLedger` with three-tier memory for context persistence across turns
+8. **Observe** — Launch Studio to track agent communication, costs, compression savings, and context flow
+
+### Hook-Based Integration
+
+Agents and patterns support **opt-in hooks** for cross-cutting concerns — zero overhead when not wired, fault-tolerant, and chainable:
+
+```python
+from pyagent_patterns.base import Agent, MockLLM
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.cost import CostTracker
+from pyagent_context import ContextLedger
+from pyagent_compress import MessageCompressor
+
+bus = TraceEventBus()
+
+# Fluent chaining — setters return self
+agent = (
+    Agent("analyst", MockLLM(responses=["Revenue grew 25%"]), system_prompt="Analyse data.")
+    .set_trace_bus(bus)                              # emit trace events
+    .set_context(ContextLedger())                    # read/write context
+    .set_compressor(MessageCompressor(0.5))          # compress output
+    .set_cost_tracker(CostTracker(event_bus=bus))    # track costs
+)
+
+result = await agent.run("What are the key trends?")
+# → trace events emitted, context updated, output compressed, cost recorded
+```
+
+#### TracedProvider
+
+Wrap any provider to emit trace events on every LLM call:
+
+```python
+from pyagent_providers import TracedProvider
+
+traced = TracedProvider(registry.get("primary"), event_bus=bus)
+agent = Agent("analyst", llm=traced)
+# → emits provider_call_start / provider_call_end / provider_call_error
+```
+
+#### RuntimeGraph Bulk Wiring
+
+When using blueprints, wire hooks to **all** compiled patterns and agents at once:
+
+```python
+from pyagent_blueprint import load_blueprint, BlueprintCompiler
+
+graph = BlueprintCompiler().compile(load_blueprint("blueprint.yaml"))
+
+graph.wire_trace(bus)                                # all patterns + agents
+graph.wire_context(ContextLedger())                  # all agents
+graph.wire_compressor(MessageCompressor(0.5))        # all agents
+graph.wire_cost_tracker(CostTracker(event_bus=bus))  # all agents
+
+result = await graph.run("support", "Help with billing")
+```
+
+The compiler also emits **warnings** when your blueprint declares features that need manual wiring (tracing, context compression, cost budget) — reminding you to call the appropriate `wire_*` method.
 
 ## When to use which pattern
 
-| If you need to… | Pattern | LLM calls |
-|---|---|---|
-| Route requests to domain specialists | **Supervisor** | 2–3 |
-| Run a fixed sequence of processing steps | **Pipeline** | N |
-| Get multiple independent perspectives fast | **Fan-Out/Fan-In** | N+1 |
-| Delegate to a fixed team hierarchy | **Hierarchical** | 1+T+W |
-| Dynamically plan and assign subtasks | **Orchestrator-Workers** | 1+N+1 |
-| Iteratively improve quality via self-critique | **Self-Reflection** | 2–6 |
-| Get independent peer review | **Cross-Reflection** | 3–6 |
-| Make a high-stakes adversarial decision | **Debate** | D×R+1 |
-| Reduce variance with ensemble answers | **Voting** | N |
-| Meet explicit quality criteria with scoring | **Evaluator-Optimizer** | 2–6 |
-| Simulate a team with defined roles | **Role-Based** | N×rounds |
-| Process data through abstraction layers | **Layered** | sum(agents) |
-| Control information flow topology | **Topology** | varies |
-| Decouple agents via shared state | **Blackboard** | N×rounds |
-| Save cost on mixed-complexity queries | **Talker-Reasoner** | 1–3 |
-| Explore solutions with emergent consensus | **Swarm** | N×rounds |
-| Require human approval at key steps | **Human-in-the-Loop** | 1+ |
-| Use external tools, search, or APIs | **ReAct** | 1–N |
+Still unsure?
 
-**Still unsure?**
 ```python
 from pyagent_patterns.advisor import PatternAdvisor, Constraints, Quality
+
 rec = PatternAdvisor().recommend("describe your task", Constraints(quality=Quality.HIGH))
 print(rec.pattern, "—", rec.reason)
 ```
 
----
+## Running Tests
 
-## Requirements
+```bash
+PYTHONPATH=packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src:packages/pyagent-providers/src:packages/pyagent-context/src:packages/pyagent-blueprint/src:packages/pyagent-studio/src \
+  python -m pytest packages/ -v
+```
 
-| Package | Python | Key deps |
-|---|---|---|
-| pyagent-patterns | ≥ 3.11 | None |
-| pyagent-router | ≥ 3.11 | pyagent-patterns |
-| pyagent-compress | ≥ 3.11 | pyagent-patterns |
-| pyagent-trace | ≥ 3.11 | pyagent-patterns, opentelemetry-api, opentelemetry-sdk |
-| pyagent-context | ≥ 3.11 | pyagent-patterns |
-| pyagent-providers | ≥ 3.11 | pyagent-patterns, pyagent-router |
-| pyagent-blueprint | ≥ 3.11 | pyagent-providers, pyagent-context, pydantic, pyyaml |
-| pyagent-studio | ≥ 3.11 | pyagent-blueprint, pyagent-trace, fastapi, litellm |
-| pyagent-all | ≥ 3.11 | all above |
+## Running Benchmarks
 
----
+```bash
+PYTHONPATH=packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src:packages/pyagent-providers/src:packages/pyagent-context/src:packages/pyagent-blueprint/src:packages/pyagent-studio/src \
+  python -m benchmarks.run
+```
+
+## Documentation
+
+Full docs with Mermaid sequence diagrams, code examples, and API reference: [pyagent.org](https://pyagent.org)
+
+```bash
+pip install mkdocs-material mkdocstrings[python]
+mkdocs serve  # Preview at http://localhost:8000
+```
 
 ## Contributing
 
-The easiest way to contribute is to **add a new pattern**:
+The easiest way to contribute is to add a new pattern:
 
 1. Look at an existing pattern in `packages/pyagent-patterns/src/pyagent_patterns/` for structure
 2. Open an issue describing the pattern, its use case, and the paper or source it's based on
@@ -2071,8 +1977,6 @@ The easiest way to contribute is to **add a new pattern**:
 
 Other welcome contributions: new provider adapters in the docs/examples, bug reports, benchmarks, and documentation improvements.
 
-- **Issues**: https://github.com/pyagent-core/pyagent/issues
+- Issues: [https://github.com/pyagent-core/pyagent/issues](https://github.com/pyagent-core/pyagent/issues)
 
----
-
-**MIT License · Python 3.11+ · Zero mandatory dependencies in core**
+MIT License · Python 3.11+ · Zero mandatory dependencies in core

@@ -304,6 +304,242 @@ result = asyncio.run(pipeline.run("Process this document"))
 print(result.output)
 ```
 
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph Consumer
+        AG[Agent] -->|call| PP[ProviderProtocol]
+    end
+
+    subgraph Provider Layer
+        PP --> PR[ProviderRegistry]
+        PR --> RT[ProviderRouter]
+        RT -->|strategy| S1[capability_first]
+        RT -->|strategy| S2[cost_first]
+        RT -->|strategy| S3[latency_first]
+        RT -->|strategy| S4[round_robin]
+        PR --> FC[FallbackChain]
+        PR --> CN[CapabilityNegotiator]
+        PR --> CO[CostOptimizer]
+    end
+
+    subgraph Adapters
+        PP --> MA[MockProvider]
+        PP --> OA[OpenAI Adapter]
+        PP --> AA[Anthropic Adapter]
+        PP --> LA[Local Model Adapter]
+    end
+
+    subgraph Observability
+        PP -.->|emit| TB[TraceEventBus]
+        TB --> CT[CostTracker]
+    end
+```
+
+## ProviderProtocol — In Depth
+
+The `ProviderProtocol` is the core abstraction that all providers must implement. It is designed for dual compatibility: usable as both a structured provider and as an `LLMCallable` (the `Agent` constructor's expected callable type).
+
+```python
+from pyagent_providers.base import ProviderProtocol, ProviderCapabilities, HealthStatus, ProviderInfo
+
+class ProviderProtocol:
+    async def complete(self, messages: list[Message], **kwargs) -> CompletionResult:
+        """Primary method: send messages, get a completion result with metadata."""
+        ...
+
+    async def health_check(self) -> HealthStatus:
+        """Check if the provider is available and responsive."""
+        ...
+
+    def capabilities(self) -> ProviderCapabilities:
+        """Declare what this provider supports (streaming, function calling, vision, etc.)."""
+        ...
+
+    def info(self) -> ProviderInfo:
+        """Return provider metadata (name, model, version, pricing)."""
+        ...
+
+    async def __call__(self, messages: list[Message]) -> str:
+        """LLMCallable compatibility: Agent can use any provider as its llm parameter."""
+        result = await self.complete(messages)
+        return result.text
+```
+
+### CompletionResult
+
+Every `complete()` call returns a `CompletionResult` with:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `text` | `str` | The generated text |
+| `input_tokens` | `int` | Number of input tokens consumed |
+| `output_tokens` | `int` | Number of output tokens generated |
+| `cost_usd` | `float` | Cost in USD for this call |
+| `model` | `str` | Model identifier used |
+| `latency_ms` | `float` | Round-trip latency in milliseconds |
+| `metadata` | `dict` | Provider-specific extra data |
+
+### LLMCallable Compatibility
+
+Because `ProviderProtocol` implements `__call__`, any provider can be passed directly to `Agent` as the `llm` parameter:
+
+```python
+from pyagent_patterns.base import Agent
+from pyagent_providers import MockProvider
+
+provider = MockProvider(name="gpt-4o", model="gpt-4o")
+
+# Provider works as both a structured provider and a simple callable
+agent = Agent("analyst", llm=provider, system_prompt="Analyse data.")
+result = await agent.run("What are the key trends?")
+```
+
+## Writing Custom Provider Adapters
+
+Implement `ProviderProtocol` to integrate any LLM backend:
+
+```python
+from pyagent_providers.base import ProviderProtocol, ProviderCapabilities, HealthStatus, ProviderInfo
+from pyagent_patterns.base import Message
+
+class MyOpenAIProvider(ProviderProtocol):
+    def __init__(self, model: str = "gpt-4o", api_key: str | None = None):
+        self.model = model
+        self.client = openai.AsyncOpenAI(api_key=api_key)
+
+    async def complete(self, messages: list[Message], **kwargs) -> CompletionResult:
+        response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=[{"role": m.role, "content": m.content} for m in messages],
+        )
+        usage = response.usage
+        return CompletionResult(
+            text=response.choices[0].message.content,
+            input_tokens=usage.prompt_tokens,
+            output_tokens=usage.completion_tokens,
+            cost_usd=self._calculate_cost(usage),
+            model=self.model,
+            latency_ms=response.response_ms,
+        )
+
+    async def health_check(self) -> HealthStatus:
+        try:
+            await self.client.models.retrieve(self.model)
+            return HealthStatus(healthy=True)
+        except Exception as e:
+            return HealthStatus(healthy=False, error=str(e))
+
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            streaming=True,
+            function_calling=True,
+            vision="vision" in self.model,
+        )
+
+    def info(self) -> ProviderInfo:
+        return ProviderInfo(name="openai", model=self.model)
+```
+
+## Integration with pyagent-trace
+
+Providers can emit trace events for every LLM call, enabling cost and token tracking in Studio:
+
+```python
+from pyagent_trace.events import TraceEventBus, TraceEvent
+from pyagent_trace.cost import CostTracker
+
+bus = TraceEventBus()
+tracker = CostTracker(event_bus=bus)
+
+# After each provider.complete() call, record cost
+result = await provider.complete(messages)
+tracker.record(
+    pattern="pipeline",
+    agent="analyst",
+    model=result.model,
+    input_tokens=result.input_tokens,
+    output_tokens=result.output_tokens,
+    cost_usd=result.cost_usd,
+)
+# → CostTracker emits a "cost" event to the bus
+# → Studio displays per-provider cost breakdown
+```
+
+### TracedProvider Pattern
+
+Wrap any provider with trace event emission for automatic observability:
+
+```python
+class TracedProvider:
+    """Wraps a ProviderProtocol to emit trace events on every complete() call."""
+
+    def __init__(self, provider: ProviderProtocol, event_bus: TraceEventBus):
+        self.provider = provider
+        self.bus = event_bus
+
+    async def complete(self, messages, **kwargs):
+        self.bus.emit(TraceEvent(event_type="llm_call_start", data={
+            "model": self.provider.info().model,
+            "input_tokens": sum(len(m.content.split()) for m in messages),
+        }))
+        result = await self.provider.complete(messages, **kwargs)
+        self.bus.emit(TraceEvent(event_type="llm_call", data={
+            "model": result.model,
+            "input_tokens": result.input_tokens,
+            "output_tokens": result.output_tokens,
+            "cost_usd": result.cost_usd,
+            "latency_ms": result.latency_ms,
+        }))
+        return result
+```
+
+## Integration with pyagent-blueprint
+
+In a blueprint YAML, providers are declared as named entries and referenced by agents:
+
+```yaml
+providers:
+  primary:
+    model: gpt-4o
+  fallback:
+    model: gpt-4o-mini
+  reasoning:
+    model: o3-mini
+
+agents:
+  classifier:
+    prompt: "Classify the input"
+    provider: primary        # ← references named provider
+  analyst:
+    prompt: "Deep analysis"
+    provider: reasoning      # ← uses reasoning model for hard tasks
+```
+
+The `BlueprintCompiler` resolves these references through the `ProviderRegistry`, creating `ProviderProtocol` instances for each named provider.
+
+## Integration with pyagent-router
+
+The `ModelSelector` from `pyagent-router` can work alongside providers to dynamically select the cheapest model for each task:
+
+```python
+from pyagent_router import ModelSelector
+from pyagent_providers import ProviderRegistry
+
+selector = ModelSelector()
+registry = ProviderRegistry()
+
+# Register multiple providers
+registry.register("gpt-4o", MyOpenAIProvider(model="gpt-4o"))
+registry.register("gpt-4o-mini", MyOpenAIProvider(model="gpt-4o-mini"))
+
+# Dynamic selection based on task difficulty
+selection = selector.select(task)
+provider = registry.get(selection.model)
+result = await provider.complete(messages)
+```
+
 ## Full Documentation
 
-See [pyagent.dev](https://pyagent.dev) for full API reference and integration guides.
+See [pyagent.org](https://pyagent.org) for full API reference and integration guides.

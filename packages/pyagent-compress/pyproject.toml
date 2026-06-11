@@ -4,11 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyagent-compress"
-version = "0.2.0"
+version = "0.1.0"
 description = "Inter-agent message compression and token budget management for multi-agent LLM systems"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
+authors = [{name = "PyAgent Team", email = "team@pyagent.org"}]
 keywords = ["agents", "compression", "LLM", "tokens", "efficiency"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -20,17 +21,12 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Typing :: Typed",
 ]
-authors = [
-    {name = "PyAgent Contributors"},
-]
 dependencies = ["pyagent-patterns>=0.1.0"]
 
 [project.urls]
-Homepage      = "https://github.com/pyagent-core/pyagent"
-Source        = "https://github.com/pyagent-core/pyagent/tree/main/packages/pyagent-compress"
-Documentation = "https://pyagent-core.github.io/pyagent"
-Issues        = "https://github.com/pyagent-core/pyagent/issues"
-Changelog     = "https://github.com/pyagent-core/pyagent/blob/main/CHANGELOG.md"
+Homepage = "https://pyagent.org"
+Repository = "https://github.com/pyagent-core/pyagent"
+Documentation = "https://pyagent.org"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.5", "mypy>=1.10"]

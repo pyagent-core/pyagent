@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 import uuid
 from abc import ABC, abstractmethod
@@ -12,6 +13,8 @@ from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
+
+logger = logging.getLogger(__name__)
 
 
 class Role(StrEnum):
@@ -150,6 +153,12 @@ class Agent:
         llm: The LLM callable to use for this agent.
         system_prompt: Optional system prompt prepended to every call.
         description: Description of the agent's purpose (for routing/selection).
+
+    Optional hooks (set via setter methods — no constructor change):
+        _trace_bus: Emit agent_start/agent_end trace events.
+        _context_ledger: Read context before LLM call; write output after.
+        _compressor: Compress agent output before returning.
+        _cost_tracker: Record cost per LLM call.
     """
 
     name: str
@@ -157,13 +166,152 @@ class Agent:
     system_prompt: str = ""
     description: str = ""
 
+    def __post_init__(self) -> None:
+        self._trace_bus: Any = None
+        self._context_ledger: Any = None
+        self._compressor: Any = None
+        self._cost_tracker: Any = None
+
+    # -- Hook setters (return self for chaining) --
+
+    def set_trace_bus(self, bus: Any) -> Agent:
+        """Attach a TraceEventBus — emits agent_start/agent_end events on run()."""
+        self._trace_bus = bus
+        return self
+
+    def set_context(self, ledger: Any) -> Agent:
+        """Attach a ContextLedger — reads context before LLM, writes output after."""
+        self._context_ledger = ledger
+        return self
+
+    def set_compressor(self, compressor: Any) -> Agent:
+        """Attach a MessageCompressor — compresses output before returning."""
+        self._compressor = compressor
+        return self
+
+    def set_cost_tracker(self, tracker: Any) -> Agent:
+        """Attach a CostTracker — records cost after each LLM call."""
+        self._cost_tracker = tracker
+        return self
+
     async def run(self, messages: list[Message]) -> Message:
-        """Send messages to the LLM and return an assistant message."""
+        """Send messages to the LLM and return an assistant message.
+
+        When hooks are wired the execution order is:
+        1. Emit ``agent_start`` trace event
+        2. Prepend context from ledger as messages
+        3. Call LLM
+        4. Record cost
+        5. Compress output
+        6. Write result to context ledger
+        7. Emit ``agent_end`` trace event with timing/tokens
+        """
+        start = time.perf_counter()
+
+        # 1. Trace: agent_start
+        if self._trace_bus is not None:
+            self._emit_trace("agent_start", {})
+
+        # 2. Context: prepend context messages
         call_messages = list(messages)
+        if self._context_ledger is not None:
+            try:
+                ctx_messages = self._context_ledger.to_messages(max_tokens=None)
+                if ctx_messages:
+                    call_messages = ctx_messages + call_messages
+            except Exception:
+                logger.debug("Agent '%s': failed to read context ledger", self.name)
+
         if self.system_prompt:
             call_messages.insert(0, Message.system(self.system_prompt))
+
+        # 3. Call LLM
         content = await self.llm(call_messages)
-        return Message.assistant(content, name=self.name)
+
+        # 4. Cost tracking
+        if self._cost_tracker is not None:
+            try:
+                input_tokens = sum(len(m.content) for m in call_messages) // 4
+                output_tokens = len(content) // 4
+                self._cost_tracker.record(
+                    pattern_type="agent",
+                    agent_name=self.name,
+                    model=getattr(self.llm, "_model", "unknown"),
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    cost_usd=0.0,  # real cost comes from provider
+                )
+            except Exception:
+                logger.debug("Agent '%s': failed to record cost", self.name)
+
+        # 5. Compression
+        compression_meta: dict[str, Any] = {}
+        if self._compressor is not None:
+            try:
+                compressed = self._compressor.compress(content)
+                compression_meta = {
+                    "compressed": True,
+                    "original_tokens": compressed.original_tokens,
+                    "compressed_tokens": compressed.compressed_tokens,
+                    "savings_pct": compressed.savings_pct,
+                }
+                content = compressed.compressed
+                # Emit compression trace event
+                if self._trace_bus is not None and compressed.savings_pct > 0:
+                    self._emit_trace("compression", {
+                        "original_tokens": compressed.original_tokens,
+                        "compressed_tokens": compressed.compressed_tokens,
+                        "savings_pct": compressed.savings_pct,
+                    })
+            except Exception:
+                logger.debug("Agent '%s': compression failed, using original", self.name)
+
+        # 6. Context: write output
+        if self._context_ledger is not None:
+            try:
+                from pyagent_context.item import ContextItem, TrustLevel
+                self._context_ledger.append(
+                    ContextItem(
+                        content=content,
+                        source=self.name,
+                        trust_level=TrustLevel.INFERRED,
+                    )
+                )
+                # Emit context_update trace event
+                if self._trace_bus is not None:
+                    self._emit_trace("context_update", {
+                        "source": self.name,
+                        "tokens": len(content) // 4,
+                    })
+            except Exception:
+                logger.debug("Agent '%s': failed to write context", self.name)
+
+        duration = time.perf_counter() - start
+
+        # 7. Trace: agent_end
+        if self._trace_bus is not None:
+            self._emit_trace("agent_end", {
+                "duration_seconds": duration,
+                "output_tokens": len(content) // 4,
+                **compression_meta,
+            })
+
+        return Message.assistant(content, name=self.name, metadata=compression_meta)
+
+    def _emit_trace(self, event_type: str, payload: dict[str, Any]) -> None:
+        """Emit a trace event to the attached bus (no-op if bus is None)."""
+        try:
+            from pyagent_trace.events import TraceEvent
+            self._trace_bus.emit(
+                TraceEvent(
+                    timestamp=time.time(),
+                    event_type=event_type,
+                    agent_name=self.name,
+                    payload=payload,
+                )
+            )
+        except Exception:
+            pass  # trace must never break agent execution
 
 
 class Pattern(ABC):
@@ -171,7 +319,17 @@ class Pattern(ABC):
 
     Subclasses must implement `_execute`. The `run` method handles timing,
     context creation, and metadata collection.
+
+    Optional hooks:
+        _trace_bus: Emit pattern_start/pattern_end trace events.
     """
+
+    _trace_bus: Any = None
+
+    def set_trace_bus(self, bus: Any) -> Pattern:
+        """Attach a TraceEventBus — emits pattern_start/pattern_end on run()."""
+        self._trace_bus = bus
+        return self
 
     @property
     @abstractmethod
@@ -192,6 +350,10 @@ class Pattern(ABC):
         ctx = context or Context(task=task)
         ctx.messages.append(Message.user(task))
 
+        # Trace: pattern_start
+        if self._trace_bus is not None:
+            self._emit_pattern_trace("pattern_start", {})
+
         start = time.perf_counter()
         result = await self._execute(ctx)
         result.duration_seconds = time.perf_counter() - start
@@ -201,7 +363,30 @@ class Pattern(ABC):
         total_chars = sum(len(m.content) for m in result.messages)
         result.token_estimate = total_chars // 4
 
+        # Trace: pattern_end
+        if self._trace_bus is not None:
+            self._emit_pattern_trace("pattern_end", {
+                "duration_seconds": result.duration_seconds,
+                "token_estimate": result.token_estimate,
+                "output_length": len(result.output),
+            })
+
         return result
+
+    def _emit_pattern_trace(self, event_type: str, payload: dict[str, Any]) -> None:
+        """Emit a trace event to the attached bus."""
+        try:
+            from pyagent_trace.events import TraceEvent
+            self._trace_bus.emit(
+                TraceEvent(
+                    timestamp=time.time(),
+                    event_type=event_type,
+                    pattern_type=self.pattern_type,
+                    payload=payload,
+                )
+            )
+        except Exception:
+            pass  # trace must never break pattern execution
 
     @abstractmethod
     async def _execute(self, ctx: Context) -> Result:

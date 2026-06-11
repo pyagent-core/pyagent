@@ -3,7 +3,7 @@
 Agents don't communicate directly — they read from and write to a shared
 blackboard. Each agent specializes in reading certain keys and writing others.
 
-LLM calls: N agents × rounds
+LLM calls: N agents x rounds
 """
 
 from __future__ import annotations

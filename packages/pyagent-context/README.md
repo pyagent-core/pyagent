@@ -250,6 +250,200 @@ context_messages = ledger.to_messages(max_tokens=2000)
 ledger.add(result.output, "pipeline", TrustLevel.INFERRED)
 ```
 
+## Architecture — Three-Tier Memory Model
+
+```mermaid
+flowchart TD
+    subgraph Agent Interaction
+        A1[Agent 1] -->|append output| CL[ContextLedger]
+        CL -->|to_messages budget| A2[Agent 2 input]
+    end
+
+    subgraph Three-Tier Memory
+        CL --> WM[WorkingMemory — bounded deque, current turn]
+        CL --> SM[SessionMemory — JSON/SQLite, cross-turn persistence]
+        CL --> SEM[SemanticMemory — TF-IDF similarity, long-term recall]
+    end
+
+    subgraph Processing
+        CL --> CC[ContextCompressor — policy-based trimming]
+        CL --> TR[TrustAwareRetriever — ranked retrieval]
+        CL --> CR[ContextRedactor — sensitivity filtering]
+        CL --> LC[ContextLifecycle — expiry, decay, consolidation]
+    end
+```
+
+### Memory Tier Details
+
+| Tier | Class | Storage | Capacity | Eviction | Use Case |
+|------|-------|---------|----------|----------|----------|
+| **Working** | `WorkingMemory` | In-memory deque | `max_items` or `max_tokens` | Oldest-first when full | Current conversation turn |
+| **Session** | `SessionMemory` | JSON file or SQLite | Unlimited | Manual clear | Cross-turn persistence (multi-step workflows) |
+| **Semantic** | `InMemorySemanticStore` | In-memory TF-IDF index | Unlimited | Manual | Long-term recall via similarity search |
+
+### WorkingMemory Eviction
+
+When `WorkingMemory` reaches its `max_items` or `max_tokens` limit, the oldest items are evicted first. Utilization metrics are available:
+
+```python
+from pyagent_context import WorkingMemory
+
+wm = WorkingMemory(max_items=20, max_tokens=8000)
+wm.add(item)
+
+print(wm.utilization)     # 0.05 → 5% of max_items used
+print(wm.token_usage)     # current token estimate total
+print(len(wm))            # number of items in memory
+wm.clear()                # flush all items
+```
+
+### SessionMemory Backends
+
+```python
+from pyagent_context import SessionMemory
+
+# JSON backend — simple file-based persistence
+sm_json = SessionMemory(backend="json", path="session.json")
+
+# SQLite backend — more robust, concurrent-safe
+sm_sqlite = SessionMemory(backend="sqlite", path="session.db")
+
+sm_json.add(item)
+sm_json.save()            # persist to disk
+sm_json.load()            # reload from disk
+items = sm_json.retrieve(query="billing", top_k=5)
+```
+
+### SemanticMemory — TF-IDF Similarity Search
+
+The `InMemorySemanticStore` uses TF-IDF vectorization for similarity-based retrieval across the full context history:
+
+```python
+from pyagent_context import InMemorySemanticStore
+
+store = InMemorySemanticStore()
+store.add(item1)
+store.add(item2)
+store.add(item3)
+
+# Retrieve items most similar to the query
+results = store.search("billing question", top_k=3)
+for item, score in results:
+    print(f"[{score:.2f}] {item.content[:80]}...")
+```
+
+## ContextLedger — Token-Budgeted Message Conversion
+
+The `ContextLedger` is an append-only log that converts stored `ContextItem` objects into LLM-compatible messages with automatic token budgeting:
+
+```python
+from pyagent_context import ContextLedger, ContextItem, TrustLevel
+
+ledger = ContextLedger()
+ledger.append(ContextItem(content="Revenue was $25.2B", source="database", trust=TrustLevel.VERIFIED))
+ledger.append(ContextItem(content="Margin expanded to 17%", source="agent_1", trust=TrustLevel.INFERRED))
+
+# Convert to messages with a token budget
+# Higher-trust items are prioritized when budget is tight
+messages = ledger.to_messages(budget=4000)
+print(ledger.total_tokens())  # total token estimate across all items
+```
+
+## TrustAwareRetriever — Composite Scoring
+
+The retriever ranks items using a composite score of three signals:
+
+| Signal | Weight | Description |
+|--------|--------|-------------|
+| **Trust** | Configurable | `VERIFIED` > `INFERRED` > `USER_PROVIDED` > `UNVERIFIED` |
+| **Recency** | Half-life decay | Newer items score higher; decay rate is configurable |
+| **Relevance** | Keyword overlap | TF-IDF similarity between query and item content |
+
+```python
+from pyagent_context import TrustAwareRetriever
+
+retriever = TrustAwareRetriever(
+    trust_weight=0.4,
+    recency_weight=0.3,
+    relevance_weight=0.3,
+    half_life_hours=24.0,
+)
+results = retriever.retrieve(items, query="billing issue", top_k=5)
+```
+
+## Integration with pyagent-patterns
+
+Context flows between agents via the `ContextLedger`:
+
+```python
+from pyagent_patterns.base import Agent, MockLLM
+from pyagent_patterns.orchestration import Pipeline
+from pyagent_context import ContextLedger, ContextItem, TrustLevel
+
+ledger = ContextLedger()
+
+# Before agent execution: read context to prepend as system/user messages
+context_messages = ledger.to_messages(budget=4000)
+
+# After agent execution: write output as a new context item
+ledger.append(ContextItem(
+    content=result.output,
+    source="analyst",
+    trust=TrustLevel.INFERRED,
+))
+```
+
+In the hook-based integration model, agents automatically read from and write to the ledger when one is attached via `set_context()`.
+
+## Integration with pyagent-compress
+
+Two levels of compression work together:
+
+| Layer | Package | What It Compresses | How |
+|-------|---------|-------------------|-----|
+| **Message-level** | `pyagent-compress` | Individual agent outputs | Extractive: remove filler, rank sentences, keep top-N |
+| **Context-level** | `pyagent-context` | Accumulated context items | Policy-based: FIFO, semantic lossless, sawtooth |
+
+```python
+from pyagent_context import ContextCompressor, ContextLedger
+from pyagent_compress import MessageCompressor
+
+# Context compression: decide which items to keep
+compressor = ContextCompressor(policy="semantic_lossless")
+trimmed = compressor.compress(ledger.items(), target_tokens=4000)
+
+# Message compression: reduce verbosity of individual outputs
+msg_compressor = MessageCompressor(target_ratio=0.5)
+compressed = msg_compressor.compress(agent_output)
+```
+
+## Integration with pyagent-trace
+
+Context operations can be tracked via the `TraceEventBus`:
+
+- **Ledger writes** — When agents append items, trace events capture the source, trust level, and token count
+- **Memory tier transitions** — Working → session → semantic migrations emit trace events
+- **Retrieval** — Trust-aware retrieval results (scores, items selected) are logged for debugging
+- **Compression** — Context compression events show which items were kept/dropped and the token savings
+
+## Integration with pyagent-blueprint
+
+The `context` section of a blueprint YAML maps directly to context package configuration:
+
+```yaml
+context:
+  memory:
+    backend: sqlite
+    working_max_tokens: 128000
+  compression:
+    policy: semantic_lossless
+    target_ratio: 0.6
+  redaction:
+    max_sensitivity: internal
+```
+
+After `BlueprintCompiler.compile()`, these settings are available on the `RuntimeGraph` for the consumer to wire into agents.
+
 ## Full Documentation
 
-See [pyagent.dev](https://pyagent.dev) for full API reference and integration guides.
+See [pyagent.org](https://pyagent.org) for full API reference and integration guides.

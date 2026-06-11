@@ -22,6 +22,8 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    "pyagent-patterns>=0.1.0",
+    "pyagent-router>=0.1.0",
     "pyagent-providers>=0.1.0",
     "pyagent-context>=0.1.0",
     "pydantic>=2.7",

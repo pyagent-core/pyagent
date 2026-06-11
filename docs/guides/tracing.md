@@ -1,313 +1,238 @@
 # Tracing Guide
 
-**pyagent-trace** instruments every pattern execution with OpenTelemetry spans — giving you cost tracking, latency histograms, record/replay debugging, and a direct feed into Studio's trace explorer.
+**pyagent-trace** provides pattern-aware OpenTelemetry spans for full observability.
 
-```bash
-pip install pyagent-trace
-pip install pyagent-trace[langfuse]   # production LLM observability
+## Architecture
+
+```mermaid
+flowchart LR
+    P[Pattern.run] --> S[Span Emitter]
+    S --> OT[OpenTelemetry SDK]
+    OT --> B1[Jaeger]
+    OT --> B2[Langfuse]
+    OT --> B3[Grafana Tempo]
+    OT --> B4[Datadog]
+
+    subgraph Span Attributes
+        PT[pattern.type]
+        AR[agent.name]
+        CT[cost.total_usd]
+        DR[exec.duration_ms]
+    end
 ```
 
----
+## Quick Start
 
-## How Tracing Works
-
-Every pattern run emits a tree of OTel spans:
-
-```
-pyagent.pattern.pipeline  (root span)
-├── pyagent.agent.extractor     ← one child span per agent call
-├── pyagent.agent.fact_checker
-└── pyagent.agent.writer
-```
-
-Each span carries structured attributes — cost, tokens, model, duration — so you can slice and aggregate in any OTel-compatible backend.
-
----
-
-## Quickstart — Decorator Approach
+### Decorators (Simplest)
 
 ```python
 from pyagent_trace import traced_pattern, traced_agent
-from pyagent_patterns.base import Agent
+from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import Pipeline
-from pyagent_providers import AnthropicLLM, OpenAILLM
-import asyncio
 
+# Auto-emit spans for every pattern.run()
 @traced_pattern
 class TracedPipeline(Pipeline):
     pass
 
-pipeline = TracedPipeline(stages=[
-    traced_agent(Agent("extractor", AnthropicLLM("claude-haiku-3-5-20241022"),
-                       system_prompt="Extract key claims and figures.")),
-    traced_agent(Agent("analyst",   OpenAILLM("gpt-4o-mini"),
-                       system_prompt="Identify risk factors.")),
-    traced_agent(Agent("writer",    AnthropicLLM("claude-sonnet-4-20250514"),
-                       system_prompt="Write an executive brief.")),
-])
-
-result = asyncio.run(pipeline.run("Tesla Q3 2025 earnings report..."))
-print(result.output)
-# Spans are automatically emitted to the configured OTel backend
+# Or wrap individual agents
+agent = traced_agent(Agent("my_agent", my_llm))
 ```
 
----
-
-## Backend Setup
-
-### Jaeger — local development
-
-```bash
-docker run -d --name jaeger \
-  -p 6831:6831/udp -p 16686:16686 \
-  jaegertracing/all-in-one:latest
-```
-
-```python
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-
-provider = TracerProvider()
-provider.add_span_processor(
-    BatchSpanProcessor(JaegerExporter(agent_host_name="localhost", agent_port=6831))
-)
-trace.set_tracer_provider(provider)
-# Visit http://localhost:16686 → search service "pyagent"
-```
-
-### Langfuse — production LLM observability
-
-```bash
-pip install pyagent-trace[langfuse]
-```
-
-```python
-from pyagent_trace.exporters.langfuse import configure_langfuse
-
-configure_langfuse(
-    public_key="pk-lf-...",
-    secret_key="sk-lf-...",
-    host="https://cloud.langfuse.com",
-)
-# Every LLM call: prompt, response, tokens, cost → Langfuse dashboard
-```
-
-### Grafana Tempo (OTLP)
-
-```python
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-
-provider.add_span_processor(
-    BatchSpanProcessor(OTLPSpanExporter(endpoint="http://tempo:4317"))
-)
-# Connect Grafana datasource to Tempo for trace exploration + Prometheus metrics
-```
-
-### Datadog APM
-
-```bash
-pip install pyagent-trace[datadog]
-```
-
-```python
-from pyagent_trace.exporters.datadog import configure_datadog
-configure_datadog(service="my-agent-service", env="production")
-```
-
----
-
-## PatternSpanEmitter — Manual Span Control
-
-For patterns that need custom span attributes or error handling.
+### Manual Span Control
 
 ```python
 from pyagent_trace import PatternSpanEmitter
-from pyagent_patterns.resolution import Debate
-from pyagent_providers import GeminiLLM, AnthropicLLM
-from pyagent_patterns.base import Agent
-import asyncio
 
-debate = Debate(
-    debaters=[Agent("bull", GeminiLLM("gemini-2.5-flash"), system_prompt="Argue the bull case."),
-              Agent("bear", GeminiLLM("gemini-2.5-flash"), system_prompt="Argue the bear case.")],
-    judge=Agent("judge", AnthropicLLM("claude-sonnet-4-20250514"), system_prompt="Render a verdict."),
-    rounds=2,
-)
-
-emitter = PatternSpanEmitter(service_name="investment-analysis")
-
-async def run_traced_debate():
-    span = emitter.pattern_span("debate", attributes={
-        "rounds": 2,
-        "topic": "nvidia_investment",
-        "portfolio_id": "pf-001",
-    })
-    try:
-        result = await debate.run("Should we buy Nvidia at $3.2T market cap?")
-        emitter.set_pattern_result(
-            span,
-            output_len=len(result.output),
-            rounds=result.metadata.get("rounds", 2),
-            cost_estimate=result.cost_estimate,
-        )
-        return result
-    except Exception as exc:
-        emitter.record_error(span, exc)
-        raise
-    finally:
-        span.end()
-
-result = asyncio.run(run_traced_debate())
+emitter = PatternSpanEmitter()
+span = emitter.pattern_span("debate", {"rounds": 3})
+try:
+    result = await pattern.run(task)
+    emitter.set_pattern_result(span, len(result.output), rounds=3, cost_estimate=0.012)
+finally:
+    span.end()
 ```
 
----
-
-## CostTracker
-
-Track costs across a full session — aggregate by pattern, model, or agent.
+## Cost Tracking
 
 ```python
 from pyagent_trace import CostTracker
 
 tracker = CostTracker()
-
-# Wire into any pattern manually, or use traced_agent for automatic recording
-tracker.record("pipeline", "extractor", "claude-haiku-3-5-20241022",
-               input_tokens=180, output_tokens=42, cost_usd=0.000060)
-tracker.record("pipeline", "analyst",   "gpt-4o-mini",
-               input_tokens=60,  output_tokens=85, cost_usd=0.000090)
-tracker.record("pipeline", "writer",    "claude-sonnet-4-20250514",
-               input_tokens=145, output_tokens=220, cost_usd=0.008400)
+tracker.record("debate", "bull_agent", "gpt-4o", input_tokens=500, output_tokens=200, cost_usd=0.003)
+tracker.record("debate", "bear_agent", "gpt-4o-mini", input_tokens=500, output_tokens=200, cost_usd=0.0004)
+tracker.record("debate", "judge", "gpt-4o", input_tokens=1000, output_tokens=300, cost_usd=0.0055)
 
 print(f"Total: ${tracker.total_cost:.4f}")
-
-print("By pattern:", tracker.by_pattern())
-# → {"pipeline": 0.008550}
-
-print("By model:", tracker.by_model())
-# → {"claude-haiku-3-5-20241022": 0.000060,
-#    "gpt-4o-mini": 0.000090,
-#    "claude-sonnet-4-20250514": 0.008400}
-
-print("By agent:", tracker.by_agent())
-# → {"extractor": 0.000060, "analyst": 0.000090, "writer": 0.008400}
-
-# Budget projections
-runs_per_day = 500
-print(f"Daily cost at {runs_per_day} runs: ${tracker.total_cost * runs_per_day:.2f}")
-print(f"Monthly: ${tracker.total_cost * runs_per_day * 30:.2f}")
+print(f"By pattern: {tracker.by_pattern()}")
+print(f"By model: {tracker.by_model()}")
 ```
 
----
-
 ## Record & Replay
-
-Record LLM interactions to JSONL — replay them in tests and CI without hitting APIs.
 
 ```python
 from pyagent_trace.recorder import Recorder
 
-# --- Record a production run ---
+# Record
 recorder = Recorder()
-recorder.start("pipeline")
-recorder.record_llm_call(
-    agent_name="extractor",
-    messages=[{"role": "user", "content": "Tesla Q3 2025 report..."}],
-    response="Revenue $25.2B (+8% YoY), gross margin 17.1%",
-    model="claude-haiku-3-5-20241022",
-    input_tokens=180, output_tokens=42, cost_usd=0.000060,
-)
-recorder.record_llm_call(
-    agent_name="writer",
-    messages=[{"role": "user", "content": "Revenue $25.2B..."}],
-    response="Tesla Q3: Revenue beat consensus by 2%...",
-    model="claude-sonnet-4-20250514",
-    input_tokens=145, output_tokens=220, cost_usd=0.008400,
-)
-recorder.end("Tesla Q3: Revenue beat consensus by 2%...")
-recorder.save("traces/pipeline_run_001.jsonl")
-```
+recorder.start("debate")
+recorder.record_llm_call("bull", messages, response_text)
+recorder.end(result.output)
+recorder.save("traces/debate_run_001.jsonl")
 
-```python
-# --- Replay in tests (zero API cost) ---
-from pyagent_trace.recorder import Recorder, ReplayLLM
-
-entries = Recorder.load("traces/pipeline_run_001.jsonl")
+# Replay / Debug
+entries = Recorder.load("traces/debate_run_001.jsonl")
 for entry in entries:
-    print(f"[{entry.event_type}] {entry.agent_name}: {entry.response[:60]}...")
-
-# Use ReplayLLM to re-run the pipeline deterministically
-replay_extractor = ReplayLLM.from_recording("traces/pipeline_run_001.jsonl", "extractor")
-replay_writer    = ReplayLLM.from_recording("traces/pipeline_run_001.jsonl", "writer")
-
-import asyncio
-from pyagent_patterns.orchestration import Pipeline
-from pyagent_patterns.base import Agent
-
-replay_pipeline = Pipeline(stages=[
-    Agent("extractor", replay_extractor, system_prompt="Extract facts."),
-    Agent("writer",    replay_writer,    system_prompt="Write brief."),
-])
-result = asyncio.run(replay_pipeline.run("Tesla Q3 2025..."))
-assert "Revenue beat consensus" in result.output   # deterministic test
+    print(f"[{entry.event_type}] {entry.agent_name}: {entry.response[:80]}...")
 ```
 
----
+## Trace Event Bus & Exporters
 
-## Integration with pyagent-studio
+`pyagent-trace` provides a portal-agnostic `TraceExporter` protocol and a pub/sub `TraceEventBus` for streaming trace events to multiple backends simultaneously.
 
-Recorded `.jsonl` files load directly into Studio's visual trace explorer:
-
-```bash
-# View traces in Studio dashboard
-pyagent dashboard --trace traces/pipeline_run_001.jsonl
-```
-
-Or query programmatically via TraceService:
+### TraceEventBus
 
 ```python
-from pyagent_studio.services.trace_service import TraceService
+from pyagent_trace.events import TraceEvent, TraceEventBus
 
-svc = TraceService()
-spans = svc.load("traces/pipeline_run_001.jsonl")
+bus = TraceEventBus()
 
-print(f"Spans: {len(spans)}")
-for span in spans:
-    print(f"  [{span.event_type}] {span.agent_name}: {span.duration_ms:.0f}ms")
+# Subscribe to all events
+bus.subscribe(lambda e: print(e.event_type))
 
-# Analyse costs across many runs
-cost_spans = svc.query(event_type="llm_call")
-total_tokens = sum(s.tokens for s in cost_spans)
-print(f"Total tokens across all recorded runs: {total_tokens:,}")
+# Subscribe to specific event types
+bus.subscribe_filter({"llm_call", "error"}, lambda e: handle_error(e))
 ```
 
----
+### Built-in Exporters
 
-## Span Attribute Reference
+| Exporter | Backend | Install |
+|----------|---------|---------|
+| `ConsoleExporter` | stdout | built-in |
+| `JsonlExporter` | JSONL file | built-in |
+| `OTelExporter` | Jaeger, Tempo, Datadog, Honeycomb | `pip install opentelemetry-api opentelemetry-sdk` |
+| `LangfuseExporter` | Langfuse | `pip install langfuse` |
+
+```python
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.exporters.console import ConsoleExporter
+from pyagent_trace.exporters.jsonl import JsonlExporter
+from pyagent_trace.exporters.langfuse import LangfuseExporter
+
+bus = TraceEventBus()
+
+# Fan-out to multiple backends simultaneously
+bus.subscribe(ConsoleExporter().export_event)
+bus.subscribe(JsonlExporter("traces/run.jsonl").export_event)
+bus.subscribe(LangfuseExporter().export_event)  # uses LANGFUSE_* env vars
+```
+
+### Custom Exporters
+
+Implement the `TraceExporter` protocol:
+
+```python
+from pyagent_trace.exporters.base import TraceExporter
+from pyagent_trace.events import TraceEvent
+
+class MyExporter(TraceExporter):
+    def export_event(self, event: TraceEvent) -> None:
+        # Send to your backend
+        ...
+
+    def flush(self) -> None: ...
+    def shutdown(self) -> None: ...
+```
+
+### Wiring Producers
+
+`Recorder` and `CostTracker` accept an optional `event_bus` parameter:
+
+```python
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.recorder import Recorder
+from pyagent_trace.cost import CostTracker
+
+bus = TraceEventBus()
+recorder = Recorder(event_bus=bus)
+tracker = CostTracker(event_bus=bus)
+```
+
+## Hook-Based Tracing (Recommended)
+
+The simplest way to add tracing is via the built-in hooks on `Agent` and `Pattern`. No decorators or subclassing required.
+
+### Agent Trace Hook
+
+```python
+from pyagent_patterns.base import Agent, MockLLM
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.exporters.console import ConsoleExporter
+
+bus = TraceEventBus()
+bus.subscribe(ConsoleExporter().export_event)
+
+agent = Agent("analyst", MockLLM(responses=["Revenue grew 25%"]))
+agent.set_trace_bus(bus)  # emits agent_start + agent_end
+
+result = await agent.run("Analyse revenue trends")
+# Console output:
+#   [agent_start] analyst
+#   [agent_end]   analyst  duration=0.002s  tokens=12
+```
+
+### Pattern Trace Hook
+
+```python
+from pyagent_patterns.orchestration import Pipeline
+
+pipeline = Pipeline(stages=[agent_a, agent_b])
+pipeline.set_trace_bus(bus)  # emits pattern_start + pattern_end
+
+result = await pipeline.run("Process document")
+# Console output:
+#   [pattern_start] pipeline
+#   [agent_start]   agent_a
+#   [agent_end]     agent_a
+#   [agent_start]   agent_b
+#   [agent_end]     agent_b
+#   [pattern_end]   pipeline  duration=0.005s
+```
+
+### TracedProvider
+
+Wrap any `ProviderProtocol` to emit trace events on every LLM call:
+
+```python
+from pyagent_providers import TracedProvider
+
+traced = TracedProvider(original_provider, event_bus=bus)
+agent = Agent("analyst", llm=traced)
+# Emits: provider_call_start, provider_call_end (or provider_call_error)
+```
+
+### Wire All at Once via RuntimeGraph
+
+```python
+from pyagent_blueprint import load_blueprint, BlueprintCompiler
+
+graph = BlueprintCompiler().compile(load_blueprint("blueprint.yaml"))
+graph.wire_trace(bus)  # sets trace_bus on ALL patterns + agents
+```
+
+→ See the full [Hooks Guide](hooks.md) for all four hook types.
+
+## Custom Attributes
+
+All attributes are namespaced under `pyagent.*`:
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
-| `pyagent.pattern.type` | string | Pattern name: `"pipeline"`, `"debate"`, etc. |
-| `pyagent.pattern.rounds` | int | Rounds executed (reflection, debate patterns) |
-| `pyagent.agent.name` | string | Agent identifier |
-| `pyagent.agent.model` | string | LLM model used |
-| `pyagent.cost.input_tokens` | int | Prompt token count |
-| `pyagent.cost.output_tokens` | int | Completion token count |
-| `pyagent.cost.total_usd` | float | Estimated cost (USD) |
-| `pyagent.exec.duration_ms` | float | Wall-clock time (ms) |
-| `pyagent.router.difficulty` | int | Task difficulty 1–10 from pyagent-router |
-| `pyagent.router.selected_model` | string | Model chosen by router |
-| `pyagent.compress.savings_pct` | float | Compression savings 0–1 |
-| `pyagent.early_stop` | bool | Pattern stopped before max rounds |
-| `pyagent.route_key` | string | Selected route in Supervisor pattern |
-
----
-
-## See Also
-
-- [Trace Package](../packages/trace.md) — full API and backend setup reference
-- [Studio Package](../packages/studio.md) — visual trace explorer, cost dashboards
-- [Compression Guide](compression.md) — `pyagent.compress.savings_pct` attribute
+| `pyagent.pattern.type` | string | Pattern name (e.g., "debate") |
+| `pyagent.pattern.rounds` | int | Number of rounds executed |
+| `pyagent.agent.name` | string | Agent name |
+| `pyagent.router.difficulty` | int | Task difficulty 1-10 |
+| `pyagent.router.selected_model` | string | Routed model name |
+| `pyagent.compress.savings_pct` | float | Compression savings 0-1 |
+| `pyagent.cost.total_usd` | float | Total cost in USD |
+| `pyagent.exec.duration_ms` | float | Execution time in ms |

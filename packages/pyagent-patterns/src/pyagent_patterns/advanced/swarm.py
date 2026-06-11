@@ -3,7 +3,7 @@
 Each agent operates independently with simple local rules.
 Global behavior emerges from agent interactions. No central orchestrator.
 
-LLM calls: N agents × rounds
+LLM calls: N agents x rounds
 """
 
 from __future__ import annotations
@@ -76,7 +76,7 @@ class Swarm(Pattern):
                 result = await agent.run([prompt])
                 return agent.name, result.content
 
-            update_tasks = [_update_agent(agent, states) for agent in self._agents]
+            update_tasks = [_update_agent(agent) for agent in self._agents]
             updates = await asyncio.gather(*update_tasks)
             for name, content in updates:
                 new_states[name] = content

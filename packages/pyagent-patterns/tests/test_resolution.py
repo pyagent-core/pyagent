@@ -67,7 +67,7 @@ async def test_debate_multi_round():
     )
     result = await pattern.run("Should we buy AAPL?")
     assert result.metadata["rounds"] == 2
-    assert len(result.metadata["debate_log"]) == 4  # 2 debaters × 2 rounds
+    assert len(result.metadata["debate_log"]) == 4  # 2 debaters x 2 rounds
     assert "BUY" in result.output
 
 

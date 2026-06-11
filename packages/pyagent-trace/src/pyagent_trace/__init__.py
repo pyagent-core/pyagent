@@ -2,6 +2,8 @@
 
 from pyagent_trace.attributes import PyAgentAttributes
 from pyagent_trace.cost import CostTracker
+from pyagent_trace.events import TraceEvent, TraceEventBus
+from pyagent_trace.exporters.base import TraceExporter
 from pyagent_trace.recorder import Recorder
 
 
@@ -27,6 +29,9 @@ __all__ = [
     "PatternSpanEmitter",
     "PyAgentAttributes",
     "Recorder",
+    "TraceEvent",
+    "TraceEventBus",
+    "TraceExporter",
     "traced_agent",
     "traced_pattern",
 ]

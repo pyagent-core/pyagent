@@ -1,6 +1,6 @@
 """TokenBudget: enforce per-agent and per-workflow token limits.
 
-Tracks token consumption across a workflow and raises BudgetExceeded
+Tracks token consumption across a workflow and raises BudgetExceededError
 when limits are hit, enabling graceful degradation.
 """
 
@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 
-class BudgetExceeded(Exception):
+class BudgetExceededError(Exception):
     """Raised when a token budget is exceeded."""
 
     def __init__(self, agent: str, used: int, limit: int) -> None:
@@ -40,11 +40,11 @@ class AgentBudget:
 
         Args:
             tokens: Number of tokens consumed.
-            strict: If True, raises BudgetExceeded. If False, just tracks.
+            strict: If True, raises BudgetExceededError. If False, just tracks.
         """
         self.used += tokens
         if strict and self.used > self.limit:
-            raise BudgetExceeded(self.name, self.used, self.limit)
+            raise BudgetExceededError(self.name, self.used, self.limit)
 
 
 @dataclass
@@ -54,7 +54,7 @@ class TokenBudget:
     Args:
         workflow_limit: Total token limit across all agents.
         per_agent_limit: Default per-agent token limit.
-        strict: If True, raises BudgetExceeded on limit violations.
+        strict: If True, raises BudgetExceededError on limit violations.
     """
 
     workflow_limit: int = 100_000
@@ -81,7 +81,7 @@ class TokenBudget:
         self._total_used += tokens
 
         if self.strict and self._total_used > self.workflow_limit:
-            raise BudgetExceeded("workflow", self._total_used, self.workflow_limit)
+            raise BudgetExceededError("workflow", self._total_used, self.workflow_limit)
 
     def remaining(self, agent_name: str | None = None) -> int:
         """Get remaining tokens for an agent or the whole workflow."""

@@ -3,7 +3,7 @@
 Multiple debater agents argue different positions over several rounds.
 A judge agent evaluates arguments and renders a final decision.
 
-LLM calls: D debaters × R rounds + 1 judge = D*R + 1
+LLM calls: D debaters x R rounds + 1 judge = D*R + 1
 """
 
 from __future__ import annotations

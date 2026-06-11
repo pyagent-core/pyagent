@@ -61,7 +61,7 @@ class Layered(Pattern):
             messages=messages,
             metadata={
                 "layer_count": len(self._layers),
-                "layer_names": [layer_.name for layer_ in self._layers],
-                "agents_per_layer": [len(layer_.agents) for layer_ in self._layers],
+                "layer_names": [layer.name for layer in self._layers],
+                "agents_per_layer": [len(layer.agents) for layer in self._layers],
             },
         )
