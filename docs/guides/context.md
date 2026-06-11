@@ -126,6 +126,40 @@ redactor = ContextRedactor(max_sensitivity=Sensitivity.INTERNAL)
 safe_items = redactor.redact(items)  # PII items excluded
 ```
 
+## Agent Hook Integration
+
+Wire a `ContextLedger` into any agent using the built-in hook — the agent automatically reads context before each LLM call and writes its output back:
+
+```python
+from pyagent_patterns.base import Agent, MockLLM
+from pyagent_context import ContextLedger, ContextItem, TrustLevel
+
+ledger = ContextLedger()
+ledger.append(ContextItem(
+    content="Customer account created 2024-01-15",
+    source="database",
+    trust=TrustLevel.VERIFIED,
+))
+
+agent = Agent("support", MockLLM(responses=["Your account was created on Jan 15, 2024."]))
+agent.set_context(ledger)
+
+result = await agent.run("When was my account created?")
+# → ledger now contains the agent's output as an INFERRED item
+print(len(ledger.items))  # 2 (original + agent output)
+```
+
+### With RuntimeGraph
+
+```python
+from pyagent_blueprint import load_blueprint, BlueprintCompiler
+
+graph = BlueprintCompiler().compile(load_blueprint("blueprint.yaml"))
+graph.wire_context(ledger)  # sets context on ALL agents
+```
+
+→ See the full [Hooks Guide](hooks.md) for all four hook types.
+
 ## API Reference
 
 ::: pyagent_context

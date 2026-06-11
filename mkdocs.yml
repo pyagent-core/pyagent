@@ -1,8 +1,8 @@
 site_name: PyAgent
 site_description: "18 reusable multi-agent orchestration patterns for LLMs — with routing, compression, and OTel tracing"
-site_url: https://pyagent.dev
-repo_url: https://github.com/pyagent/pyagent
-repo_name: pyagent/pyagent
+site_url: https://pyagent.org
+repo_url: https://github.com/pyagent-core/pyagent
+repo_name: pyagent-core/pyagent
 
 theme:
   name: material
@@ -109,12 +109,14 @@ nav:
     - Recovery: guides/recovery.md
     - Providers: guides/providers.md
     - Context: guides/context.md
+    - Hooks: guides/hooks.md
     - Blueprint: guides/blueprint.md
     - Studio: guides/studio.md
   - Cookbook:
     - Code Review Agent: cookbook/code-review.md
     - Research Agent: cookbook/research.md
     - Customer Support: cookbook/customer-support.md
+    - API & Hooks Bibliography: cookbook/api-bibliography.md
   - API Reference:
     - pyagent-patterns: api/patterns.md
     - pyagent-router: api/router.md

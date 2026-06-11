@@ -158,6 +158,70 @@ recorder = Recorder(event_bus=bus)
 tracker = CostTracker(event_bus=bus)
 ```
 
+## Hook-Based Tracing (Recommended)
+
+The simplest way to add tracing is via the built-in hooks on `Agent` and `Pattern`. No decorators or subclassing required.
+
+### Agent Trace Hook
+
+```python
+from pyagent_patterns.base import Agent, MockLLM
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.exporters.console import ConsoleExporter
+
+bus = TraceEventBus()
+bus.subscribe(ConsoleExporter().export_event)
+
+agent = Agent("analyst", MockLLM(responses=["Revenue grew 25%"]))
+agent.set_trace_bus(bus)  # emits agent_start + agent_end
+
+result = await agent.run("Analyse revenue trends")
+# Console output:
+#   [agent_start] analyst
+#   [agent_end]   analyst  duration=0.002s  tokens=12
+```
+
+### Pattern Trace Hook
+
+```python
+from pyagent_patterns.orchestration import Pipeline
+
+pipeline = Pipeline(stages=[agent_a, agent_b])
+pipeline.set_trace_bus(bus)  # emits pattern_start + pattern_end
+
+result = await pipeline.run("Process document")
+# Console output:
+#   [pattern_start] pipeline
+#   [agent_start]   agent_a
+#   [agent_end]     agent_a
+#   [agent_start]   agent_b
+#   [agent_end]     agent_b
+#   [pattern_end]   pipeline  duration=0.005s
+```
+
+### TracedProvider
+
+Wrap any `ProviderProtocol` to emit trace events on every LLM call:
+
+```python
+from pyagent_providers import TracedProvider
+
+traced = TracedProvider(original_provider, event_bus=bus)
+agent = Agent("analyst", llm=traced)
+# Emits: provider_call_start, provider_call_end (or provider_call_error)
+```
+
+### Wire All at Once via RuntimeGraph
+
+```python
+from pyagent_blueprint import load_blueprint, BlueprintCompiler
+
+graph = BlueprintCompiler().compile(load_blueprint("blueprint.yaml"))
+graph.wire_trace(bus)  # sets trace_bus on ALL patterns + agents
+```
+
+→ See the full [Hooks Guide](hooks.md) for all four hook types.
+
 ## Custom Attributes
 
 All attributes are namespaced under `pyagent.*`:

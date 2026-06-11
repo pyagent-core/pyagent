@@ -278,6 +278,118 @@ llm = MockLLM(responses=["slow response"], delay=0.5)
 llm = MockLLM()
 ```
 
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph Core Abstractions
+        MSG[Message] --> AG[Agent]
+        AG -->|run| RES[Result]
+        AG -->|wraps| LLM[LLMCallable]
+    end
+
+    subgraph Pattern Tiers
+        P[Pattern base class]
+        P --> O[Orchestration: Pipeline, Supervisor, Fan-Out, Hierarchical, Orchestrator-Workers]
+        P --> R[Resolution: SelfReflection, CrossReflection, Debate, Voting, EvaluatorOptimizer]
+        P --> S[Structural: RoleBased, Layered, Topology, Blackboard]
+        P --> A[Advanced: TalkerReasoner, Swarm, HumanInTheLoop, ReAct]
+    end
+
+    subgraph Composition
+        CP[CompositePattern] -->|escalation chain| P
+        PA[PatternAdvisor] -->|recommend| P
+        REG[PatternRegistry] -->|lookup by name| P
+    end
+```
+
+### Core Abstractions
+
+| Class | Purpose | Key Methods |
+|-------|---------|-------------|
+| `Message` | Communication unit with role + content | `Message.user()`, `Message.system()`, `Message.assistant()` |
+| `Agent` | LLM-backed callable with name and system prompt | `run(input, context)` → `Result` |
+| `Context` | Metadata passed through pattern execution | Dict-like with pattern-specific data |
+| `Result` | Unified return from every pattern | `output`, `messages`, `metadata`, `duration_seconds`, `token_estimate` |
+| `Pattern` | Base class for all orchestration patterns | `run(input)`, `stream(input)` |
+| `MockLLM` | Testing helper returning canned responses | Accepts `responses` list, optional `delay` |
+
+### LLMCallable Protocol
+
+The `Agent` constructor accepts any `LLMCallable` — an async callable `(list[Message]) -> str`. This makes agents provider-agnostic:
+
+```python
+from pyagent_patterns.base import Agent, Message
+
+# Any async callable works as an LLM
+async def my_llm(messages: list[Message]) -> str:
+    return "response"
+
+agent = Agent("my_agent", llm=my_llm)
+
+# ProviderProtocol from pyagent-providers also satisfies LLMCallable
+from pyagent_providers import MockProvider
+provider = MockProvider(name="gpt-4o", model="gpt-4o")
+agent = Agent("my_agent", llm=provider)  # works because ProviderProtocol implements __call__
+```
+
+## Hook-Based Integration Points
+
+Patterns and agents support optional hook-based injection for integrating with tracing, context, compression, and cost tracking **without breaking changes**. Hooks are opt-in: if not set, agents and patterns behave exactly as before.
+
+### Available Hooks
+
+| Hook | Setter Method | What It Does |
+|------|--------------|--------------|
+| `trace_bus` | `agent.set_trace_bus(bus)` | Emit `agent_start`/`agent_end` trace events on every `run()` call |
+| `context_ledger` | `agent.set_context(ledger)` | Read context before LLM call; write output as `ContextItem` after |
+| `compressor` | `agent.set_compressor(compressor)` | Compress agent output before returning to the pattern |
+| `cost_tracker` | `agent.set_cost_tracker(tracker)` | Record cost after each LLM call |
+
+### Wiring Hooks Manually
+
+```python
+from pyagent_patterns.base import Agent, MockLLM
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.cost import CostTracker
+from pyagent_context import ContextLedger
+from pyagent_compress import MessageCompressor
+
+agent = Agent("analyst", llm, system_prompt="Analyse data.")
+
+# Opt-in: attach hooks
+bus = TraceEventBus()
+agent.set_trace_bus(bus)                        # trace events
+agent.set_context(ContextLedger())              # context read/write
+agent.set_compressor(MessageCompressor(0.5))    # output compression
+agent.set_cost_tracker(CostTracker(event_bus=bus))  # cost tracking
+```
+
+### Pattern-Level Hooks
+
+Patterns emit `pattern_start`/`pattern_end` trace events when a `trace_bus` is attached:
+
+```python
+from pyagent_patterns.orchestration import Pipeline
+
+pipeline = Pipeline(stages=[agent1, agent2, agent3])
+pipeline.set_trace_bus(bus)  # emits pattern_start/pattern_end events
+```
+
+## Integration with PyAgent Ecosystem
+
+`pyagent-patterns` is the foundation of the PyAgent ecosystem. Every other package integrates through it:
+
+| Package | Integration |
+|---------|------------|
+| **pyagent-router** | `RouterMiddleware.wrap(agent)` — auto-select cheapest model per call |
+| **pyagent-compress** | `CompressMiddleware.wrap(agent)` — compress output between stages |
+| **pyagent-trace** | `traced_pattern`/`traced_agent` decorators, or hook-based `set_trace_bus()` |
+| **pyagent-providers** | `ProviderProtocol` implements `LLMCallable` — use as `Agent.llm` directly |
+| **pyagent-context** | `ContextLedger` provides messages to prepend; agents write output as `ContextItem` |
+| **pyagent-blueprint** | `BlueprintCompiler` uses the pattern registry to instantiate patterns from YAML |
+| **pyagent-studio** | Studio compiles and simulates patterns; trace events feed the dashboard |
+
 ## Full Documentation
 
-See [pyagent.dev](https://pyagent.dev) for Mermaid sequence diagrams, full API reference, cookbook, and benchmarks.
+See [pyagent.org](https://pyagent.org) for Mermaid sequence diagrams, full API reference, cookbook, and benchmarks.

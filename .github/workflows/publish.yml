@@ -3,61 +3,127 @@ name: Publish to PyPI
 on:
   push:
     tags:
-      - "v*"
+      - "v*"          # e.g. v0.2.1
+  workflow_dispatch:  # allow manual trigger
 
 jobs:
-  test:
+  # ── Step 1: build all packages ──────────────────────────────────────────────
+  build:
+    name: Build packages
     runs-on: ubuntu-latest
-    env:
-      PYTHONPATH: packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src:packages/pyagent-providers/src:packages/pyagent-context/src:packages/pyagent-blueprint/src:packages/pyagent-studio/src
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install pytest pytest-asyncio pydantic pyyaml click rich fastapi uvicorn jinja2 httpx
-      - run: python -m pytest packages/ -v --tb=short
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build pyagent-patterns
+        run: uv build --package pyagent-patterns --out-dir dist/pyagent-patterns
+
+      - name: Build pyagent-compress
+        run: uv build --package pyagent-compress --out-dir dist/pyagent-compress
+
+      - name: Build pyagent-router
+        run: uv build --package pyagent-router --out-dir dist/pyagent-router
+
+      - name: Build pyagent-trace
+        run: uv build --package pyagent-trace --out-dir dist/pyagent-trace
+
+      - name: Build pyagent-context
+        run: uv build --package pyagent-context --out-dir dist/pyagent-context
+
+      - name: Build pyagent-providers
+        run: uv build --package pyagent-providers --out-dir dist/pyagent-providers
+
+      - name: Build pyagent-blueprint
+        run: uv build --package pyagent-blueprint --out-dir dist/pyagent-blueprint
+
+      - name: Build pyagent-studio
+        run: uv build --package pyagent-studio --out-dir dist/pyagent-studio
+
+      - name: Build pyagent-all
+        run: uv build --package pyagent-all --out-dir dist/pyagent-all
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  # ── Step 2: publish in dependency order ─────────────────────────────────────
   publish:
-    needs: test
+    name: Publish to PyPI
+    needs: build
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write  # Required for trusted publishing
-    strategy:
-      matrix:
-        package:
-          - pyagent-patterns
-          - pyagent-router
-          - pyagent-compress
-          - pyagent-trace
-          - pyagent-providers
-          - pyagent-context
-          - pyagent-blueprint
-          - pyagent-studio
-          - pyagent-all
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install build
-      - name: Set version from tag
-        run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          sed -i "s/^version = \".*\"/version = \"${VERSION}\"/" packages/${{ matrix.package }}/pyproject.toml
-      - run: python -m build
-        working-directory: packages/${{ matrix.package }}
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: packages/${{ matrix.package }}/dist/
+    environment: pypi          # matches the Trusted Publisher environment name on PyPI
 
-  github-release:
-    needs: publish
-    runs-on: ubuntu-latest
     permissions:
-      contents: write
+      id-token: write          # required for OIDC Trusted Publishers
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: softprops/action-gh-release@v2
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
         with:
-          generate_release_notes: true
+          name: dist
+          path: dist/
+
+      # Tier 1 — no inter-package deps
+      - name: Publish pyagent-patterns
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-patterns/
+          skip-existing: true
+
+      - name: Publish pyagent-compress
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-compress/
+          skip-existing: true
+
+      - name: Publish pyagent-router
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-router/
+          skip-existing: true
+
+      - name: Publish pyagent-trace
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-trace/
+          skip-existing: true
+
+      - name: Publish pyagent-context
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-context/
+          skip-existing: true
+
+      # Tier 2 — depends on patterns + router
+      - name: Publish pyagent-providers
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-providers/
+          skip-existing: true
+
+      # Tier 3 — depends on providers + context
+      - name: Publish pyagent-blueprint
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-blueprint/
+          skip-existing: true
+
+      # Tier 4 — depends on blueprint + trace
+      - name: Publish pyagent-studio
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-studio/
+          skip-existing: true
+
+      # Meta-package last — depends on everything
+      - name: Publish pyagent-all
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-all/
+          skip-existing: true

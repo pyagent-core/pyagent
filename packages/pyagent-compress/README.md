@@ -191,6 +191,131 @@ result = asyncio.run(pipeline.run("Analyse quantum computing trends"))
 print(f"Budget used: {budget.total_used} / {budget.workflow_limit}")
 ```
 
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph Agent Pipeline
+        A1[Agent 1] -->|verbose output| MW[CompressMiddleware]
+        MW -->|compressed output| A2[Agent 2]
+    end
+
+    subgraph Compression Engine
+        MW --> FR[Remove Filler Phrases]
+        FR --> SS[Split into Sentences]
+        SS --> RK[Rank by Info Density]
+        RK --> TP[Keep Top N to Target Ratio]
+    end
+
+    subgraph Budget & Tracking
+        MW --> TB[TokenBudget]
+        MW -.->|emit| TE[TraceEventBus]
+    end
+```
+
+### How Compression Works (Internal Pipeline)
+
+The `MessageCompressor` processes text through four stages:
+
+1. **Filler removal** — Strips phrases like "let me think", "basically", "in other words", "it's worth noting" that add no information
+2. **Sentence splitting** — Breaks text into individual sentences for scoring
+3. **Information density ranking** — Scores each sentence by keyword density, specificity, and uniqueness relative to other sentences
+4. **Top-N selection** — Keeps the highest-scoring sentences up to the `target_ratio` threshold, preserving their original order
+
+### Compression Result
+
+`MessageCompressor.compress()` returns a `CompressionResult` with:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `compressed` | `str` | The compressed text |
+| `original_tokens` | `int` | Token count before compression |
+| `compressed_tokens` | `int` | Token count after compression |
+| `savings_pct` | `float` | Percentage of tokens saved (0.0–1.0) |
+| `sentences_kept` | `int` | Number of sentences retained |
+| `sentences_removed` | `int` | Number of sentences dropped |
+
+## Integration with pyagent-trace
+
+When `CompressMiddleware` is used alongside a `TraceEventBus`, compression events are emitted for every compressed agent output, enabling visibility in Studio:
+
+```python
+from pyagent_trace.events import TraceEventBus
+from pyagent_compress import CompressMiddleware, MessageCompressor
+
+bus = TraceEventBus()
+middleware = CompressMiddleware(
+    compressor=MessageCompressor(target_ratio=0.5),
+)
+
+# Each wrapped agent's output triggers a "compression" trace event:
+# TraceEvent(event_type="compression", data={
+#     "agent": "researcher",
+#     "original_tokens": 2000,
+#     "compressed_tokens": 1050,
+#     "savings_pct": 0.475,
+# })
+```
+
+This enables:
+- **Studio Trace Viewer** — See compression events alongside agent and LLM call events
+- **Cost Dashboard** — Track how much compression saves in token costs
+- **Budget Monitoring** — Real-time `TokenBudget` utilization in the dashboard
+
+## Integration with pyagent-context
+
+Compression and context work together to manage token budgets across agent communication:
+
+```python
+from pyagent_context import ContextLedger, ContextCompressor
+from pyagent_compress import MessageCompressor, TokenBudget
+
+# Context-level compression (pyagent-context)
+# Manages which context items to keep/drop based on trust and relevance
+context_compressor = ContextCompressor(policy="semantic_lossless")
+compressed_items = context_compressor.compress(ledger.items(), target_tokens=4000)
+
+# Message-level compression (pyagent-compress)
+# Reduces the verbosity of individual agent outputs
+msg_compressor = MessageCompressor(target_ratio=0.5)
+result = msg_compressor.compress(agent_output)
+
+# Token budget spans both layers
+budget = TokenBudget(workflow_limit=50_000, per_agent_limit=10_000)
+```
+
+**Key distinction:**
+- `pyagent-compress` compresses **inter-agent messages** (output of one agent before it becomes input to the next)
+- `pyagent-context` compresses **context items** (the accumulated context ledger that agents read from)
+
+Both contribute to staying within `TokenBudget` limits.
+
+## Integration with pyagent-patterns
+
+`CompressMiddleware.wrap()` returns an agent-compatible wrapper that can be used anywhere a regular `Agent` is expected:
+
+```python
+from pyagent_patterns.orchestration import Pipeline, Supervisor
+from pyagent_patterns.resolution import Debate
+from pyagent_compress import CompressMiddleware, MessageCompressor
+
+middleware = CompressMiddleware(compressor=MessageCompressor(target_ratio=0.4))
+
+# Works with any pattern — Pipeline, Supervisor, Debate, etc.
+pipeline = Pipeline(stages=[
+    middleware.wrap(agent1),  # output compressed before reaching agent2
+    middleware.wrap(agent2),  # output compressed before reaching agent3
+    agent3,                   # final stage: no compression (full output)
+])
+
+# For multi-round patterns, compression reduces token accumulation
+debate = Debate(
+    debaters=[middleware.wrap(bull), middleware.wrap(bear)],
+    judge=judge,
+    rounds=3,
+)
+```
+
 ## Full Documentation
 
-See [pyagent.dev](https://pyagent.dev) for full API reference and integration guides.
+See [pyagent.org](https://pyagent.org) for full API reference and integration guides.

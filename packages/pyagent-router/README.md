@@ -176,4 +176,4 @@ print(f"Will use {selection.model} (~${est.total_cost:.6f})")
 
 ## Full Documentation
 
-See [pyagent.dev](https://pyagent.dev) for full API reference and integration guides.
+See [pyagent.org](https://pyagent.org) for full API reference and integration guides.

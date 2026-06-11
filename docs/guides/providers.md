@@ -87,6 +87,26 @@ optimizer = CostOptimizer(registry)
 ranked = optimizer.rank_by_cost(prompt_tokens=1000, completion_tokens=500)
 ```
 
+## TracedProvider
+
+Wrap any provider to emit trace events for every LLM call — useful for observability without changing agent code:
+
+```python
+from pyagent_providers import TracedProvider
+from pyagent_trace.events import TraceEventBus
+
+bus = TraceEventBus()
+traced = TracedProvider(registry.get("primary"), event_bus=bus)
+
+# Use as a drop-in replacement
+agent = Agent("analyst", llm=traced)
+# → emits provider_call_start, provider_call_end (or provider_call_error)
+```
+
+`TracedProvider` implements `ProviderProtocol`, so it works anywhere a provider is expected — as an `Agent`'s `llm` parameter, in a `FallbackChain`, or registered in a `ProviderRegistry`.
+
+→ See the full [Hooks Guide](hooks.md) for all hook types including agent-level tracing.
+
 ## Integration with Blueprint
 
 In a blueprint YAML, providers are declared and referenced by agents:

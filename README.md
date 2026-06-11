@@ -9,25 +9,17 @@ Existing frameworks give you primitives. PyAgent gives you named, tested, compos
 
 ## Packages
 
-```bash
-pip install pyagent-patterns
-```
-
-```bash
-pip install pyagent-router
-```
-
-```bash
-pip install pyagent-compress
-```
-
-```bash
-pip install pyagent-trace
-```
-
-```bash
-pip install pyagent-all
-```
+| Package | Description | Install |
+|---------|-------------|---------|
+| **pyagent-patterns** | 18 multi-agent orchestration patterns + composites + guardrails + recovery | `pip install pyagent-patterns` |
+| **pyagent-router** | Difficulty scoring, cost estimation, model selection, routing middleware | `pip install pyagent-router` |
+| **pyagent-compress** | Inter-agent message compression, agent pruning, interaction pruning, token budgets | `pip install pyagent-compress` |
+| **pyagent-trace** | TraceEventBus pub/sub, OpenTelemetry spans, Langfuse export, cost tracking, record/replay | `pip install pyagent-trace` |
+| **pyagent-providers** | Multi-provider abstraction, registry, routing strategies, fallback chains, capability negotiation | `pip install pyagent-providers` |
+| **pyagent-context** | Structured context with trust/sensitivity metadata, three-tier memory, compression, retrieval | `pip install pyagent-context` |
+| **pyagent-blueprint** | Declarative YAML specs, Pydantic validation, compile to RuntimeGraph, contract testing, diff, CLI | `pip install pyagent-blueprint` |
+| **pyagent-studio** | CLI + web control plane for designing, simulating, debugging, and governing agent blueprints | `pip install pyagent-studio` |
+| **pyagent-all** | Meta-package: installs everything above | `pip install pyagent-all` |
 
 ## Table of Contents
 
@@ -45,6 +37,11 @@ pip install pyagent-all
 - [pyagent-trace](#pyagent-trace)
 - [Guardrails](#guardrails)
 - [Recovery](#recovery)
+- [pyagent-providers](#pyagent-providers)
+- [pyagent-context](#pyagent-context)
+- [pyagent-blueprint](#pyagent-blueprint)
+- [pyagent-studio](#pyagent-studio)
+- [End-to-end integration](#end-to-end-integration)
 - [When to use which pattern](#when-to-use-which-pattern)
 - [Contributing](#contributing)
 
@@ -1632,6 +1629,310 @@ resilient_pattern = BoundedExecution(
 result = asyncio.run(circuit.execute(resilient_pattern, "Handle this production request"))
 ```
 
+## pyagent-providers
+
+Multi-provider abstraction layer for LLM applications. Register, route, negotiate, and optimize across providers.
+
+```python
+from pyagent_providers import ProviderRegistry, ProviderRouter, FallbackChain, MockProvider
+
+# Registry of named providers
+registry = ProviderRegistry()
+registry.register("primary", MockProvider(name="gpt-4o", model="gpt-4o"))
+registry.register("fallback", MockProvider(name="gpt-mini", model="gpt-4o-mini"))
+
+# Router: pick provider by strategy (capability_first, cost_first, latency_first, round_robin)
+router = ProviderRouter(registry, strategy="cost_first")
+result = await router.route(messages)
+
+# FallbackChain: try primary, fall back to secondary on failure
+chain = FallbackChain(providers=[
+    registry.get("primary"),
+    registry.get("fallback"),
+])
+result = await chain.complete(messages)
+
+# CapabilityNegotiator: find providers matching requirements
+from pyagent_providers import CapabilityNegotiator
+negotiator = CapabilityNegotiator(registry)
+matches = negotiator.find(required=["function_calling", "streaming"])
+
+# CostOptimizer: rank providers by cost for a workload
+from pyagent_providers import CostOptimizer
+optimizer = CostOptimizer(registry)
+ranked = optimizer.rank_by_cost(prompt_tokens=1000, completion_tokens=500)
+```
+
+`ProviderProtocol` implements `__call__`, so any provider works as an `Agent`'s `llm` parameter:
+
+```python
+from pyagent_patterns.base import Agent
+agent = Agent("analyst", llm=registry.get("primary"), system_prompt="Analyse data.")
+```
+
+## pyagent-context
+
+Structured context memory with trust metadata, three-tier storage, compression, and retrieval.
+
+```python
+from pyagent_context import ContextItem, ContextLedger, TrustLevel, Sensitivity
+from pyagent_context import WorkingMemory, SessionMemory, InMemorySemanticStore
+from pyagent_context import ContextCompressor, TrustAwareRetriever, ContextRedactor
+
+# ContextItem: atomic unit of context with trust and sensitivity
+item = ContextItem(
+    content="Revenue was $25.2B in Q3 2025",
+    source="database",
+    trust=TrustLevel.VERIFIED,
+    sensitivity=Sensitivity.INTERNAL,
+)
+
+# ContextLedger: append-only log with token-budgeted message conversion
+ledger = ContextLedger()
+ledger.append(item)
+messages = ledger.to_messages(budget=4000)  # high-trust items prioritized
+
+# Three-tier memory
+working = WorkingMemory(max_items=20, max_tokens=8000)  # current turn
+session = SessionMemory(backend="sqlite", path="session.db")  # cross-turn persistence
+semantic = InMemorySemanticStore()  # TF-IDF similarity search
+semantic.add(item)
+results = semantic.search("billing question", top_k=3)
+
+# Context compression (4 policies: none, fifo, semantic_lossless, sawtooth)
+compressor = ContextCompressor(policy="semantic_lossless")
+compressed = compressor.compress(ledger.items(), target_tokens=4000)
+
+# Trust-aware retrieval (composite score: trust + recency + relevance)
+retriever = TrustAwareRetriever()
+results = retriever.retrieve(ledger.items(), query="billing", top_k=5)
+
+# Redaction: filter by sensitivity before sending to LLM
+redactor = ContextRedactor(max_sensitivity=Sensitivity.INTERNAL)
+safe_items = redactor.redact(ledger.items())  # PII items excluded
+```
+
+## pyagent-blueprint
+
+Declarative YAML specs for multi-agent systems — validate, compile, test, diff, render, and scaffold.
+
+```yaml
+# blueprint.yaml
+api_version: pyagent/v1
+metadata:
+  name: customer-support
+  version: 1.0.0
+
+providers:
+  primary: { model: gpt-4.1-mini }
+  fallback: { model: gpt-4.1-nano }
+
+context:
+  memory: { working_max_tokens: 128000 }
+  compression: { policy: semantic_lossless, target_ratio: 0.6 }
+
+agents:
+  classifier:
+    prompt: "Classify into: billing, tech, general"
+    provider: primary
+  billing:
+    prompt: "Handle billing inquiries"
+    provider: primary
+    guardrails: [pii_redact]
+
+workflows:
+  support:
+    pattern: supervisor
+    agents:
+      classifier: classifier
+      routes: { billing: billing }
+
+contracts:
+  support:
+    input: { type: string, max_tokens: 2000 }
+    output: { type: string }
+    sla: { latency_p95_ms: 5000, cost_max_usd: 0.05 }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }
+```
+
+```python
+from pyagent_blueprint import (
+    load_blueprint, BlueprintCompiler, BlueprintValidator,
+    BlueprintRenderer, BlueprintDiffer, BlueprintTester, BlueprintGenerator,
+)
+
+# Load → Validate → Compile → Run
+spec = load_blueprint("blueprint.yaml")
+issues = BlueprintValidator().validate(spec)        # static analysis
+graph = BlueprintCompiler().compile(spec)            # YAML → RuntimeGraph
+result = await graph.run("support", "I can't see my invoice")
+
+# Render documentation
+print(BlueprintRenderer().to_mermaid(spec))          # Mermaid flowchart
+print(BlueprintRenderer().to_markdown(spec))         # full Markdown doc
+
+# Semantic diff between versions
+changes = BlueprintDiffer().diff(old_spec, new_spec)
+print(BlueprintDiffer().summary(changes))            # BREAKING / WARNING / INFO
+
+# Contract conformance tests
+results = await BlueprintTester().test(spec)
+
+# Generate scaffold
+yaml_str = BlueprintGenerator().generate(pattern="supervisor", agents=["a", "b", "c"])
+```
+
+**CLI**: `pyagent-blueprint validate|compile|render|test|diff|generate`
+
+## pyagent-studio
+
+CLI + web control plane for designing, simulating, debugging, and governing agent blueprints.
+
+```bash
+# CLI commands
+pyagent apply blueprint.yaml                    # load, validate, summarize
+pyagent simulate blueprint.yaml support "Help"  # run with MockLLM
+pyagent simulate blueprint.yaml support "Help" --live  # run with real LLMs
+pyagent dashboard                               # launch web UI
+```
+
+**Web dashboard** (FastAPI + HTMX + Pico CSS — zero JS build step):
+
+| Page | Description |
+|------|-------------|
+| **Overview** | Blueprint summary, validation status, quick actions |
+| **Agents** | Agent table with prompts, providers, guardrails |
+| **Workflows** | Workflow DAGs with Mermaid diagrams |
+| **Simulate** | Run workflows with MockLLM or live providers |
+| **Traces** | Live SSE trace stream + historical JSONL viewer |
+| **Governance** | Compliance score, validation issues, blueprint diff |
+| **Providers** | LLM model catalog, health checks |
+
+**Headless services** for scripting and CI:
+
+```python
+from pyagent_studio import BlueprintService, SimulationService, GovernanceService, TraceService
+
+svc = BlueprintService()
+spec = svc.load("blueprint.yaml")
+issues = svc.validate()
+
+sim = SimulationService()
+result = await sim.run(spec, "support", "Help me with billing")
+
+gov = GovernanceService()
+report = gov.check_compliance(spec)
+print(gov.format_report(report))
+
+traces = TraceService()
+spans = traces.load("traces/run.jsonl")
+print(traces.summary())
+```
+
+## End-to-End Integration
+
+All PyAgent packages are designed to work together in a layered architecture:
+
+```mermaid
+flowchart TD
+    BP[Blueprint YAML] -->|load & validate| BC[BlueprintCompiler]
+    BC -->|compile| RG[RuntimeGraph]
+    RG -->|contains| P[Patterns]
+    P -->|orchestrate| A[Agents]
+    A -->|call| PR[Providers]
+
+    A -->|read/write| CL[ContextLedger]
+    CL -->|tier 1| WM[WorkingMemory]
+    CL -->|tier 2| SM[SessionMemory]
+    CL -->|tier 3| SEM[SemanticMemory]
+
+    A -->|output| CM[Compressor]
+    CM -->|compressed| A
+
+    A -.->|emit events| TB[TraceEventBus]
+    P -.->|emit events| TB
+    PR -.->|emit events| TB
+    CM -.->|emit events| TB
+
+    TB -->|export| EX1[ConsoleExporter]
+    TB -->|export| EX2[JsonlExporter]
+    TB -->|export| EX3[OTelExporter]
+    TB -->|export| EX4[LangfuseExporter]
+
+    TB -->|feed| ST[Studio Dashboard]
+```
+
+**The consumer workflow:**
+
+1. **Specify** — Define your agent system in a YAML blueprint (agents, workflows, providers, contracts, observability, context)
+2. **Compile** — `BlueprintCompiler` transforms the spec into a `RuntimeGraph` of executable patterns
+3. **Orchestrate** — Use design patterns (Pipeline, Supervisor, Debate, etc.) to structure agent collaboration
+4. **Provide** — Integrate LLM providers with `ProviderRegistry`, `FallbackChain`, and `CostOptimizer`
+5. **Trace** — Attach a `TraceEventBus` to agents and patterns; events propagate to exporters and Studio
+6. **Compress** — Wrap agents with `CompressMiddleware`; enforce `TokenBudget` limits across workflows
+7. **Remember** — Use `ContextLedger` with three-tier memory for context persistence across turns
+8. **Observe** — Launch Studio to track agent communication, costs, compression savings, and context flow
+
+### Hook-Based Integration
+
+Agents and patterns support **opt-in hooks** for cross-cutting concerns — zero overhead when not wired, fault-tolerant, and chainable:
+
+```python
+from pyagent_patterns.base import Agent, MockLLM
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.cost import CostTracker
+from pyagent_context import ContextLedger
+from pyagent_compress import MessageCompressor
+
+bus = TraceEventBus()
+
+# Fluent chaining — setters return self
+agent = (
+    Agent("analyst", MockLLM(responses=["Revenue grew 25%"]), system_prompt="Analyse data.")
+    .set_trace_bus(bus)                              # emit trace events
+    .set_context(ContextLedger())                    # read/write context
+    .set_compressor(MessageCompressor(0.5))          # compress output
+    .set_cost_tracker(CostTracker(event_bus=bus))    # track costs
+)
+
+result = await agent.run("What are the key trends?")
+# → trace events emitted, context updated, output compressed, cost recorded
+```
+
+#### TracedProvider
+
+Wrap any provider to emit trace events on every LLM call:
+
+```python
+from pyagent_providers import TracedProvider
+
+traced = TracedProvider(registry.get("primary"), event_bus=bus)
+agent = Agent("analyst", llm=traced)
+# → emits provider_call_start / provider_call_end / provider_call_error
+```
+
+#### RuntimeGraph Bulk Wiring
+
+When using blueprints, wire hooks to **all** compiled patterns and agents at once:
+
+```python
+from pyagent_blueprint import load_blueprint, BlueprintCompiler
+
+graph = BlueprintCompiler().compile(load_blueprint("blueprint.yaml"))
+
+graph.wire_trace(bus)                                # all patterns + agents
+graph.wire_context(ContextLedger())                  # all agents
+graph.wire_compressor(MessageCompressor(0.5))        # all agents
+graph.wire_cost_tracker(CostTracker(event_bus=bus))  # all agents
+
+result = await graph.run("support", "Help with billing")
+```
+
+The compiler also emits **warnings** when your blueprint declares features that need manual wiring (tracing, context compression, cost budget) — reminding you to call the appropriate `wire_*` method.
+
 ## When to use which pattern
 
 Still unsure?
@@ -1646,20 +1947,20 @@ print(rec.pattern, "—", rec.reason)
 ## Running Tests
 
 ```bash
-PYTHONPATH=packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src \
+PYTHONPATH=packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src:packages/pyagent-providers/src:packages/pyagent-context/src:packages/pyagent-blueprint/src:packages/pyagent-studio/src \
   python -m pytest packages/ -v
 ```
 
 ## Running Benchmarks
 
 ```bash
-PYTHONPATH=packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src \
+PYTHONPATH=packages/pyagent-patterns/src:packages/pyagent-router/src:packages/pyagent-compress/src:packages/pyagent-trace/src:packages/pyagent-providers/src:packages/pyagent-context/src:packages/pyagent-blueprint/src:packages/pyagent-studio/src \
   python -m benchmarks.run
 ```
 
 ## Documentation
 
-Full docs with Mermaid sequence diagrams, code examples, and API reference: [pyagent.dev](https://pyagent.dev)
+Full docs with Mermaid sequence diagrams, code examples, and API reference: [pyagent.org](https://pyagent.org)
 
 ```bash
 pip install mkdocs-material mkdocstrings[python]

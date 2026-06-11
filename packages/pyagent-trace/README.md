@@ -223,6 +223,225 @@ exporter = OTLPSpanExporter(
 )
 ```
 
+## TraceEventBus — Portal-Agnostic Event Pub/Sub
+
+The `TraceEventBus` is the central hub for all trace events in the PyAgent ecosystem. It decouples event producers (agents, patterns, providers, compression) from consumers (exporters, Studio, custom handlers) using a pub/sub model.
+
+```python
+from pyagent_trace.events import TraceEvent, TraceEventBus
+
+bus = TraceEventBus()
+
+# Subscribe to ALL events
+bus.subscribe(lambda event: print(f"[{event.event_type}] {event.data}"))
+
+# Subscribe to specific event types only
+bus.subscribe_filter(
+    {"llm_call", "error", "cost"},
+    lambda event: alert_on_failure(event),
+)
+
+# Emit events (typically done by agents, patterns, or providers)
+bus.emit(TraceEvent(
+    event_type="agent_start",
+    data={"agent": "analyst", "input_tokens": 500},
+))
+
+# Async emit for non-blocking producers
+await bus.emit_async(TraceEvent(
+    event_type="llm_call",
+    data={"model": "gpt-4o", "tokens": 1200, "cost_usd": 0.006},
+))
+```
+
+### TraceEvent Structure
+
+Every event flowing through the bus is a `TraceEvent` with:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `event_type` | `str` | Category: `agent_start`, `agent_end`, `pattern_start`, `pattern_end`, `llm_call`, `cost`, `compression`, `error` |
+| `data` | `dict` | Event-specific payload (agent name, tokens, cost, model, etc.) |
+| `timestamp` | `float` | Unix timestamp of when the event was created |
+| `trace_id` | `str` | Correlation ID linking related events in a single workflow execution |
+| `parent_id` | `str \| None` | Parent event ID for hierarchical span nesting |
+
+### Event Type Reference
+
+| Event Type | Producer | Key Data Fields |
+|------------|----------|----------------|
+| `pattern_start` | Pattern | `pattern_type`, `input` |
+| `pattern_end` | Pattern | `pattern_type`, `output`, `duration_ms`, `token_estimate` |
+| `agent_start` | Agent | `agent_name`, `input` |
+| `agent_end` | Agent | `agent_name`, `output`, `duration_ms` |
+| `llm_call` | Agent/Provider | `model`, `input_tokens`, `output_tokens`, `cost_usd`, `latency_ms` |
+| `cost` | CostTracker | `pattern`, `agent`, `model`, `cost_usd`, `tokens` |
+| `compression` | CompressMiddleware | `agent`, `original_tokens`, `compressed_tokens`, `savings_pct` |
+| `error` | Any | `source`, `error_type`, `message`, `traceback` |
+
+## Built-in Exporters
+
+PyAgent ships four exporters that plug into the `TraceEventBus`:
+
+### ConsoleExporter — Development Debugging
+
+Prints formatted trace events to stdout. Zero configuration.
+
+```python
+from pyagent_trace.exporters.console import ConsoleExporter
+
+bus.subscribe(ConsoleExporter().export_event)
+# Output: [2025-01-15T10:30:00] agent_start | analyst | input_tokens=500
+```
+
+### JsonlExporter — Persistent Trace Files
+
+Appends events as newline-delimited JSON for offline analysis and replay.
+
+```python
+from pyagent_trace.exporters.jsonl import JsonlExporter
+
+exporter = JsonlExporter("traces/run_001.jsonl")
+bus.subscribe(exporter.export_event)
+
+# After workflow completes
+exporter.flush()
+exporter.shutdown()
+```
+
+### OTelExporter — OpenTelemetry Backend Integration
+
+Maps PyAgent trace events to OpenTelemetry spans. Requires `opentelemetry-api` + `opentelemetry-sdk`.
+
+```python
+from pyagent_trace.exporters.otel import OTelExporter
+
+# Sends spans to any OTel-compatible backend (Jaeger, Grafana Tempo, Datadog, Honeycomb)
+otel = OTelExporter(service_name="my-agent-system")
+bus.subscribe(otel.export_event)
+```
+
+**Span mapping:**
+- `pattern_start`/`pattern_end` → parent span named `pyagent.pattern.<type>`
+- `agent_start`/`agent_end` → child span named `pyagent.agent.<name>`
+- `llm_call` → child span with model, token, and cost attributes
+- Error events set `StatusCode.ERROR` on the corresponding span
+
+### LangfuseExporter — Langfuse Observability Platform
+
+Maps PyAgent events to Langfuse traces, generations, and spans. Uses `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and `LANGFUSE_HOST` environment variables.
+
+```python
+from pyagent_trace.exporters.langfuse import LangfuseExporter
+
+langfuse = LangfuseExporter()  # reads from env vars
+bus.subscribe(langfuse.export_event)
+
+# Langfuse mapping:
+# pattern_start → new Langfuse trace
+# agent_start   → span within trace
+# llm_call      → generation with model, tokens, cost
+# pattern_end   → trace completion
+```
+
+### Multi-Backend Fan-Out
+
+Subscribe multiple exporters to the same bus for simultaneous export:
+
+```python
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.exporters.console import ConsoleExporter
+from pyagent_trace.exporters.jsonl import JsonlExporter
+from pyagent_trace.exporters.langfuse import LangfuseExporter
+
+bus = TraceEventBus()
+
+# All three receive every event
+bus.subscribe(ConsoleExporter().export_event)         # dev debugging
+bus.subscribe(JsonlExporter("traces/run.jsonl").export_event)  # persistent log
+bus.subscribe(LangfuseExporter().export_event)        # production dashboard
+```
+
+## Custom Exporters
+
+Implement the `TraceExporter` protocol to send events to any backend:
+
+```python
+from pyagent_trace.exporters.base import TraceExporter
+from pyagent_trace.events import TraceEvent
+
+class SlackAlertExporter(TraceExporter):
+    """Send error events to a Slack channel."""
+
+    def __init__(self, webhook_url: str):
+        self.webhook_url = webhook_url
+
+    def export_event(self, event: TraceEvent) -> None:
+        if event.event_type == "error":
+            # POST to Slack webhook
+            requests.post(self.webhook_url, json={
+                "text": f":warning: Agent error: {event.data.get('message')}",
+            })
+
+    def flush(self) -> None:
+        pass  # No buffering
+
+    def shutdown(self) -> None:
+        pass  # No cleanup needed
+
+# Wire it up
+bus.subscribe(SlackAlertExporter("https://hooks.slack.com/...").export_event)
+```
+
+## Wiring Producers — Connecting CostTracker & Recorder to the Bus
+
+Both `CostTracker` and `Recorder` accept an optional `event_bus` parameter. When provided, they automatically emit trace events for every cost record and LLM call:
+
+```python
+from pyagent_trace.events import TraceEventBus
+from pyagent_trace.cost import CostTracker
+from pyagent_trace.recorder import Recorder
+
+bus = TraceEventBus()
+
+# CostTracker emits "cost" events on every .record() call
+tracker = CostTracker(event_bus=bus)
+tracker.record("pipeline", "analyst", "gpt-4o", 800, 400, 0.006)
+# → bus receives: TraceEvent(event_type="cost", data={...})
+
+# Recorder emits "pattern_start", "llm_call", "pattern_end" events
+recorder = Recorder(event_bus=bus)
+recorder.start("debate")
+recorder.record_llm_call("bull", messages, response)
+recorder.end(final_output)
+# → bus receives three events in sequence
+```
+
+## Integration with Other Packages
+
+### With pyagent-patterns
+
+Use `traced_pattern` and `traced_agent` decorators, or wire `CostTracker` + `Recorder` with the event bus to capture all pattern and agent activity.
+
+### With pyagent-providers
+
+Providers can emit `llm_call` events through the bus to track model usage, latency, input/output tokens, and cost per call. This enables per-provider cost attribution in Studio.
+
+### With pyagent-compress
+
+When `CompressMiddleware` is wired with a `TraceEventBus`, it emits `compression` events containing `original_tokens`, `compressed_tokens`, and `savings_pct` for every compressed agent output. This enables compression savings tracking in Studio.
+
+### With pyagent-context
+
+Context operations (ledger writes, memory tier transitions, retrieval scores) can be tracked via trace events, providing visibility into how context flows between agents and how memory is consumed.
+
+### With pyagent-studio
+
+Studio subscribes to the `TraceEventBus` to power:
+- **Trace Viewer** — live SSE stream of trace events + historical JSONL browsing
+- **Cost Dashboard** — real-time cost breakdown by pattern, agent, and model
+- **Governance** — compliance monitoring based on trace data
+
 ## Full Documentation
 
-See [pyagent.dev](https://pyagent.dev) for full API reference and integration guides.
+See [pyagent.org](https://pyagent.org) for full API reference and integration guides.
