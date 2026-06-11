@@ -89,6 +89,16 @@ nav:
     - Blueprint: guides/blueprint.md
     - Studio: guides/studio.md
   - Packages:
+    - Blueprint:
+      - Overview: packages/blueprint/index.md
+      - Spec Format: packages/blueprint/spec-format.md
+      - Agents: packages/blueprint/agents.md
+      - Workflows: packages/blueprint/workflows.md
+      - Providers: packages/blueprint/providers.md
+      - Context Config: packages/blueprint/context.md
+      - Contracts & Observability: packages/blueprint/contracts.md
+      - CLI: packages/blueprint/cli.md
+      - Python API: packages/blueprint/compiler.md
     - Patterns:
       - Overview: packages/patterns/index.md
       - Orchestration:
@@ -113,13 +123,17 @@ nav:
         - Swarm: packages/patterns/advanced/swarm.md
         - Human-in-the-Loop: packages/patterns/advanced/human-in-the-loop.md
         - ReAct: packages/patterns/advanced/react.md
-    - Router: packages/router.md
-    - Compress: packages/compress.md
+    - Studio:
+      - Overview: packages/studio/index.md
+      - CLI: packages/studio/cli.md
+      - Dashboard: packages/studio/dashboard.md
+      - Services: packages/studio/services.md
+      - Traces: packages/studio/traces.md
     - Trace: packages/trace.md
     - Context: packages/context.md
+    - Compress: packages/compress.md
     - Providers: packages/providers.md
-    - Blueprint: packages/blueprint.md
-    - Studio: packages/studio.md
+    - Router: packages/router.md
   - Cookbook:
     - Code Review Agent: cookbook/code-review.md
     - Research Agent: cookbook/research.md
