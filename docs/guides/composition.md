@@ -261,6 +261,6 @@ The result: most requests run cheap, hard requests escalate automatically.
 ## See Also
 
 - [Recovery Guide](recovery.md) — failure-based recovery with `BoundedExecution`
-- [Patterns Package](../packages/patterns.md) — all pattern classes
+- [Patterns Package](../packages/patterns/index.md) — all pattern classes
 - [Routing Guide](router.md) — complement composition with model-level routing
 - [API Reference](../api/patterns.md)

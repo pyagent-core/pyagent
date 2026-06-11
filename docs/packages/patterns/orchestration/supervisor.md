@@ -214,4 +214,4 @@ Trace: pyagent.pattern.supervisor (1.4s, $0.005)
 
 - [Orchestrator-Workers](orchestrator-workers.md) — dynamic routing where subtasks aren't known upfront
 - [Talker-Reasoner](../advanced/talker-reasoner.md) — route by complexity rather than topic
-- [Routing Guide](../../guides/router.md) — combine Supervisor with cost-based model selection
+- [Routing Guide](../../../guides/router.md) — combine Supervisor with cost-based model selection

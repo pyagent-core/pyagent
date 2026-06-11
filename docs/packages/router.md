@@ -264,6 +264,6 @@ agent = model_middleware.wrap(
 
 ## See Also
 
-- [Patterns Package](patterns.md) — `Agent`, `Pipeline`, `FanOutFanIn` and all orchestration patterns
+- [Patterns Package](patterns/index.md) — `Agent`, `Pipeline`, `FanOutFanIn` and all orchestration patterns
 - [Providers Package](providers.md) — `ProviderRouter` for provider-level routing and fallback
 - [API Reference](../api/router.md)

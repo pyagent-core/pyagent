@@ -175,4 +175,4 @@ Trace: pyagent.pattern.talker_reasoner (3.2s, $0.00280)
 
 - [Supervisor](../orchestration/supervisor.md) — route by topic rather than complexity
 - [Evaluator-Optimizer](../resolution/evaluator-optimizer.md) — scored quality gate for the reasoner's output
-- [Routing Guide](../../guides/router.md) — difficulty scoring and cost-based routing
+- [Routing Guide](../../../guides/router.md) — difficulty scoring and cost-based routing

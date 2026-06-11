@@ -290,5 +290,5 @@ def guarded_check(guard: GuardrailChain, content: str):
 ## See Also
 
 - [Recovery Guide](recovery.md) — handle failures when guardrails reject at runtime
-- [Patterns Package](../packages/patterns.md) — `Agent`, `Pipeline`, `FanOutFanIn` integration points
+- [Patterns Package](../packages/patterns/index.md) — `Agent`, `Pipeline`, `FanOutFanIn` integration points
 - [API Reference](../api/patterns.md)
