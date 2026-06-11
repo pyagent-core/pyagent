@@ -1,15 +1,64 @@
+---
+hide:
+  - toc
+---
+
 # PyAgent
 
-**18 reusable multi-agent orchestration patterns for LLMs** — with routing, compression, and OTel tracing.
+**Production-ready patterns for multi-agent LLM systems** — 18 composable orchestration patterns, declarative YAML blueprints, intelligent model routing, inter-agent compression, and a full observability stack.
+
+<div style="margin: 1.5rem 0" markdown>
+
+[:fontawesome-solid-bolt: Get Started](getting-started.md){ .md-button .md-button--primary }
+&nbsp;&nbsp;
+[:fontawesome-brands-github: GitHub](https://github.com/pyagent-core/pyagent){ .md-button }
+&nbsp;&nbsp;&nbsp;
+`pip install pyagent-all`
+
+</div>
 
 ---
 
 ## Why PyAgent?
 
-Existing frameworks (LangGraph, CrewAI, AutoGen) give you raw primitives but no **named, tested, composable patterns**. PyAgent fills this gap:
+<div class="grid cards" markdown>
 
-| Feature | LangGraph | CrewAI | AutoGen | **PyAgent** |
-|---------|-----------|--------|---------|-------------|
+-   :material-puzzle:{ .lg .middle } **Named pattern library**
+
+    ---
+
+    18 battle-tested patterns — Pipeline, Supervisor, Fan-Out, Debate, Swarm, ReAct and more. No more reinventing coordination logic from scratch.
+
+    [:octicons-arrow-right-24: Browse patterns](packages/patterns/index.md)
+
+-   :material-file-code:{ .lg .middle } **Spec-driven with Blueprint**
+
+    ---
+
+    Declare your entire agent system in YAML. Validate, compile, test, and diff versions — without writing a line of Python.
+
+    [:octicons-arrow-right-24: Blueprint docs](packages/blueprint/index.md)
+
+-   :material-monitor-dashboard:{ .lg .middle } **Visual Studio control plane**
+
+    ---
+
+    Launch a web dashboard for simulating workflows, exploring traces, and monitoring provider costs — no code required.
+
+    [:octicons-arrow-right-24: Studio docs](packages/studio/index.md)
+
+-   :material-chart-timeline-variant:{ .lg .middle } **Full observability stack**
+
+    ---
+
+    OTel spans, Langfuse export, cost tracking, record/replay — opt-in hooks, zero overhead when not wired.
+
+    [:octicons-arrow-right-24: Tracing guide](guides/tracing.md)
+
+</div>
+
+| | LangGraph | CrewAI | AutoGen | **PyAgent** |
+|--|:---------:|:------:|:-------:|:-----------:|
 | Named pattern library | ❌ | ❌ | ❌ | ✅ 18 patterns |
 | Pattern composition | ❌ | ❌ | ❌ | ✅ |
 | Difficulty-aware routing | ❌ | ❌ | ❌ | ✅ |
@@ -17,45 +66,80 @@ Existing frameworks (LangGraph, CrewAI, AutoGen) give you raw primitives but no 
 | Pattern-aware OTel tracing | ❌ | ❌ | ❌ | ✅ |
 | Zero mandatory deps | ❌ | ❌ | ❌ | ✅ |
 
-## Quick Install
+---
 
-```bash
-pip install pyagent-patterns  # Core patterns only
-pip install pyagent-all       # All 9 packages
-```
+## Quick Start
 
-## Hello World (10 lines)
+=== "Patterns"
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent, MockLLM
-from pyagent_patterns.orchestration import Pipeline
+    ```bash
+    pip install pyagent-patterns
+    ```
 
-llm = MockLLM(responses=["Extracted: key facts", "Summary: concise version"])
-pipeline = Pipeline(stages=[
-    Agent("extractor", llm),
-    Agent("summarizer", llm),
-])
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent, MockLLM
+    from pyagent_patterns.orchestration import Pipeline
 
-result = asyncio.run(pipeline.run("Process this document"))
-print(result.output)  # "Summary: concise version"
-```
+    llm = MockLLM(responses=["Extracted: key facts", "Summary: concise version"])
+    pipeline = Pipeline(stages=[
+        Agent("extractor",  llm),
+        Agent("summarizer", llm),
+    ])
+    result = asyncio.run(pipeline.run("Process this document"))
+    print(result.output)  # "Summary: concise version"
+    ```
 
-## Packages
+=== "Blueprint"
 
-| Package | Description |
-|---------|-------------|
-| **pyagent-patterns** | 18 multi-agent orchestration patterns + composites + guardrails + recovery |
-| **pyagent-router** | Difficulty scoring, cost estimation, model selection, routing middleware |
-| **pyagent-compress** | Inter-agent message compression, agent pruning, interaction pruning, token budgets |
-| **pyagent-trace** | TraceEventBus pub/sub, OpenTelemetry spans, Langfuse export, cost tracking, record/replay |
-| **pyagent-providers** | Multi-provider abstraction, registry, routing strategies, fallback chains, capability negotiation, cost optimizer |
-| **pyagent-context** | Structured context with trust/sensitivity metadata, three-tier memory (working/session/semantic), compression, retrieval, redaction |
-| **pyagent-blueprint** | Declarative YAML specs, Pydantic validation, compilation to RuntimeGraph, contract testing, Mermaid rendering, semantic diff, CLI |
-| **pyagent-studio** | CLI + web control plane for designing, simulating, debugging, and governing agent blueprints with live trace streaming |
-| **pyagent-all** | Meta-package: installs everything above |
+    ```bash
+    pip install pyagent-blueprint
+    ```
 
-## End-to-End Integration Architecture
+    ```yaml
+    # pipeline.yaml
+    api_version: pyagent/v1
+    metadata: { name: doc-pipeline, version: "1.0.0" }
+    agents:
+      extractor:  { prompt: "Extract the key facts as bullet points." }
+      summarizer: { prompt: "Summarise the input in 3 sentences." }
+    workflows:
+      main:
+        pattern: pipeline
+        agents: { stages: [extractor, summarizer] }
+    ```
+
+    ```python
+    import asyncio
+    from pyagent_blueprint import load_blueprint, BlueprintCompiler
+
+    graph  = BlueprintCompiler().compile(load_blueprint("pipeline.yaml"))
+    result = asyncio.run(graph.run("main", "Process this document"))
+    print(result.output)
+    ```
+
+=== "Full stack"
+
+    ```bash
+    pip install pyagent-all
+    ```
+
+    ```python
+    import asyncio
+    from pyagent_blueprint import load_blueprint, BlueprintCompiler
+    from pyagent_trace.events import TraceEventBus
+
+    bus   = TraceEventBus()
+    graph = BlueprintCompiler().compile(load_blueprint("blueprint.yaml"))
+    graph.wire_trace(bus)
+
+    result = asyncio.run(graph.run("main", "Analyse Q3 revenue trends"))
+    # Then explore: pyagent dashboard --trace traces/runs.jsonl
+    ```
+
+---
+
+## Architecture
 
 ```mermaid
 flowchart TD
@@ -106,78 +190,168 @@ flowchart TD
     AGT & PAT & PRV & CMP -.->|"trace events"| BUS
 ```
 
-**The intended flow for consumers:**
+**The intended flow:**
 
-1. **Specify** — Define your agent system in a YAML blueprint (agents, workflows, providers, contracts, observability, context)
-2. **Compile** — `BlueprintCompiler` transforms the spec into a `RuntimeGraph` of executable patterns and agents
-3. **Orchestrate** — Use design patterns (Pipeline, Supervisor, Debate, etc.) to structure agent collaboration
-4. **Provide** — Integrate LLM providers with fallback chains, capability negotiation, and cost optimization
-5. **Trace** — Attach a `TraceEventBus` to agents and patterns for observability; events propagate to exporters and Studio
-6. **Compress** — Wrap agents with `CompressMiddleware` to reduce inter-agent token transfer; enforce `TokenBudget` limits
-7. **Remember** — Use `ContextLedger` with three-tier memory (working → session → semantic) for context persistence across turns
-8. **Observe** — Launch Studio to track agent communication, memory compression, context flow, provider costs, and token usage in real time
+1. **Specify** — Declare agents, workflows, providers, and contracts in a YAML blueprint
+2. **Compile** — `BlueprintCompiler` transforms the spec into a runnable `RuntimeGraph`
+3. **Orchestrate** — Patterns coordinate agent collaboration (Pipeline, Supervisor, Debate …)
+4. **Provide** — Provider registry handles fallback chains, cost routing, and capability negotiation
+5. **Remember** — `ContextLedger` maintains three-tier memory across agents and turns
+6. **Compress** — `CompressMiddleware` trims inter-agent token transfer and enforces budgets
+7. **Trace** — `TraceEventBus` collects events from agents, patterns, and providers
+8. **Observe** — Studio visualises traces, costs, compliance, and provider health in real time
 
-## Hook-Based Integration
+---
 
-Agents and Patterns support **opt-in hooks** for cross-cutting concerns — zero overhead when not wired:
+## Packages
 
-```python
-from pyagent_patterns.base import Agent, MockLLM
-from pyagent_trace.events import TraceEventBus
-from pyagent_trace import CostTracker
-from pyagent_context import ContextLedger
-from pyagent_compress import MessageCompressor
+<div class="grid cards" markdown>
 
-agent = (
-    Agent("analyst", llm, system_prompt="Analyse data.")
-    .set_trace_bus(TraceEventBus())        # emit trace events
-    .set_context(ContextLedger())          # read/write context per call
-    .set_compressor(MessageCompressor(0.5))# compress output
-    .set_cost_tracker(CostTracker())       # track token costs
-)
+-   :material-file-code:{ .lg .middle } **pyagent-blueprint**
 
-result = await agent.run("What are the key trends?")
-# → trace events emitted, context updated, output compressed, cost recorded
-```
+    ---
 
-Or wire all hooks at once via `RuntimeGraph`:
+    YAML spec → `BlueprintCompiler` → `RuntimeGraph`. Validate, test, render, and diff from the CLI.
 
-```python
-from pyagent_blueprint import load_blueprint, BlueprintCompiler
+    [:octicons-arrow-right-24: Docs](packages/blueprint/index.md)
 
-graph = BlueprintCompiler().compile(load_blueprint("blueprint.yaml"))
-graph.wire_trace(bus)
-graph.wire_context(ledger)
-graph.wire_compressor(compressor)
-graph.wire_cost_tracker(tracker)
-```
+-   :material-puzzle:{ .lg .middle } **pyagent-patterns**
 
-→ See the full [Hooks Guide](guides/hooks.md) and [API & Hooks Bibliography](cookbook/api-bibliography.md).
+    ---
 
-## Pattern Catalog
+    18 orchestration patterns: Pipeline, Supervisor, Fan-Out, Debate, Voting, Swarm, ReAct and more.
 
-### Orchestration (Tier 1)
-- [Supervisor](packages/patterns/orchestration/supervisor.md) — classify → route → collect
-- [Pipeline](packages/patterns/orchestration/pipeline.md) — sequential stage chain
-- [Fan-Out/Fan-In](packages/patterns/orchestration/fan-out-fan-in.md) — parallel + aggregate
-- [Hierarchical](packages/patterns/orchestration/hierarchical.md) — manager → teams → workers
-- [Orchestrator-Workers](packages/patterns/orchestration/orchestrator-workers.md) — dynamic delegation
+    [:octicons-arrow-right-24: Docs](packages/patterns/index.md)
 
-### Resolution (Tier 2)
-- [Self-Reflection](packages/patterns/resolution/self-reflection.md) — generate → critique → refine
-- [Cross-Reflection](packages/patterns/resolution/cross-reflection.md) — peer review
-- [Debate](packages/patterns/resolution/debate.md) — adversarial argumentation + judge
-- [Voting](packages/patterns/resolution/voting.md) — majority consensus
-- [Evaluator-Optimizer](packages/patterns/resolution/evaluator-optimizer.md) — criteria-based optimization
+-   :material-monitor-dashboard:{ .lg .middle } **pyagent-studio**
 
-### Structural (Tier 3)
-- [Role-Based](packages/patterns/structural/role-based.md) — specialized agent roles
-- [Layered](packages/patterns/structural/layered.md) — abstraction layers
-- [Topology](packages/patterns/structural/topology.md) — chain / star / mesh
-- [Blackboard](packages/patterns/structural/blackboard.md) — shared async state
+    ---
 
-### Advanced (Tier 4)
-- [Talker-Reasoner](packages/patterns/advanced/talker-reasoner.md) — fast System 1 / slow System 2
-- [Swarm](packages/patterns/advanced/swarm.md) — emergent behavior
-- [Human-in-the-Loop](packages/patterns/advanced/human-in-the-loop.md) — approval gates
-- [ReAct](packages/patterns/advanced/react.md) — reason → act → observe
+    `kubectl`-style CLI + FastAPI web dashboard. Simulate, diff, explore traces, govern.
+
+    [:octicons-arrow-right-24: Docs](packages/studio/index.md)
+
+-   :material-chart-timeline-variant:{ .lg .middle } **pyagent-trace**
+
+    ---
+
+    `TraceEventBus` pub/sub, OTel spans, Langfuse export, cost tracking, record/replay.
+
+    [:octicons-arrow-right-24: Docs](packages/trace.md)
+
+-   :material-brain:{ .lg .middle } **pyagent-context**
+
+    ---
+
+    Three-tier memory (working / session / semantic), trust metadata, compression, and redaction.
+
+    [:octicons-arrow-right-24: Docs](packages/context.md)
+
+-   :material-arrow-collapse-all:{ .lg .middle } **pyagent-compress**
+
+    ---
+
+    Inter-agent message compression, agent pruning, interaction pruning, and token budgets.
+
+    [:octicons-arrow-right-24: Docs](packages/compress.md)
+
+-   :material-server-network:{ .lg .middle } **pyagent-providers**
+
+    ---
+
+    Multi-provider registry, routing strategies, fallback chains, capability negotiation, cost optimizer.
+
+    [:octicons-arrow-right-24: Docs](packages/providers.md)
+
+-   :material-call-split:{ .lg .middle } **pyagent-router**
+
+    ---
+
+    Difficulty scoring, cost estimation, model selection middleware — route cheap tasks to cheap models.
+
+    [:octicons-arrow-right-24: Docs](packages/router.md)
+
+</div>
+
+---
+
+## 18 Patterns
+
+=== ":material-sitemap: Orchestration"
+
+    | Pattern | What it does |
+    |---------|-------------|
+    | [Supervisor](packages/patterns/orchestration/supervisor.md) | Classify input → route to specialist → collect result |
+    | [Pipeline](packages/patterns/orchestration/pipeline.md) | Sequential stage chain — each agent processes the previous output |
+    | [Fan-Out / Fan-In](packages/patterns/orchestration/fan-out-fan-in.md) | Run agents in parallel, aggregate into one result |
+    | [Hierarchical](packages/patterns/orchestration/hierarchical.md) | Manager delegates to team leads who delegate to workers |
+    | [Orchestrator-Workers](packages/patterns/orchestration/orchestrator-workers.md) | Dynamic task delegation based on capability |
+
+=== ":material-scale-balance: Resolution"
+
+    | Pattern | What it does |
+    |---------|-------------|
+    | [Self-Reflection](packages/patterns/resolution/self-reflection.md) | Agent critiques and refines its own output iteratively |
+    | [Cross-Reflection](packages/patterns/resolution/cross-reflection.md) | Second agent reviews the first agent's output |
+    | [Debate](packages/patterns/resolution/debate.md) | Agents argue opposing positions, a judge decides |
+    | [Voting](packages/patterns/resolution/voting.md) | Multiple agents vote, majority or consensus wins |
+    | [Evaluator-Optimizer](packages/patterns/resolution/evaluator-optimizer.md) | Score against criteria, iterate until threshold is met |
+
+=== ":material-view-grid: Structural"
+
+    | Pattern | What it does |
+    |---------|-------------|
+    | [Role-Based](packages/patterns/structural/role-based.md) | Assign specialist roles — analyst, writer, reviewer … |
+    | [Layered](packages/patterns/structural/layered.md) | Abstraction layers — each processes at a different granularity |
+    | [Topology](packages/patterns/structural/topology.md) | Fixed topology: chain, star, or full mesh |
+    | [Blackboard](packages/patterns/structural/blackboard.md) | Shared mutable state; agents read/write asynchronously |
+
+=== ":material-atom: Advanced"
+
+    | Pattern | What it does |
+    |---------|-------------|
+    | [Talker-Reasoner](packages/patterns/advanced/talker-reasoner.md) | Fast System 1 responds, slow System 2 verifies |
+    | [Swarm](packages/patterns/advanced/swarm.md) | Agents self-organise; emergent behaviour from local rules |
+    | [Human-in-the-Loop](packages/patterns/advanced/human-in-the-loop.md) | Pause workflow for human approval at defined checkpoints |
+    | [ReAct](packages/patterns/advanced/react.md) | Reason → act → observe loop with tool calls |
+
+---
+
+## Where to start
+
+<div class="grid cards" markdown>
+
+-   :material-school-outline:{ .lg .middle } **New to multi-agent systems?**
+
+    ---
+
+    Start with the tutorial, then explore the pattern library one pattern at a time.
+
+    1. [Getting Started](getting-started.md)
+    2. [Pipeline pattern](packages/patterns/orchestration/pipeline.md)
+    3. [Supervisor pattern](packages/patterns/orchestration/supervisor.md)
+    4. [Composition guide](guides/composition.md)
+
+-   :material-code-braces:{ .lg .middle } **Adding to an existing codebase?**
+
+    ---
+
+    Drop patterns in alongside your existing LLM setup, then layer in routing and context.
+
+    1. [Hooks guide](guides/hooks.md)
+    2. [Providers guide](guides/providers.md)
+    3. [Router guide](guides/router.md)
+    4. [Context guide](guides/context.md)
+
+-   :material-rocket-launch-outline:{ .lg .middle } **Building for production?**
+
+    ---
+
+    Start with Blueprint for versioning and CI validation, then add Studio for observability.
+
+    1. [Blueprint guide](guides/blueprint.md)
+    2. [Studio guide](guides/studio.md)
+    3. [Tracing guide](guides/tracing.md)
+    4. [Recovery guide](guides/recovery.md)
+
+</div>

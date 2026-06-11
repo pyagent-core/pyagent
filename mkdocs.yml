@@ -77,15 +77,15 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Guides:
-    - Composition: guides/composition.md
-    - Routing: guides/router.md
-    - Compression: guides/compression.md
-    - Tracing: guides/tracing.md
-    - Guardrails: guides/guardrails.md
-    - Recovery: guides/recovery.md
+    - Hooks: guides/hooks.md
     - Providers: guides/providers.md
     - Context: guides/context.md
-    - Hooks: guides/hooks.md
+    - Routing: guides/router.md
+    - Compression: guides/compression.md
+    - Guardrails: guides/guardrails.md
+    - Tracing: guides/tracing.md
+    - Recovery: guides/recovery.md
+    - Composition: guides/composition.md
     - Blueprint: guides/blueprint.md
     - Studio: guides/studio.md
   - Packages:
@@ -134,7 +134,7 @@ nav:
     - Compress: packages/compress.md
     - Providers: packages/providers.md
     - Router: packages/router.md
-  - Cookbook:
+  - Examples:
     - Code Review Agent: cookbook/code-review.md
     - Research Agent: cookbook/research.md
     - Customer Support: cookbook/customer-support.md
