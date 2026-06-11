@@ -76,30 +76,6 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
-  - Patterns:
-    - Selection Guide: patterns/index.md
-    - Orchestration:
-      - Supervisor: patterns/orchestration/supervisor.md
-      - Pipeline: patterns/orchestration/pipeline.md
-      - Fan-Out / Fan-In: patterns/orchestration/fan-out-fan-in.md
-      - Hierarchical: patterns/orchestration/hierarchical.md
-      - Orchestrator-Workers: patterns/orchestration/orchestrator-workers.md
-    - Resolution:
-      - Self-Reflection: patterns/resolution/self-reflection.md
-      - Cross-Reflection: patterns/resolution/cross-reflection.md
-      - Debate: patterns/resolution/debate.md
-      - Voting: patterns/resolution/voting.md
-      - Evaluator-Optimizer: patterns/resolution/evaluator-optimizer.md
-    - Structural:
-      - Role-Based: patterns/structural/role-based.md
-      - Layered: patterns/structural/layered.md
-      - Topology: patterns/structural/topology.md
-      - Blackboard: patterns/structural/blackboard.md
-    - Advanced:
-      - Talker-Reasoner: patterns/advanced/talker-reasoner.md
-      - Swarm: patterns/advanced/swarm.md
-      - Human-in-the-Loop: patterns/advanced/human-in-the-loop.md
-      - ReAct: patterns/advanced/react.md
   - Guides:
     - Composition: guides/composition.md
     - Routing: guides/router.md
@@ -113,7 +89,30 @@ nav:
     - Blueprint: guides/blueprint.md
     - Studio: guides/studio.md
   - Packages:
-    - Patterns: packages/patterns.md
+    - Patterns:
+      - Overview: packages/patterns/index.md
+      - Orchestration:
+        - Supervisor: packages/patterns/orchestration/supervisor.md
+        - Pipeline: packages/patterns/orchestration/pipeline.md
+        - Fan-Out / Fan-In: packages/patterns/orchestration/fan-out-fan-in.md
+        - Hierarchical: packages/patterns/orchestration/hierarchical.md
+        - Orchestrator-Workers: packages/patterns/orchestration/orchestrator-workers.md
+      - Resolution:
+        - Self-Reflection: packages/patterns/resolution/self-reflection.md
+        - Cross-Reflection: packages/patterns/resolution/cross-reflection.md
+        - Debate: packages/patterns/resolution/debate.md
+        - Voting: packages/patterns/resolution/voting.md
+        - Evaluator-Optimizer: packages/patterns/resolution/evaluator-optimizer.md
+      - Structural:
+        - Role-Based: packages/patterns/structural/role-based.md
+        - Layered: packages/patterns/structural/layered.md
+        - Topology: packages/patterns/structural/topology.md
+        - Blackboard: packages/patterns/structural/blackboard.md
+      - Advanced:
+        - Talker-Reasoner: packages/patterns/advanced/talker-reasoner.md
+        - Swarm: packages/patterns/advanced/swarm.md
+        - Human-in-the-Loop: packages/patterns/advanced/human-in-the-loop.md
+        - ReAct: packages/patterns/advanced/react.md
     - Router: packages/router.md
     - Compress: packages/compress.md
     - Trace: packages/trace.md

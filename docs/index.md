@@ -140,27 +140,27 @@ graph.wire_cost_tracker(tracker)
 ## Pattern Catalog
 
 ### Orchestration (Tier 1)
-- [Supervisor](patterns/orchestration/supervisor.md) — classify → route → collect
-- [Pipeline](patterns/orchestration/pipeline.md) — sequential stage chain
-- [Fan-Out/Fan-In](patterns/orchestration/fan-out-fan-in.md) — parallel + aggregate
-- [Hierarchical](patterns/orchestration/hierarchical.md) — manager → teams → workers
-- [Orchestrator-Workers](patterns/orchestration/orchestrator-workers.md) — dynamic delegation
+- [Supervisor](packages/patterns/orchestration/supervisor.md) — classify → route → collect
+- [Pipeline](packages/patterns/orchestration/pipeline.md) — sequential stage chain
+- [Fan-Out/Fan-In](packages/patterns/orchestration/fan-out-fan-in.md) — parallel + aggregate
+- [Hierarchical](packages/patterns/orchestration/hierarchical.md) — manager → teams → workers
+- [Orchestrator-Workers](packages/patterns/orchestration/orchestrator-workers.md) — dynamic delegation
 
 ### Resolution (Tier 2)
-- [Self-Reflection](patterns/resolution/self-reflection.md) — generate → critique → refine
-- [Cross-Reflection](patterns/resolution/cross-reflection.md) — peer review
-- [Debate](patterns/resolution/debate.md) — adversarial argumentation + judge
-- [Voting](patterns/resolution/voting.md) — majority consensus
-- [Evaluator-Optimizer](patterns/resolution/evaluator-optimizer.md) — criteria-based optimization
+- [Self-Reflection](packages/patterns/resolution/self-reflection.md) — generate → critique → refine
+- [Cross-Reflection](packages/patterns/resolution/cross-reflection.md) — peer review
+- [Debate](packages/patterns/resolution/debate.md) — adversarial argumentation + judge
+- [Voting](packages/patterns/resolution/voting.md) — majority consensus
+- [Evaluator-Optimizer](packages/patterns/resolution/evaluator-optimizer.md) — criteria-based optimization
 
 ### Structural (Tier 3)
-- [Role-Based](patterns/structural/role-based.md) — specialized agent roles
-- [Layered](patterns/structural/layered.md) — abstraction layers
-- [Topology](patterns/structural/topology.md) — chain / star / mesh
-- [Blackboard](patterns/structural/blackboard.md) — shared async state
+- [Role-Based](packages/patterns/structural/role-based.md) — specialized agent roles
+- [Layered](packages/patterns/structural/layered.md) — abstraction layers
+- [Topology](packages/patterns/structural/topology.md) — chain / star / mesh
+- [Blackboard](packages/patterns/structural/blackboard.md) — shared async state
 
 ### Advanced (Tier 4)
-- [Talker-Reasoner](patterns/advanced/talker-reasoner.md) — fast System 1 / slow System 2
-- [Swarm](patterns/advanced/swarm.md) — emergent behavior
-- [Human-in-the-Loop](patterns/advanced/human-in-the-loop.md) — approval gates
-- [ReAct](patterns/advanced/react.md) — reason → act → observe
+- [Talker-Reasoner](packages/patterns/advanced/talker-reasoner.md) — fast System 1 / slow System 2
+- [Swarm](packages/patterns/advanced/swarm.md) — emergent behavior
+- [Human-in-the-Loop](packages/patterns/advanced/human-in-the-loop.md) — approval gates
+- [ReAct](packages/patterns/advanced/react.md) — reason → act → observe

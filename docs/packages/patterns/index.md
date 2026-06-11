@@ -1,6 +1,6 @@
 # pyagent-patterns
 
-**Core agent abstractions and multi-agent orchestration patterns** — the foundation every other package builds on. Provides `Agent`, `Message`, `Pattern`, and eight production-ready orchestration patterns.
+**Core agent abstractions and multi-agent orchestration patterns** — the foundation every other package builds on. Provides `Agent`, `Message`, `Pattern`, and 18 production-ready orchestration patterns.
 
 ```bash
 pip install pyagent-patterns
@@ -273,7 +273,7 @@ dual = TalkerReasoner(
                  system_prompt="Handle simple queries quickly."),
     reasoner=Agent("slow", AnthropicLLM("claude-sonnet-4-20250514"),
                    system_prompt="Handle complex analysis and reasoning."),
-    handoff_threshold=6,   # difficulty score above which Reasoner is used
+    handoff_threshold=6,
 )
 ```
 
@@ -332,29 +332,76 @@ agent = (
 )
 ```
 
-→ See the full [Hooks Guide](../guides/hooks.md) for all four hook types.
+→ See the full [Hooks Guide](../../guides/hooks.md) for all four hook types.
 
 ---
 
 ## Pattern Selection Guide
 
-| Scenario | Pattern | LLM Calls |
-|----------|---------|-----------|
-| Step-by-step transformation | `Pipeline` | N |
-| Independent parallel research | `FanOutFanIn` | N + 1 |
-| Dynamic task decomposition | `OrchestratorWorkers` | 1 + N |
-| Team with management layers | `Hierarchical` | varies |
-| Iterative quality improvement | `Supervisor` | ≤ max_iter × 2 |
-| Tool-using research agent | `ReAct` | ≤ max_steps |
-| Customer support routing | `Swarm` | N hops |
-| Fast + smart dual-mode | `TalkerReasoner` | 1 (fast) or 2 |
-| Human approval gate | `HumanInTheLoop` | 1 + human |
+Use this decision tree to choose the right pattern for your task.
+
+```mermaid
+flowchart TD
+    START([New Task]) --> Q1{Single step?}
+    Q1 -->|Yes| Q2{Need quality check?}
+    Q1 -->|No| Q3{Need classification?}
+
+    Q2 -->|No| P1[Pipeline / Single Agent]
+    Q2 -->|Yes| Q4{Budget tight?}
+
+    Q4 -->|Yes| P2[Talker-Reasoner]
+    Q4 -->|No| Q5{Adversarial needed?}
+
+    Q5 -->|Yes| P3[Debate]
+    Q5 -->|No| P4[Self-Reflection]
+
+    Q3 -->|Yes| P5[Supervisor]
+    Q3 -->|No| Q6{Parallel possible?}
+
+    Q6 -->|Yes| Q7{Need consensus?}
+    Q6 -->|No| P6[Pipeline]
+
+    Q7 -->|Yes| P7[Fan-Out + Voting]
+    Q7 -->|No| P8[Fan-Out/Fan-In]
+
+    style P1 fill:#4CAF50,color:#fff
+    style P2 fill:#4CAF50,color:#fff
+    style P3 fill:#FF9800,color:#fff
+    style P4 fill:#FF9800,color:#fff
+    style P5 fill:#2196F3,color:#fff
+    style P6 fill:#2196F3,color:#fff
+    style P7 fill:#9C27B0,color:#fff
+    style P8 fill:#9C27B0,color:#fff
+```
+
+### All 18 Patterns at a Glance
+
+| # | Pattern | Tier | LLM Calls | Best For |
+|---|---------|------|-----------|----------|
+| 1 | Supervisor | Orchestration | 2-3 | Task routing, customer support |
+| 2 | Pipeline | Orchestration | N stages | Sequential processing, ETL |
+| 3 | Fan-Out/Fan-In | Orchestration | N+1 | Parallel analysis, research |
+| 4 | Hierarchical | Orchestration | 3+ levels | Enterprise workflows |
+| 5 | Orchestrator-Workers | Orchestration | 1+N+1 | Dynamic task decomposition |
+| 6 | Self-Reflection | Resolution | 2-6 | Code gen, writing |
+| 7 | Cross-Reflection | Resolution | 3+ | Peer review, editing |
+| 8 | Debate | Resolution | D×R+1 | Controversial decisions |
+| 9 | Voting | Resolution | N | Consensus, fault tolerance |
+| 10 | Evaluator-Optimizer | Resolution | 2-4/round | Criteria-driven quality |
+| 11 | Role-Based | Structural | N×rounds | Team simulation |
+| 12 | Layered | Structural | sum(layers) | Multi-level analysis |
+| 13 | Topology | Structural | varies | Communication structure |
+| 14 | Blackboard | Structural | N×rounds | Shared state coordination |
+| 15 | Talker-Reasoner | Advanced | 1-2 | Cost-optimized chat |
+| 16 | Swarm | Advanced | N×rounds | Emergent behavior |
+| 17 | Human-in-the-Loop | Advanced | 1+ | Safety-critical tasks |
+| 18 | ReAct | Advanced | 1-N steps | Tool-using agents |
 
 ---
 
 ## See Also
 
-- [Router Package](router.md) — automatic model selection per agent call
-- [Compress Package](compress.md) — token budget enforcement across pipelines
-- [Patterns Guide](../guides/patterns.md) — deep-dive on each pattern
-- [API Reference](../api/patterns.md)
+- [Router Package](../router.md) — automatic model selection per agent call
+- [Compress Package](../compress.md) — token budget enforcement across pipelines
+- [Guides](../../guides/composition.md) — deep-dive integration guides
+- [API Reference](../../api/patterns.md)

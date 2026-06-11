@@ -140,7 +140,7 @@ All hooks are `None` by default — existing code works identically without them
 
 ## Next Steps
 
-- [Pattern Selection Guide](patterns/index.md) — decision tree + all 18 patterns
+- [Pattern Selection Guide](packages/patterns/index.md) — decision tree + all 18 patterns
 - [Hooks Guide](guides/hooks.md) — tracing, context, compression, and cost hooks
 - [Router Guide](guides/router.md) — auto-select cheapest model
 - [Compression Guide](guides/compression.md) — reduce token costs
