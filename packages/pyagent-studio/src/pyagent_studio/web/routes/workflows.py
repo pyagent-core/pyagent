@@ -11,7 +11,7 @@ router = APIRouter()
 async def workflows_list(request: Request):
     """List all workflows."""
     templates = request.app.state.templates
-    return templates.TemplateResponse("workflows.html", {"request": request, "workflows": {}})
+    return templates.TemplateResponse(request, "workflows.html", context={"workflows": {}})
 
 
 @router.get("/{name}")
@@ -19,5 +19,5 @@ async def workflow_detail(request: Request, name: str):
     """Workflow detail with Mermaid DAG."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
-        "workflows.html", {"request": request, "workflows": {}, "selected": name}
+        request, "workflows.html", context={"workflows": {}, "selected": name}
     )

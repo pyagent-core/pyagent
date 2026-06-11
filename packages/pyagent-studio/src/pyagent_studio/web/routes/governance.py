@@ -12,5 +12,5 @@ async def governance_page(request: Request):
     """Render governance page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
-        "governance.html", {"request": request, "score": 100, "issues": []}
+        request, "governance.html", context={"score": 100, "issues": []}
     )

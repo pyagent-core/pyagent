@@ -25,7 +25,7 @@ def get_trace_bus() -> TraceEventBus:
 async def traces_page(request: Request):
     """Render traces page."""
     templates = request.app.state.templates
-    return templates.TemplateResponse("traces.html", {"request": request})
+    return templates.TemplateResponse(request, "traces.html", context={})
 
 
 @router.get("/live")

@@ -11,4 +11,4 @@ router = APIRouter()
 async def providers_page(request: Request):
     """Render providers page."""
     templates = request.app.state.templates
-    return templates.TemplateResponse("providers.html", {"request": request, "providers": []})
+    return templates.TemplateResponse(request, "providers.html", context={"providers": []})

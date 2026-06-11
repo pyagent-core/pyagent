@@ -11,7 +11,7 @@ router = APIRouter()
 async def agents_list(request: Request):
     """List all agents."""
     templates = request.app.state.templates
-    return templates.TemplateResponse("agents.html", {"request": request, "agents": {}})
+    return templates.TemplateResponse(request, "agents.html", context={"agents": {}})
 
 
 @router.get("/{name}")
@@ -19,5 +19,5 @@ async def agent_detail(request: Request, name: str):
     """Agent detail view."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
-        "agents.html", {"request": request, "agents": {}, "selected": name}
+        request, "agents.html", context={"agents": {}, "selected": name}
     )

@@ -11,4 +11,4 @@ router = APIRouter()
 async def diff_page(request: Request):
     """Render diff page."""
     templates = request.app.state.templates
-    return templates.TemplateResponse("diff.html", {"request": request})
+    return templates.TemplateResponse(request, "diff.html", context={})

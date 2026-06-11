@@ -11,4 +11,4 @@ router = APIRouter()
 async def docs_page(request: Request):
     """Render docs page."""
     templates = request.app.state.templates
-    return templates.TemplateResponse("docs.html", {"request": request})
+    return templates.TemplateResponse(request, "docs.html", context={})

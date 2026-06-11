@@ -11,4 +11,4 @@ router = APIRouter()
 async def simulate_page(request: Request):
     """Render simulation form."""
     templates = request.app.state.templates
-    return templates.TemplateResponse("simulate.html", {"request": request})
+    return templates.TemplateResponse(request, "simulate.html", context={})

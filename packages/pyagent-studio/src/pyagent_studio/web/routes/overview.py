@@ -13,7 +13,6 @@ async def overview(request: Request):
     templates = request.app.state.templates
     # Default context when no blueprint is loaded
     ctx = {
-        "request": request,
         "blueprint_name": "No blueprint loaded",
         "blueprint_version": "-",
         "owner": "-",
@@ -24,4 +23,4 @@ async def overview(request: Request):
         "valid": True,
         "issue_count": 0,
     }
-    return templates.TemplateResponse("overview.html", ctx)
+    return templates.TemplateResponse(request, "overview.html", context=ctx)
