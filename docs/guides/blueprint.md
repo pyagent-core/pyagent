@@ -154,4 +154,4 @@ pyagent-blueprint generate --pattern supervisor --agents "a,b,c"
 
 ## API Reference
 
-::: pyagent_blueprint
+→ See the full [Blueprint API Reference](../api/blueprint.md).

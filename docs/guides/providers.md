@@ -128,4 +128,4 @@ The `BlueprintCompiler` resolves these references through the `ProviderRegistry`
 
 ## API Reference
 
-::: pyagent_providers
+→ See the full [Providers API Reference](../api/providers.md).

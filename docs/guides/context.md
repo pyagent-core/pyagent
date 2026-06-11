@@ -162,4 +162,4 @@ graph.wire_context(ledger)  # sets context on ALL agents
 
 ## API Reference
 
-::: pyagent_context
+→ See the full [Context API Reference](../api/context.md).
