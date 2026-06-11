@@ -32,7 +32,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install pytest pytest-asyncio
+      - run: |
+          pip install pytest pytest-asyncio
+          pip install -e packages/pyagent-patterns
+          pip install -e packages/pyagent-router
+          pip install -e packages/pyagent-compress
+          pip install -e packages/pyagent-trace
+          pip install -e packages/pyagent-context
+          pip install -e packages/pyagent-providers
+          pip install -e "packages/pyagent-blueprint[dev]"
+          pip install -e "packages/pyagent-studio[dev]"
       - run: python -m pytest packages/ -v --tb=short
 
   benchmark:
