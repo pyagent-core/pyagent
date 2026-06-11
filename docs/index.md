@@ -59,34 +59,51 @@ print(result.output)  # "Summary: concise version"
 
 ```mermaid
 flowchart TD
-    BP[Blueprint YAML] -->|load & validate| BC[BlueprintCompiler]
-    BC -->|compile| RG[RuntimeGraph]
-    RG -->|contains| P[Patterns]
-    P -->|orchestrate| A[Agents]
-    A -->|call| PR[Providers]
+    classDef bp    fill:#7C3AED,stroke:#5B21B6,color:#fff
+    classDef exec  fill:#1D4ED8,stroke:#1E40AF,color:#fff
+    classDef mem   fill:#059669,stroke:#047857,color:#fff
+    classDef obs   fill:#B45309,stroke:#92400E,color:#fff
+    classDef sink  fill:#374151,stroke:#1F2937,color:#fff
 
-    A -->|read/write| CL[ContextLedger]
-    CL -->|tier 1| WM[WorkingMemory]
-    CL -->|tier 2| SM[SessionMemory]
-    CL -->|tier 3| SEM[SemanticMemory]
+    subgraph BPL["📋  Blueprint"]
+        direction LR
+        YAML[/"blueprint.yaml"/]:::bp
+        COMP["BlueprintCompiler"]:::bp
+        RG["RuntimeGraph"]:::bp
+        YAML -->|load + validate| COMP -->|compile| RG
+    end
 
-    A -->|output| CM[Compressor]
-    CM -->|compressed| A
+    subgraph EXEC["⚡  Execution"]
+        direction LR
+        PAT["Patterns\n18 types"]:::exec
+        AGT["Agents"]:::exec
+        PRV["Providers\nAnthropic · OpenAI · …"]:::exec
+        CMP["Compressor\n+ TokenBudget"]:::exec
+        PAT -->|orchestrate| AGT -->|call| PRV
+    end
 
-    A -.->|emit events| TB[TraceEventBus]
-    P -.->|emit events| TB
-    PR -.->|emit events| TB
-    CM -.->|emit events| TB
+    subgraph CTX["🧠  Context & Memory"]
+        direction LR
+        CL[["ContextLedger"]]:::mem
+        WM["Working\nMemory"]:::mem
+        SM[("Session\nMemory")]:::mem
+        SEM[("Semantic\nMemory")]:::mem
+        CL --> WM & SM & SEM
+    end
 
-    TB -->|export| EX1[ConsoleExporter]
-    TB -->|export| EX2[JsonlExporter]
-    TB -->|export| EX3[OTelExporter]
-    TB -->|export| EX4[LangfuseExporter]
+    subgraph OBS["📊  Observability"]
+        direction LR
+        BUS(["TraceEventBus"]):::obs
+        EXP["Console · JSONL\nOTel · Langfuse"]:::sink
+        STU["Studio Dashboard\nTraces · Costs · Governance"]:::obs
+        BUS --> EXP
+        BUS --> STU
+    end
 
-    TB -->|feed| ST[Studio Dashboard]
-    ST -->|visualize| TV[Trace Viewer]
-    ST -->|visualize| CV[Cost Dashboard]
-    ST -->|visualize| GV[Governance View]
+    RG -->|"run workflow"| PAT
+    AGT <-->|"read / write"| CL
+    AGT -->|"compress output"| CMP -->|"trimmed tokens"| AGT
+    AGT & PAT & PRV & CMP -.->|"trace events"| BUS
 ```
 
 **The intended flow for consumers:**
