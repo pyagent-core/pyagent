@@ -113,6 +113,8 @@ nav:
     - Blueprint: guides/blueprint.md
     - Studio: guides/studio.md
   - Packages:
+    - Patterns: packages/patterns.md
+    - Router: packages/router.md
     - Compress: packages/compress.md
     - Trace: packages/trace.md
     - Context: packages/context.md

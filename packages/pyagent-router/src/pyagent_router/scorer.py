@@ -2,8 +2,6 @@
 
 Uses heuristics (token count, keyword complexity, question type) and
 optionally an LLM classifier to score difficulty 1-10.
-
-Based on: arxiv:2509.11079 "Difficulty-Aware Agent Orchestration"
 """
 
 from __future__ import annotations
