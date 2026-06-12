@@ -1,6 +1,6 @@
 # PyAgent
 
-**Production-ready patterns for multi-agent LLM systems** — declare systems in YAML, orchestrate with 18 named patterns, persist state with three-tier memory, and observe everything with OTel tracing and a web dashboard.
+**A production stack for multi-agent LLM systems** — declare systems in YAML, orchestrate with 18 named patterns, persist state with three-tier memory, and observe everything with OTel tracing and a web dashboard.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

@@ -1,6 +1,6 @@
 # pyagent-compress
 
-**Inter-agent message compression and token budget management** for multi-agent LLM systems. Reduce token costs without losing key information.
+**Pillar 2 of the PyAgent production stack for multi-agent LLM systems** — inter-agent message compression and token budget management. Reduce costs without losing key information.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

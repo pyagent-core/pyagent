@@ -1,6 +1,6 @@
 # pyagent-router
 
-**Difficulty-aware routing and model selection** for multi-agent LLM workflows. Route easy tasks to cheap models, hard tasks to expensive ones.
+**Pillar 2 of the PyAgent production stack for multi-agent LLM systems** — difficulty-aware routing and model selection. Route easy tasks to cheap models, hard tasks to capable ones.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

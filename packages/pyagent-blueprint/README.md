@@ -1,6 +1,6 @@
 # pyagent-blueprint
 
-**Declarative YAML specs for multi-agent LLM systems** — validate, compile, test, diff, render, and generate agent system blueprints.
+**Pillar 1 of the PyAgent production stack for multi-agent LLM systems** — declare your entire agent system in a single YAML file. Validate, compile, test, diff, and generate from the CLI.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

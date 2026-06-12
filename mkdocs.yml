@@ -1,11 +1,12 @@
 site_name: PyAgent
-site_description: "18 reusable multi-agent orchestration patterns for LLMs — with routing, compression, and OTel tracing"
+site_description: "PyAgent: a production stack for multi-agent LLM systems — YAML blueprints, 18 orchestration patterns, three-tier memory, and OTel tracing"
 site_url: https://pyagent.org
 repo_url: https://github.com/pyagent-core/pyagent
 repo_name: pyagent-core/pyagent
 
 theme:
   name: material
+  custom_dir: docs/overrides
   palette:
     - scheme: slate
       primary: indigo

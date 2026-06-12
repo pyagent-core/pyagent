@@ -1,13 +1,19 @@
 ---
-hide:
-  - toc
+template: home.html
 ---
+
+<div class="home-hero" markdown>
 
 # PyAgent
 
-**Production-ready patterns for multi-agent LLM systems** — 18 composable orchestration patterns, declarative YAML blueprints, intelligent model routing, inter-agent compression, and a full observability stack.
+**Production-ready patterns for multi-agent LLM systems**
 
-<div style="margin: 1.5rem 0" markdown>
+<div class="hero-pills" markdown>
+<span class="hero-pill">18 patterns</span>
+<span class="hero-pill">4 pillars</span>
+<span class="hero-pill">Python 3.11+</span>
+<span class="hero-pill">0 mandatory deps</span>
+</div>
 
 [:fontawesome-solid-bolt: Get Started](getting-started.md){ .md-button .md-button--primary }
 &nbsp;&nbsp;
@@ -19,51 +25,154 @@ hide:
 
 ---
 
-## Four Architecture Pillars
+<div class="pillar-stripe stripe-blueprint" markdown>
+<div class="stripe-inner" markdown>
+<div class="stripe-text" markdown>
 
-<div class="grid cards" markdown>
+### Pillar 1 — Blueprint
 
--   :material-file-code:{ .lg .middle } **📋 Blueprint**
+**Declare your entire agent system in a single YAML file.** No boilerplate Python to wire up agents, workflows, or providers. The `BlueprintCompiler` validates, compiles, diffs, and generates from the spec.
 
-    ---
+`pyagent-blueprint`
 
-    Declare your entire agent system in a single YAML file. Validate, compile, test, diff, and render without writing Python.
-
-    `pyagent-blueprint`
-
-    [:octicons-arrow-right-24: Blueprint docs](packages/blueprint/index.md)
-
--   :material-lightning-bolt:{ .lg .middle } **⚡ Execution**
-
-    ---
-
-    18 orchestration patterns running typed agents against real providers, with difficulty-based routing and inter-agent compression.
-
-    `pyagent-patterns` · `pyagent-providers` · `pyagent-router` · `pyagent-compress`
-
-    [:octicons-arrow-right-24: Patterns docs](packages/patterns/index.md)
-
--   :material-brain:{ .lg .middle } **🧠 Context & Memory**
-
-    ---
-
-    Three-tier memory (working / session / semantic) with trust metadata, compression policies, and PII redaction — shared across all agents in a run.
-
-    `pyagent-context`
-
-    [:octicons-arrow-right-24: Context docs](packages/context.md)
-
--   :material-chart-timeline-variant:{ .lg .middle } **📊 Observability**
-
-    ---
-
-    OTel spans, Langfuse export, cost tracking, record/replay, and a web dashboard with trace explorer, governance, and provider health.
-
-    `pyagent-trace` · `pyagent-studio`
-
-    [:octicons-arrow-right-24: Trace docs](packages/trace.md)
+[:octicons-arrow-right-24: Blueprint docs](packages/blueprint/index.md){ .md-button .md-button--primary }
 
 </div>
+<div class="stripe-code" markdown>
+
+```yaml
+# customer-support.yaml
+api_version: pyagent/v1
+metadata: { name: customer-support, version: "1.0.0" }
+providers:
+  fast:   { provider: anthropic, model: claude-haiku-3-5-20241022 }
+  expert: { provider: anthropic, model: claude-sonnet-4-20250514 }
+agents:
+  classifier: { provider: fast,   prompt: "Classify into billing, technical, general." }
+  specialist: { provider: expert, prompt: "Handle the request professionally." }
+workflows:
+  main:
+    pattern: supervisor
+    agents: { classifier: classifier, routes: { billing: specialist } }
+```
+
+```bash
+blueprint validate customer-support.yaml
+blueprint test     customer-support.yaml
+blueprint diff     v1.yaml v2.yaml
+```
+
+</div>
+</div>
+</div>
+
+<div class="pillar-stripe stripe-execution" markdown>
+<div class="stripe-inner" markdown>
+<div class="stripe-code" markdown>
+
+```python
+from pyagent_patterns.orchestration import Pipeline
+from pyagent_patterns.base import Agent
+from pyagent_providers import ProviderRegistry, AnthropicLLM
+from pyagent_router.middleware import RouterMiddleware
+
+router = RouterMiddleware(model_registry={
+    "claude-haiku":  AnthropicLLM("claude-haiku-3-5-20241022"),
+    "claude-sonnet": AnthropicLLM("claude-sonnet-4-20250514"),
+})
+pipeline = Pipeline(stages=[
+    router.wrap(Agent("extractor",  AnthropicLLM("claude-sonnet-4-20250514"))),
+    router.wrap(Agent("summarizer", AnthropicLLM("claude-sonnet-4-20250514"))),
+])
+result = asyncio.run(pipeline.run("Summarise the quarterly report..."))
+```
+
+</div>
+<div class="stripe-text" markdown>
+
+### Pillar 2 — Execution
+
+**18 named patterns orchestrate real agents against real providers.** Difficulty-based routing automatically selects the right model for each task. Inter-agent compression enforces token budgets across the pipeline.
+
+`pyagent-patterns` · `pyagent-providers` · `pyagent-router` · `pyagent-compress`
+
+[:octicons-arrow-right-24: Patterns docs](packages/patterns/index.md){ .md-button .md-button--primary }
+
+</div>
+</div>
+</div>
+
+<div class="pillar-stripe stripe-context" markdown>
+<div class="stripe-inner" markdown>
+<div class="stripe-text" markdown>
+
+### Pillar 3 — Context & Memory
+
+**Three-tier memory shared across all agents in a run.** Working memory for the current task, session memory across turns, semantic memory for long-term retrieval — with trust levels and PII redaction built in.
+
+`pyagent-context`
+
+[:octicons-arrow-right-24: Context docs](packages/context.md){ .md-button .md-button--primary }
+
+</div>
+<div class="stripe-code" markdown>
+
+```python
+from pyagent_context import ContextLedger, ContextItem, TrustLevel, Sensitivity
+
+ledger = ContextLedger()
+ledger.append(ContextItem(
+    content="Customer ID: C-10482, tier: premium, since 2022",
+    source="crm",
+    trust=TrustLevel.VERIFIED,
+    sensitivity=Sensitivity.INTERNAL,
+))
+
+graph.wire_context(ledger)  # shared across all agents in the graph
+```
+
+</div>
+</div>
+</div>
+
+<div class="pillar-stripe stripe-observability" markdown>
+<div class="stripe-inner" markdown>
+<div class="stripe-code" markdown>
+
+```python
+from pyagent_trace.events import TraceEventBus
+
+bus = TraceEventBus()
+graph.wire_trace(bus)  # attach to all agents in the compiled graph
+```
+
+```bash
+pyagent apply     customer-support.yaml
+pyagent simulate  customer-support.yaml main "I need a refund"
+pyagent dashboard --blueprint customer-support.yaml
+# → http://localhost:8080  (traces · costs · governance · provider health)
+```
+
+</div>
+<div class="stripe-text" markdown>
+
+### Pillar 4 — Observability
+
+**Every LLM call traced, every cost tracked, every decision visible.** OTel spans, Langfuse export, record/replay for debugging, and a web dashboard with trace explorer, cost analytics, compliance governance, and provider health monitoring.
+
+`pyagent-trace` · `pyagent-studio`
+
+[:octicons-arrow-right-24: Trace docs](packages/trace.md){ .md-button .md-button--primary }
+
+</div>
+</div>
+</div>
+
+---
+
+<div class="why-section" markdown>
+
+## Why PyAgent?
 
 | | LangGraph | CrewAI | AutoGen | **PyAgent** |
 |--|:---------:|:------:|:-------:|:-----------:|
@@ -74,31 +183,15 @@ hide:
 | Pattern-aware OTel tracing | ❌ | ❌ | ❌ | ✅ |
 | Zero mandatory deps | ❌ | ❌ | ❌ | ✅ |
 
+</div>
+
 ---
+
+<div class="home-content-section" markdown>
 
 ## Quick Start
 
-=== "Patterns"
-
-    ```bash
-    pip install pyagent-patterns
-    ```
-
-    ```python
-    import asyncio
-    from pyagent_patterns.base import Agent, MockLLM
-    from pyagent_patterns.orchestration import Pipeline
-
-    llm = MockLLM(responses=["Extracted: key facts", "Summary: concise version"])
-    pipeline = Pipeline(stages=[
-        Agent("extractor",  llm),
-        Agent("summarizer", llm),
-    ])
-    result = asyncio.run(pipeline.run("Process this document"))
-    print(result.output)  # "Summary: concise version"
-    ```
-
-=== "Blueprint"
+=== "📋 Blueprint"
 
     ```bash
     pip install pyagent-blueprint
@@ -126,6 +219,26 @@ hide:
     print(result.output)
     ```
 
+=== "⚡ Execution (Patterns)"
+
+    ```bash
+    pip install pyagent-patterns
+    ```
+
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent, MockLLM
+    from pyagent_patterns.orchestration import Pipeline
+
+    llm = MockLLM(responses=["Extracted: key facts", "Summary: concise version"])
+    pipeline = Pipeline(stages=[
+        Agent("extractor",  llm),
+        Agent("summarizer", llm),
+    ])
+    result = asyncio.run(pipeline.run("Process this document"))
+    print(result.output)  # "Summary: concise version"
+    ```
+
 === "Full stack"
 
     ```bash
@@ -145,58 +258,19 @@ hide:
     # Then explore: pyagent dashboard --trace traces/runs.jsonl
     ```
 
+</div>
+
 ---
+
+<div class="arch-stripe" markdown>
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    classDef bp    fill:#7C3AED,stroke:#5B21B6,color:#fff
-    classDef exec  fill:#1D4ED8,stroke:#1E40AF,color:#fff
-    classDef mem   fill:#059669,stroke:#047857,color:#fff
-    classDef obs   fill:#B45309,stroke:#92400E,color:#fff
-    classDef sink  fill:#374151,stroke:#1F2937,color:#fff
+<div class="arch-image-wrap" markdown>
 
-    subgraph BPL["📋  Blueprint"]
-        direction LR
-        YAML[/"blueprint.yaml"/]:::bp
-        COMP["BlueprintCompiler"]:::bp
-        RG["RuntimeGraph"]:::bp
-        YAML -->|load + validate| COMP -->|compile| RG
-    end
+![PyAgent Architecture](assets/pyagent-architecture.png)
 
-    subgraph EXEC["⚡  Execution"]
-        direction LR
-        PAT["Patterns\n18 types"]:::exec
-        AGT["Agents"]:::exec
-        PRV["Providers\nAnthropic · OpenAI · …"]:::exec
-        CMP["Compressor\n+ TokenBudget"]:::exec
-        PAT -->|orchestrate| AGT -->|call| PRV
-    end
-
-    subgraph CTX["🧠  Context & Memory"]
-        direction LR
-        CL[["ContextLedger"]]:::mem
-        WM["Working\nMemory"]:::mem
-        SM[("Session\nMemory")]:::mem
-        SEM[("Semantic\nMemory")]:::mem
-        CL --> WM & SM & SEM
-    end
-
-    subgraph OBS["📊  Observability"]
-        direction LR
-        BUS(["TraceEventBus"]):::obs
-        EXP["Console · JSONL\nOTel · Langfuse"]:::sink
-        STU["Studio Dashboard\nTraces · Costs · Governance"]:::obs
-        BUS --> EXP
-        BUS --> STU
-    end
-
-    RG -->|"run workflow"| PAT
-    AGT <-->|"read / write"| CL
-    AGT -->|"compress output"| CMP -->|"trimmed tokens"| AGT
-    AGT & PAT & PRV & CMP -.->|"trace events"| BUS
-```
+</div>
 
 **The intended flow:**
 
@@ -209,99 +283,11 @@ flowchart TD
 7. **Trace** — `TraceEventBus` collects events from agents, patterns, and providers
 8. **Observe** — Studio visualises traces, costs, compliance, and provider health in real time
 
----
-
-## Packages by Pillar
-
-=== "📋 Blueprint"
-
-    <div class="grid cards" markdown>
-
-    -   :material-file-code:{ .lg .middle } **pyagent-blueprint**
-
-        ---
-
-        YAML spec → `BlueprintCompiler` → `RuntimeGraph`. Validate, compile, test, render, diff, and generate from the CLI.
-
-        [:octicons-arrow-right-24: Docs](packages/blueprint/index.md)
-
-    </div>
-
-=== "⚡ Execution"
-
-    <div class="grid cards" markdown>
-
-    -   :material-puzzle:{ .lg .middle } **pyagent-patterns**
-
-        ---
-
-        18 orchestration patterns: Pipeline, Supervisor, Fan-Out, Debate, Voting, Swarm, ReAct and more.
-
-        [:octicons-arrow-right-24: Docs](packages/patterns/index.md)
-
-    -   :material-server-network:{ .lg .middle } **pyagent-providers**
-
-        ---
-
-        Multi-provider registry, routing strategies, fallback chains, capability negotiation, cost optimizer.
-
-        [:octicons-arrow-right-24: Docs](packages/providers.md)
-
-    -   :material-call-split:{ .lg .middle } **pyagent-router**
-
-        ---
-
-        Difficulty scoring, cost estimation, model selection middleware — route cheap tasks to cheap models.
-
-        [:octicons-arrow-right-24: Docs](packages/router.md)
-
-    -   :material-arrow-collapse-all:{ .lg .middle } **pyagent-compress**
-
-        ---
-
-        Inter-agent message compression, agent pruning, interaction pruning, and token budgets.
-
-        [:octicons-arrow-right-24: Docs](packages/compress.md)
-
-    </div>
-
-=== "🧠 Context & Memory"
-
-    <div class="grid cards" markdown>
-
-    -   :material-brain:{ .lg .middle } **pyagent-context**
-
-        ---
-
-        Three-tier memory (working / session / semantic), trust and sensitivity metadata, compression policies, and PII redaction.
-
-        [:octicons-arrow-right-24: Docs](packages/context.md)
-
-    </div>
-
-=== "📊 Observability"
-
-    <div class="grid cards" markdown>
-
-    -   :material-chart-timeline-variant:{ .lg .middle } **pyagent-trace**
-
-        ---
-
-        `TraceEventBus` pub/sub, OTel spans, Langfuse export, cost tracking, record/replay.
-
-        [:octicons-arrow-right-24: Docs](packages/trace.md)
-
-    -   :material-monitor-dashboard:{ .lg .middle } **pyagent-studio**
-
-        ---
-
-        `kubectl`-style CLI + FastAPI web dashboard. Simulate, diff, explore traces, govern.
-
-        [:octicons-arrow-right-24: Docs](packages/studio/index.md)
-
-    </div>
+</div>
 
 ---
+
+<div class="home-content-section" markdown>
 
 ## 18 Patterns
 
@@ -343,7 +329,11 @@ flowchart TD
     | [Human-in-the-Loop](packages/patterns/advanced/human-in-the-loop.md) | Pause workflow for human approval at defined checkpoints |
     | [ReAct](packages/patterns/advanced/react.md) | Reason → act → observe loop with tool calls |
 
+</div>
+
 ---
+
+<div class="home-content-section" markdown>
 
 ## Where to start
 
@@ -356,8 +346,8 @@ flowchart TD
     Start with the tutorial, then explore the pattern library one pattern at a time.
 
     1. [Getting Started](getting-started.md)
-    2. [Pipeline pattern](packages/patterns/orchestration/pipeline.md)
-    3. [Supervisor pattern](packages/patterns/orchestration/supervisor.md)
+    2. [Blueprint guide](guides/blueprint.md)
+    3. [Pipeline pattern](packages/patterns/orchestration/pipeline.md)
     4. [Composition guide](guides/composition.md)
 
 -   :material-code-braces:{ .lg .middle } **Adding to an existing codebase?**
@@ -383,3 +373,22 @@ flowchart TD
     4. [Recovery guide](guides/recovery.md)
 
 </div>
+
+</div>
+
+<script>
+(function () {
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('stripe-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.stripe-text, .stripe-code').forEach(function (el) {
+    observer.observe(el);
+  });
+})();
+</script>

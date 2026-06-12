@@ -1,6 +1,6 @@
 # pyagent-patterns
 
-**18 reusable multi-agent orchestration patterns for LLMs** — zero dependencies, async-first, fully typed.
+**Pillar 2 of the PyAgent production stack for multi-agent LLM systems** — 18 named orchestration patterns, zero dependencies, async-first, fully typed.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

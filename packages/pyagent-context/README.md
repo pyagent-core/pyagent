@@ -1,6 +1,6 @@
 # pyagent-context
 
-**Three-tier memory with trust-aware context ledger** for multi-agent LLM systems. Structured context management with trust levels, sensitivity classification, compression policies, and lifecycle management.
+**Pillar 3 of the PyAgent production stack for multi-agent LLM systems** — three-tier memory with trust-aware context ledger. Trust levels, sensitivity classification, compression policies, and PII redaction built in.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

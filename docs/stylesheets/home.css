@@ -1,0 +1,212 @@
+/* ── Home page: full-width layout ─────────────────────────────────────────── */
+
+.md-content__inner:has(.home-hero) {
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.home-hero {
+  text-align: center;
+  padding: 5rem 2rem 3.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.home-hero h1 {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.home-hero > p strong {
+  font-size: 1.15rem;
+  opacity: 0.9;
+}
+
+.hero-pills {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 1.75rem 0 2rem;
+}
+
+.hero-pill {
+  background: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Pillar stripes ──────────────────────────────────────────────────────── */
+.pillar-stripe {
+  padding: 5rem 2rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.stripe-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* Execution + Observability: code on left, text on right */
+.stripe-execution .stripe-inner .stripe-code,
+.stripe-observability .stripe-inner .stripe-code {
+  order: 1;
+}
+
+.stripe-execution .stripe-inner .stripe-text,
+.stripe-observability .stripe-inner .stripe-text {
+  order: 2;
+}
+
+/* Stripe backgrounds — dark scheme */
+[data-md-color-scheme="slate"] .stripe-blueprint     { background: rgba(124, 58, 237, 0.10); }
+[data-md-color-scheme="slate"] .stripe-execution     { background: rgba(29,  78, 216, 0.10); }
+[data-md-color-scheme="slate"] .stripe-context       { background: rgba(5,  150, 105, 0.10); }
+[data-md-color-scheme="slate"] .stripe-observability { background: rgba(180, 83,   9, 0.10); }
+
+/* Stripe backgrounds — light scheme */
+[data-md-color-scheme="default"] .stripe-blueprint     { background: rgba(124, 58, 237, 0.06); }
+[data-md-color-scheme="default"] .stripe-execution     { background: rgba(29,  78, 216, 0.06); }
+[data-md-color-scheme="default"] .stripe-context       { background: rgba(5,  150, 105, 0.06); }
+[data-md-color-scheme="default"] .stripe-observability { background: rgba(180, 83,   9, 0.06); }
+
+/* Stripe text */
+.stripe-text h3 {
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.stripe-text p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+
+/* ── Scroll reveal — IntersectionObserver adds .stripe-visible ───────────── */
+
+/* Slide-from-left: Blueprint/Context text + Execution/Observability code */
+.stripe-blueprint .stripe-text,
+.stripe-context   .stripe-text,
+.stripe-execution .stripe-code,
+.stripe-observability .stripe-code {
+  transform: translateX(-90px);
+  opacity: 0;
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.65s ease;
+}
+
+/* Slide-from-right: Blueprint/Context code + Execution/Observability text */
+.stripe-blueprint .stripe-code,
+.stripe-context   .stripe-code,
+.stripe-execution .stripe-text,
+.stripe-observability .stripe-text {
+  transform: translateX(90px);
+  opacity: 0;
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.65s ease 0.1s;
+}
+
+/* Settled state added by JS */
+.stripe-text.stripe-visible,
+.stripe-code.stripe-visible {
+  transform: translateX(0) !important;
+  opacity: 1 !important;
+}
+
+/* ── Architecture section (cream to match image background) ───────────────── */
+.arch-stripe {
+  padding: 4rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Match the parchment tone of the architecture image */
+[data-md-color-scheme="default"] .arch-stripe {
+  background: #F8F3EA;
+  border-radius: 16px;
+  margin: 0 auto 2rem;
+  padding: 3.5rem 3rem;
+}
+
+[data-md-color-scheme="slate"] .arch-stripe {
+  background: rgba(248, 243, 234, 0.06);
+  border-radius: 16px;
+  margin: 0 auto 2rem;
+  padding: 3.5rem 3rem;
+}
+
+.arch-stripe h2 {
+  margin-top: 0;
+}
+
+.arch-image-wrap {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.arch-image-wrap img {
+  max-width: 100%;
+  width: 900px;
+  border-radius: 12px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+}
+
+/* ── Why / comparison section ────────────────────────────────────────────── */
+.why-section {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+/* ── Content sections (Quick Start, Patterns, Where to start) ─────────────── */
+.home-content-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 2rem 3rem;
+}
+
+/* ── Hover lift on grid cards ────────────────────────────────────────────── */
+.md-content__inner:has(.home-hero) .grid.cards > ul > li,
+.md-content__inner:has(.home-hero) .grid.cards > * {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.md-content__inner:has(.home-hero) .grid.cards > ul > li:hover,
+.md-content__inner:has(.home-hero) .grid.cards > *:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media screen and (max-width: 960px) {
+  .stripe-inner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .stripe-execution .stripe-inner .stripe-code,
+  .stripe-execution .stripe-inner .stripe-text,
+  .stripe-observability .stripe-inner .stripe-code,
+  .stripe-observability .stripe-inner .stripe-text {
+    order: unset;
+  }
+
+  .home-hero { padding: 3rem 1.5rem 2.5rem; }
+  .pillar-stripe { padding: 3rem 1.5rem; }
+  .arch-stripe { padding: 2.5rem 1.5rem; border-radius: 0; }
+}

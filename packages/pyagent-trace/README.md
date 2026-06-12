@@ -1,6 +1,6 @@
 # pyagent-trace
 
-**Pattern-aware OpenTelemetry tracing** for multi-agent LLM systems. Track costs, record interactions, debug with replay.
+**Pillar 4 of the PyAgent production stack for multi-agent LLM systems** — pattern-aware OpenTelemetry tracing. Track costs, record interactions, and debug with replay.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

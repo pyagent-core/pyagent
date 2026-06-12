@@ -1,6 +1,6 @@
 # pyagent-providers
 
-**Multi-provider abstraction with capability negotiation, health checks, fallback chains, and cost-optimized routing** for multi-agent LLM systems. Drop-in replacement for hardcoded model specs.
+**Pillar 2 of the PyAgent production stack for multi-agent LLM systems** — multi-provider abstraction with capability negotiation, health checks, fallback chains, and cost-optimized routing.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

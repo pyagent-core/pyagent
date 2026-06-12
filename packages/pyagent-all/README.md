@@ -1,6 +1,6 @@
 # pyagent-all
 
-Meta-package that installs the complete PyAgent stack. One command, all four architecture pillars.
+**PyAgent: A Production Stack for Multi-Agent LLM Systems** — one command installs all four architecture pillars.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

@@ -1,6 +1,6 @@
 # pyagent-studio
 
-**The Kubernetes Dashboard for Agent Systems** — CLI + web control plane for designing, simulating, debugging, and governing multi-agent LLM blueprints.
+**Pillar 4 of the PyAgent production stack for multi-agent LLM systems** — CLI + web control plane for designing, simulating, debugging, and governing agent systems.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
