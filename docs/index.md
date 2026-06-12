@@ -19,41 +19,49 @@ hide:
 
 ---
 
-## Why PyAgent?
+## Four Architecture Pillars
 
 <div class="grid cards" markdown>
 
--   :material-puzzle:{ .lg .middle } **Named pattern library**
+-   :material-file-code:{ .lg .middle } **📋 Blueprint**
 
     ---
 
-    18 battle-tested patterns — Pipeline, Supervisor, Fan-Out, Debate, Swarm, ReAct and more. No more reinventing coordination logic from scratch.
+    Declare your entire agent system in a single YAML file. Validate, compile, test, diff, and render without writing Python.
 
-    [:octicons-arrow-right-24: Browse patterns](packages/patterns/index.md)
-
--   :material-file-code:{ .lg .middle } **Spec-driven with Blueprint**
-
-    ---
-
-    Declare your entire agent system in YAML. Validate, compile, test, and diff versions — without writing a line of Python.
+    `pyagent-blueprint`
 
     [:octicons-arrow-right-24: Blueprint docs](packages/blueprint/index.md)
 
--   :material-monitor-dashboard:{ .lg .middle } **Visual Studio control plane**
+-   :material-lightning-bolt:{ .lg .middle } **⚡ Execution**
 
     ---
 
-    Launch a web dashboard for simulating workflows, exploring traces, and monitoring provider costs — no code required.
+    18 orchestration patterns running typed agents against real providers, with difficulty-based routing and inter-agent compression.
 
-    [:octicons-arrow-right-24: Studio docs](packages/studio/index.md)
+    `pyagent-patterns` · `pyagent-providers` · `pyagent-router` · `pyagent-compress`
 
--   :material-chart-timeline-variant:{ .lg .middle } **Full observability stack**
+    [:octicons-arrow-right-24: Patterns docs](packages/patterns/index.md)
+
+-   :material-brain:{ .lg .middle } **🧠 Context & Memory**
 
     ---
 
-    OTel spans, Langfuse export, cost tracking, record/replay — opt-in hooks, zero overhead when not wired.
+    Three-tier memory (working / session / semantic) with trust metadata, compression policies, and PII redaction — shared across all agents in a run.
 
-    [:octicons-arrow-right-24: Tracing guide](guides/tracing.md)
+    `pyagent-context`
+
+    [:octicons-arrow-right-24: Context docs](packages/context.md)
+
+-   :material-chart-timeline-variant:{ .lg .middle } **📊 Observability**
+
+    ---
+
+    OTel spans, Langfuse export, cost tracking, record/replay, and a web dashboard with trace explorer, governance, and provider health.
+
+    `pyagent-trace` · `pyagent-studio`
+
+    [:octicons-arrow-right-24: Trace docs](packages/trace.md)
 
 </div>
 
@@ -203,75 +211,95 @@ flowchart TD
 
 ---
 
-## Packages
+## Packages by Pillar
 
-<div class="grid cards" markdown>
+=== "📋 Blueprint"
 
--   :material-file-code:{ .lg .middle } **pyagent-blueprint**
+    <div class="grid cards" markdown>
 
-    ---
+    -   :material-file-code:{ .lg .middle } **pyagent-blueprint**
 
-    YAML spec → `BlueprintCompiler` → `RuntimeGraph`. Validate, test, render, and diff from the CLI.
+        ---
 
-    [:octicons-arrow-right-24: Docs](packages/blueprint/index.md)
+        YAML spec → `BlueprintCompiler` → `RuntimeGraph`. Validate, compile, test, render, diff, and generate from the CLI.
 
--   :material-puzzle:{ .lg .middle } **pyagent-patterns**
+        [:octicons-arrow-right-24: Docs](packages/blueprint/index.md)
 
-    ---
+    </div>
 
-    18 orchestration patterns: Pipeline, Supervisor, Fan-Out, Debate, Voting, Swarm, ReAct and more.
+=== "⚡ Execution"
 
-    [:octicons-arrow-right-24: Docs](packages/patterns/index.md)
+    <div class="grid cards" markdown>
 
--   :material-monitor-dashboard:{ .lg .middle } **pyagent-studio**
+    -   :material-puzzle:{ .lg .middle } **pyagent-patterns**
 
-    ---
+        ---
 
-    `kubectl`-style CLI + FastAPI web dashboard. Simulate, diff, explore traces, govern.
+        18 orchestration patterns: Pipeline, Supervisor, Fan-Out, Debate, Voting, Swarm, ReAct and more.
 
-    [:octicons-arrow-right-24: Docs](packages/studio/index.md)
+        [:octicons-arrow-right-24: Docs](packages/patterns/index.md)
 
--   :material-chart-timeline-variant:{ .lg .middle } **pyagent-trace**
+    -   :material-server-network:{ .lg .middle } **pyagent-providers**
 
-    ---
+        ---
 
-    `TraceEventBus` pub/sub, OTel spans, Langfuse export, cost tracking, record/replay.
+        Multi-provider registry, routing strategies, fallback chains, capability negotiation, cost optimizer.
 
-    [:octicons-arrow-right-24: Docs](packages/trace.md)
+        [:octicons-arrow-right-24: Docs](packages/providers.md)
 
--   :material-brain:{ .lg .middle } **pyagent-context**
+    -   :material-call-split:{ .lg .middle } **pyagent-router**
 
-    ---
+        ---
 
-    Three-tier memory (working / session / semantic), trust metadata, compression, and redaction.
+        Difficulty scoring, cost estimation, model selection middleware — route cheap tasks to cheap models.
 
-    [:octicons-arrow-right-24: Docs](packages/context.md)
+        [:octicons-arrow-right-24: Docs](packages/router.md)
 
--   :material-arrow-collapse-all:{ .lg .middle } **pyagent-compress**
+    -   :material-arrow-collapse-all:{ .lg .middle } **pyagent-compress**
 
-    ---
+        ---
 
-    Inter-agent message compression, agent pruning, interaction pruning, and token budgets.
+        Inter-agent message compression, agent pruning, interaction pruning, and token budgets.
 
-    [:octicons-arrow-right-24: Docs](packages/compress.md)
+        [:octicons-arrow-right-24: Docs](packages/compress.md)
 
--   :material-server-network:{ .lg .middle } **pyagent-providers**
+    </div>
 
-    ---
+=== "🧠 Context & Memory"
 
-    Multi-provider registry, routing strategies, fallback chains, capability negotiation, cost optimizer.
+    <div class="grid cards" markdown>
 
-    [:octicons-arrow-right-24: Docs](packages/providers.md)
+    -   :material-brain:{ .lg .middle } **pyagent-context**
 
--   :material-call-split:{ .lg .middle } **pyagent-router**
+        ---
 
-    ---
+        Three-tier memory (working / session / semantic), trust and sensitivity metadata, compression policies, and PII redaction.
 
-    Difficulty scoring, cost estimation, model selection middleware — route cheap tasks to cheap models.
+        [:octicons-arrow-right-24: Docs](packages/context.md)
 
-    [:octicons-arrow-right-24: Docs](packages/router.md)
+    </div>
 
-</div>
+=== "📊 Observability"
+
+    <div class="grid cards" markdown>
+
+    -   :material-chart-timeline-variant:{ .lg .middle } **pyagent-trace**
+
+        ---
+
+        `TraceEventBus` pub/sub, OTel spans, Langfuse export, cost tracking, record/replay.
+
+        [:octicons-arrow-right-24: Docs](packages/trace.md)
+
+    -   :material-monitor-dashboard:{ .lg .middle } **pyagent-studio**
+
+        ---
+
+        `kubectl`-style CLI + FastAPI web dashboard. Simulate, diff, explore traces, govern.
+
+        [:octicons-arrow-right-24: Docs](packages/studio/index.md)
+
+    </div>
 
 ---
 
@@ -347,11 +375,11 @@ flowchart TD
 
     ---
 
-    Start with Blueprint for versioning and CI validation, then add Studio for observability.
+    Use all four pillars: Blueprint for versioning and CI, then Observability for monitoring.
 
-    1. [Blueprint guide](guides/blueprint.md)
-    2. [Studio guide](guides/studio.md)
-    3. [Tracing guide](guides/tracing.md)
+    1. [Blueprint guide](guides/blueprint.md) — pillar 1
+    2. [Tracing guide](guides/tracing.md) — pillar 4
+    3. [Studio guide](guides/studio.md) — pillar 4
     4. [Recovery guide](guides/recovery.md)
 
 </div>

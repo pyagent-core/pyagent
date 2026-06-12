@@ -1,25 +1,52 @@
 # PyAgent
 
-**18 reusable multi-agent orchestration patterns for LLMs** — with difficulty-aware routing, inter-agent compression, and OpenTelemetry tracing.
-
-Existing frameworks give you primitives. PyAgent gives you named, tested, composable patterns — a shared vocabulary for multi-agent systems that your whole team can reason about.
+**Production-ready patterns for multi-agent LLM systems** — declare systems in YAML, orchestrate with 18 named patterns, persist state with three-tier memory, and observe everything with OTel tracing and a web dashboard.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-## Packages
+```bash
+pip install pyagent-all   # full stack
+```
 
-| Package | Description | Install |
+## Architecture Pillars
+
+PyAgent is built around four pillars that mirror the lifecycle of a production multi-agent system:
+
+### 📋 Blueprint — declare your system
+
+| Package | What it does | Install |
 |---------|-------------|---------|
-| **pyagent-patterns** | 18 multi-agent orchestration patterns + composites + guardrails + recovery | `pip install pyagent-patterns` |
-| **pyagent-router** | Difficulty scoring, cost estimation, model selection, routing middleware | `pip install pyagent-router` |
+| **pyagent-blueprint** | YAML spec → validated schema → compiled `RuntimeGraph`. Validate, test, diff, and render from the CLI. | `pip install pyagent-blueprint` |
+
+### ⚡ Execution — run your patterns
+
+| Package | What it does | Install |
+|---------|-------------|---------|
+| **pyagent-patterns** | 18 orchestration patterns: Pipeline, Supervisor, Fan-Out, Debate, Swarm, ReAct and more | `pip install pyagent-patterns` |
+| **pyagent-providers** | Multi-provider registry, routing strategies, fallback chains, capability negotiation, cost optimizer | `pip install pyagent-providers` |
+| **pyagent-router** | Difficulty scoring, cost estimation, model selection middleware — cheap tasks to cheap models | `pip install pyagent-router` |
 | **pyagent-compress** | Inter-agent message compression, agent pruning, interaction pruning, token budgets | `pip install pyagent-compress` |
-| **pyagent-trace** | TraceEventBus pub/sub, OpenTelemetry spans, Langfuse export, cost tracking, record/replay | `pip install pyagent-trace` |
-| **pyagent-providers** | Multi-provider abstraction, registry, routing strategies, fallback chains, capability negotiation | `pip install pyagent-providers` |
-| **pyagent-context** | Structured context with trust/sensitivity metadata, three-tier memory, compression, retrieval | `pip install pyagent-context` |
-| **pyagent-blueprint** | Declarative YAML specs, Pydantic validation, compile to RuntimeGraph, contract testing, diff, CLI | `pip install pyagent-blueprint` |
-| **pyagent-studio** | CLI + web control plane for designing, simulating, debugging, and governing agent blueprints | `pip install pyagent-studio` |
-| **pyagent-all** | Meta-package: installs everything above | `pip install pyagent-all` |
+
+### 🧠 Context & Memory — remember across turns
+
+| Package | What it does | Install |
+|---------|-------------|---------|
+| **pyagent-context** | Three-tier memory (working/session/semantic), trust metadata, compression policies, PII redaction | `pip install pyagent-context` |
+
+### 📊 Observability — watch it run
+
+| Package | What it does | Install |
+|---------|-------------|---------|
+| **pyagent-trace** | `TraceEventBus` pub/sub, OTel spans, Langfuse export, cost tracking, record/replay | `pip install pyagent-trace` |
+| **pyagent-studio** | `kubectl`-style CLI + FastAPI web dashboard: simulate, diff, trace explorer, governance | `pip install pyagent-studio` |
+
+---
+
+> Install everything at once: `pip install pyagent-all`  
+> Full documentation: [pyagent.org](https://pyagent.org)
+
+---
 
 ## Table of Contents
 

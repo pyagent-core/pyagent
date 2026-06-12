@@ -5,6 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+> **Architecture Pillar: 📊 Observability**
+> The control plane of the Observability pillar — a `kubectl`-style CLI and FastAPI web dashboard for simulating workflows, exploring recorded traces, diffing blueprint versions, and monitoring provider health and costs.
+> Part of the full stack: install `pyagent-all` for all pillars.
+
 ## Install
 
 ```bash
@@ -282,6 +286,16 @@ Studio integrates with every PyAgent package:
 | Zero JS build step | ✓ (HTMX) | ✗ (React) | ✗ (React) | ✗ (React) |
 | Live trace streaming (SSE) | ✓ | ✗ | ✗ | ✗ |
 | Governance & compliance | ✓ | ✗ | ✗ | ✗ |
+
+## Other packages in this pillar
+
+- `pyagent-trace` — TraceEventBus, OTel spans, cost tracking, record/replay
+
+## Full stack
+
+Install all pillars at once: `pip install pyagent-all`
+
+→ [pyagent.org](https://pyagent.org) for full documentation.
 
 ## Full Documentation
 

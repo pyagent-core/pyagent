@@ -5,6 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+> **Architecture Pillar: 🧠 Context & Memory**
+> The sole Context & Memory pillar package — a structured `ContextLedger` with three-tier memory (working, session, semantic), trust and sensitivity metadata, compression, and PII redaction for agents that need to remember across turns.
+> Part of the full stack: install `pyagent-all` for all pillars.
+
 ## Install
 
 ```bash
@@ -443,6 +447,12 @@ context:
 ```
 
 After `BlueprintCompiler.compile()`, these settings are available on the `RuntimeGraph` for the consumer to wire into agents.
+
+## Full stack
+
+Install all pillars at once: `pip install pyagent-all`
+
+→ [pyagent.org](https://pyagent.org) for full documentation.
 
 ## Full Documentation
 

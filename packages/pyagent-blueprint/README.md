@@ -5,6 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+> **Architecture Pillar: 📋 Blueprint**
+> The entry point for all PyAgent systems — declare agents, workflows, providers, and contracts in a single YAML file, then validate, compile, and test without writing Python.
+> Part of the full stack: install `pyagent-all` for all pillars.
+
 ## Install
 
 ```bash
@@ -373,6 +377,12 @@ flowchart LR
 3. **Compile** — `BlueprintCompiler.compile(spec)` resolves providers, instantiates agents, wires patterns
 4. **Wire hooks** — Consumer manually connects `TraceEventBus`, `ContextLedger`, `CompressMiddleware` to agents
 5. **Run** — `graph.run("workflow_name", "input")` executes the pattern and returns a `Result`
+
+## Full stack
+
+Install all pillars at once: `pip install pyagent-all`
+
+→ [pyagent.org](https://pyagent.org) for full documentation.
 
 ## Full Documentation
 

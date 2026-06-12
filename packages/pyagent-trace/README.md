@@ -5,6 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+> **Architecture Pillar: 📊 Observability**
+> The event backbone of the Observability pillar — a pub/sub `TraceEventBus` that captures every LLM call, token count, latency, and cost, then routes them to Console, JSONL, OpenTelemetry, or Langfuse exporters.
+> Part of the full stack: install `pyagent-all` for all pillars.
+
 ## Install
 
 ```bash
@@ -441,6 +445,16 @@ Studio subscribes to the `TraceEventBus` to power:
 - **Trace Viewer** — live SSE stream of trace events + historical JSONL browsing
 - **Cost Dashboard** — real-time cost breakdown by pattern, agent, and model
 - **Governance** — compliance monitoring based on trace data
+
+## Other packages in this pillar
+
+- `pyagent-studio` — web dashboard, CLI, trace explorer, governance
+
+## Full stack
+
+Install all pillars at once: `pip install pyagent-all`
+
+→ [pyagent.org](https://pyagent.org) for full documentation.
 
 ## Full Documentation
 

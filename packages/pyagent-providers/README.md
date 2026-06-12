@@ -5,6 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+> **Architecture Pillar: ⚡ Execution**
+> Abstracts LLM provider backends behind a single `ProviderProtocol` — registry, routing strategies, fallback chains, capability negotiation, and cost optimisation for the Execution pillar.
+> Part of the full stack: install `pyagent-all` for all pillars.
+
 ## Install
 
 ```bash
@@ -539,6 +543,18 @@ selection = selector.select(task)
 provider = registry.get(selection.model)
 result = await provider.complete(messages)
 ```
+
+## Other packages in this pillar
+
+- `pyagent-patterns` — 18 orchestration patterns
+- `pyagent-router` — difficulty-based model routing
+- `pyagent-compress` — inter-agent compression and token budgets
+
+## Full stack
+
+Install all pillars at once: `pip install pyagent-all`
+
+→ [pyagent.org](https://pyagent.org) for full documentation.
 
 ## Full Documentation
 

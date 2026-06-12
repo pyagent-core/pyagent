@@ -5,6 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+> **Architecture Pillar: ⚡ Execution**
+> Routes each task to the cheapest model that can handle it — scoring difficulty 1–10 and selecting from a model registry — so the Execution pillar spends money proportionally to task complexity.
+> Part of the full stack: install `pyagent-all` for all pillars.
+
 ## Install
 
 ```bash
@@ -173,6 +177,18 @@ print(f"Will use {selection.model} (~${est.total_cost:.6f})")
 
 # Typical savings: 40-60% vs always using the most expensive model
 ```
+
+## Other packages in this pillar
+
+- `pyagent-patterns` — 18 orchestration patterns
+- `pyagent-providers` — multi-provider registry
+- `pyagent-compress` — inter-agent compression and token budgets
+
+## Full stack
+
+Install all pillars at once: `pip install pyagent-all`
+
+→ [pyagent.org](https://pyagent.org) for full documentation.
 
 ## Full Documentation
 

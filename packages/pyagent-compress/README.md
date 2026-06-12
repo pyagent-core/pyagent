@@ -5,6 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+> **Architecture Pillar: ⚡ Execution**
+> Trims the token cost of inter-agent communication in the Execution pillar — message compression, agent pruning, interaction pruning, and budget enforcement so pipelines stay within cost limits.
+> Part of the full stack: install `pyagent-all` for all pillars.
+
 ## Install
 
 ```bash
@@ -315,6 +319,18 @@ debate = Debate(
     rounds=3,
 )
 ```
+
+## Other packages in this pillar
+
+- `pyagent-patterns` — 18 orchestration patterns
+- `pyagent-providers` — multi-provider registry
+- `pyagent-router` — difficulty-based model routing
+
+## Full stack
+
+Install all pillars at once: `pip install pyagent-all`
+
+→ [pyagent.org](https://pyagent.org) for full documentation.
 
 ## Full Documentation
 

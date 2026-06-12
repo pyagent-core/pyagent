@@ -5,6 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+> **Architecture Pillar: ⚡ Execution**
+> The runtime core of the Execution pillar — 18 named orchestration patterns that coordinate how agents call providers, share results, and compose into multi-step workflows.
+> Part of the full stack: install `pyagent-all` for all pillars.
+
 ## Install
 
 ```bash
@@ -389,6 +393,18 @@ pipeline.set_trace_bus(bus)  # emits pattern_start/pattern_end events
 | **pyagent-context** | `ContextLedger` provides messages to prepend; agents write output as `ContextItem` |
 | **pyagent-blueprint** | `BlueprintCompiler` uses the pattern registry to instantiate patterns from YAML |
 | **pyagent-studio** | Studio compiles and simulates patterns; trace events feed the dashboard |
+
+## Other packages in this pillar
+
+- `pyagent-providers` — multi-provider registry
+- `pyagent-router` — difficulty-based model routing
+- `pyagent-compress` — inter-agent compression and token budgets
+
+## Full stack
+
+Install all pillars at once: `pip install pyagent-all`
+
+→ [pyagent.org](https://pyagent.org) for full documentation.
 
 ## Full Documentation
 
