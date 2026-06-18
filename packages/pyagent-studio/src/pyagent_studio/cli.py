@@ -266,7 +266,21 @@ def describe(file: str) -> None:
 @main.command()
 @click.option("--port", default=8420, type=int, help="Web dashboard port.")
 @click.option("--host", default="127.0.0.1", help="Web dashboard host.")
-def dashboard(port: int, host: str) -> None:
+@click.option(
+    "--trace",
+    "trace_path",
+    type=click.Path(exists=True),
+    default=None,
+    help="Path to a recorded trace JSONL file to load on the Overview dashboard.",
+)
+@click.option(
+    "--blueprint",
+    "blueprint_path",
+    type=click.Path(exists=True),
+    default=None,
+    help="Path to a blueprint YAML to load for the resource tabs (defaults to a bundled sample).",
+)
+def dashboard(port: int, host: str, trace_path: str | None, blueprint_path: str | None) -> None:
     """Launch the web dashboard."""
     try:
         import uvicorn
@@ -277,8 +291,15 @@ def dashboard(port: int, host: str) -> None:
         )
         sys.exit(1)
 
+    from pyagent_studio.web.app import create_app
+
     click.echo(f"Starting dashboard at http://{host}:{port}")
-    uvicorn.run("pyagent_studio.web.app:create_app", host=host, port=port, factory=True)
+    if trace_path:
+        click.echo(f"Loading trace: {trace_path}")
+    if blueprint_path:
+        click.echo(f"Loading blueprint: {blueprint_path}")
+    app = create_app(trace_path=trace_path, blueprint_path=blueprint_path)
+    uvicorn.run(app, host=host, port=port)
 
 
 if __name__ == "__main__":

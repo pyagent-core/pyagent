@@ -1,14 +1,28 @@
 {% extends "base.html" %}
 {% block title %}Diff — PyAgent Studio{% endblock %}
 {% block content %}
-<h1>Blueprint Diff</h1>
-<p>Upload or select two blueprints to compare.</p>
-<form>
-    <label for="old">Old Blueprint</label>
-    <input type="file" id="old" name="old" accept=".yaml,.yml,.json">
-    <label for="new">New Blueprint</label>
-    <input type="file" id="new" name="new" accept=".yaml,.yml,.json">
-    <button type="submit">Compare</button>
-</form>
+<div class="studio-pagehead">
+  <span class="studio-section-tag">Governance</span>
+  <h1>Blueprint Diff</h1>
+  <p>Upload two blueprint files to see a semantic diff of agents, providers, and contracts.</p>
+</div>
+
+<div class="studio-card">
+  <form hx-post="/diff/compare" hx-target="#diff-output" hx-swap="innerHTML"
+        hx-encoding="multipart/form-data" class="studio-form">
+    <div class="studio-field-row">
+      <label class="studio-field">
+        <span>Old blueprint</span>
+        <input type="file" name="old" accept=".yaml,.yml,.json" class="studio-input">
+      </label>
+      <label class="studio-field">
+        <span>New blueprint</span>
+        <input type="file" name="new" accept=".yaml,.yml,.json" class="studio-input">
+      </label>
+    </div>
+    <button type="submit" class="studio-btn studio-btn--primary">Compare</button>
+  </form>
+</div>
+
 <div id="diff-output"></div>
 {% endblock %}

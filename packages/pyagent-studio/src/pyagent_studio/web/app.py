@@ -7,7 +7,9 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.responses import Response
 
+from pyagent_studio.services.blueprint_service import BlueprintService
 from pyagent_studio.web.routes import (
     agents,
     diff,
@@ -23,18 +25,56 @@ from pyagent_studio.web.routes import (
 _WEB_DIR = Path(__file__).parent
 _TEMPLATE_DIR = _WEB_DIR / "templates"
 _STATIC_DIR = _WEB_DIR / "static"
+_SAMPLE_BLUEPRINT = _WEB_DIR.parent / "data" / "sample_blueprint.yaml"
 
 
-def create_app() -> FastAPI:
-    """Create and configure the FastAPI application."""
+class _NoCacheStaticFiles(StaticFiles):
+    """StaticFiles that disables browser caching.
+
+    The dashboard is a local dev tool whose CSS/JS change frequently; without
+    this, browsers serve stale assets after an edit until a manual hard refresh.
+    """
+
+    def file_response(self, *args: object, **kwargs: object) -> Response:
+        resp = super().file_response(*args, **kwargs)  # type: ignore[arg-type]
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        return resp
+
+
+def create_app(
+    trace_path: str | Path | None = None,
+    blueprint_path: str | Path | None = None,
+) -> FastAPI:
+    """Create and configure the FastAPI application.
+
+    Args:
+        trace_path: Optional path to a recorded trace JSONL file to preload
+            on the Overview dashboard. Falls back to sample data when omitted.
+        blueprint_path: Optional path to a blueprint YAML to load for the
+            resource tabs. Falls back to a bundled sample blueprint when omitted.
+    """
     app = FastAPI(title="PyAgent Studio", version="0.1.0")
 
     # Jinja2 templates
     templates = Jinja2Templates(directory=str(_TEMPLATE_DIR))
     app.state.templates = templates
+    app.state.trace_path = trace_path
 
-    # Static files
-    app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+    # Blueprint: load the given path, else the bundled sample so the resource
+    # tabs (Agents, Workflows, Governance, ...) are populated out of the box.
+    using_sample = blueprint_path is None
+    resolved = Path(blueprint_path) if blueprint_path else _SAMPLE_BLUEPRINT
+    blueprint_service: BlueprintService | None = BlueprintService()
+    try:
+        blueprint_service.load(resolved)
+    except Exception:
+        blueprint_service = None
+        using_sample = False
+    app.state.blueprint_service = blueprint_service
+    app.state.using_sample_blueprint = using_sample
+
+    # Static files (no-cache so edits show up without a manual hard refresh)
+    app.mount("/static", _NoCacheStaticFiles(directory=str(_STATIC_DIR)), name="static")
 
     # Register route modules
     app.include_router(overview.router)

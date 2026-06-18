@@ -1,17 +1,48 @@
 {% extends "base.html" %}
 {% block title %}Simulate — PyAgent Studio{% endblock %}
 {% block content %}
-<h1>Simulate</h1>
-<form>
-    <label for="workflow">Workflow</label>
-    <input type="text" id="workflow" name="workflow" placeholder="workflow name">
-    <label for="task">Task</label>
-    <textarea id="task" name="task" placeholder="Enter task..."></textarea>
-    <fieldset>
-        <label><input type="radio" name="mode" value="mock" checked> MockLLM</label>
-        <label><input type="radio" name="mode" value="live"> Live LLM</label>
-    </fieldset>
-    <button type="submit">Run</button>
-</form>
-<div id="results"></div>
+{% include "_bp_banner.html" %}
+
+<div class="studio-pagehead">
+  <span class="studio-section-tag">Execution</span>
+  <h1>Simulate</h1>
+  <p>Run a workflow against MockLLM (no API keys) or live LLMs. Runs stream to the Traces tab.</p>
+</div>
+
+<div class="studio-grid studio-grid--detail">
+  <div class="studio-col-main">
+    <div class="studio-card">
+      <form hx-post="/simulate/run" hx-target="#sim-results" hx-swap="innerHTML" class="studio-form">
+        <label class="studio-field">
+          <span>Workflow</span>
+          {% if workflows %}
+          <select name="workflow" class="studio-select studio-select--full">
+            {% for wf in workflows %}<option value="{{ wf }}">{{ wf }}</option>{% endfor %}
+          </select>
+          {% else %}
+          <input type="text" name="workflow" class="studio-input" placeholder="workflow name">
+          {% endif %}
+        </label>
+        <label class="studio-field">
+          <span>Task</span>
+          <textarea name="task" class="studio-input" rows="4" placeholder="I can't see my latest invoice..."></textarea>
+        </label>
+        <fieldset class="studio-radio-row">
+          <label><input type="radio" name="mode" value="mock" checked> MockLLM</label>
+          <label><input type="radio" name="mode" value="live"> Live LLM</label>
+        </fieldset>
+        <button type="submit" class="studio-btn studio-btn--primary">Run simulation</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="studio-col-side">
+    <div class="studio-card">
+      <h2>Result</h2>
+      <div id="sim-results">
+        <p class="studio-muted">Run a simulation to see the output here.</p>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

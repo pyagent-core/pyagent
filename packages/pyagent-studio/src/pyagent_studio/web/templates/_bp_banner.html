@@ -1,0 +1,5 @@
+{% if using_sample_blueprint %}
+<div class="studio-banner">Showing a sample blueprint &mdash; load your own with <code>pyagent dashboard --blueprint &lt;file.yaml&gt;</code>.</div>
+{% elif not has_blueprint %}
+<div class="studio-banner studio-banner--empty">No blueprint loaded. Restart with <code>pyagent dashboard --blueprint &lt;file.yaml&gt;</code> to populate this page.</div>
+{% endif %}

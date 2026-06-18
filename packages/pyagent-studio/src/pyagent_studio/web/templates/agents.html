@@ -1,18 +1,54 @@
 {% extends "base.html" %}
 {% block title %}Agents — PyAgent Studio{% endblock %}
 {% block content %}
-<h1>Agents</h1>
-<table>
-    <thead><tr><th>Name</th><th>Provider</th><th>Prompt</th><th>Guardrails</th></tr></thead>
-    <tbody>
-    {% for name, agent in agents.items() %}
-    <tr>
-        <td><a href="/agents/{{ name }}">{{ name }}</a></td>
-        <td>{{ agent.provider }}</td>
-        <td>{{ agent.prompt[:50] }}{% if agent.prompt|length > 50 %}...{% endif %}</td>
-        <td>{{ agent.guardrails|join(', ') }}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+{% include "_bp_banner.html" %}
+
+<div class="studio-pagehead">
+  <span class="studio-section-tag">Blueprint</span>
+  <h1>Agents</h1>
+  <p>{{ agents|length }} agent{{ '' if agents|length == 1 else 's' }} defined{% if blueprint_name %} in <strong>{{ blueprint_name }}</strong>{% endif %}.</p>
+</div>
+
+<div class="studio-grid studio-grid--detail">
+  <div class="studio-col-main">
+    <div class="studio-card">
+      <table class="studio-table">
+        <thead>
+          <tr><th>Name</th><th>Provider</th><th>Tools</th><th>Guardrails</th></tr>
+        </thead>
+        <tbody>
+        {% for name, agent in agents.items() %}
+          <tr class="{{ 'is-selected' if name == selected }}">
+            <td><a href="/agents/{{ name }}" class="studio-link">{{ name }}</a></td>
+            <td><span class="studio-pill studio-pill--neutral">{{ agent.provider }}</span></td>
+            <td>{{ agent.tools|join(', ') if agent.tools else '—' }}</td>
+            <td>{{ agent.guardrails|join(', ') if agent.guardrails else '—' }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4" class="studio-empty">No agents defined.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="studio-col-side">
+    {% set detail = agents.get(selected) if selected else None %}
+    <div class="studio-card">
+      <h2>{{ selected if detail else 'Agent detail' }}</h2>
+      {% if detail %}
+        <p class="studio-muted">{{ detail.description or 'No description.' }}</p>
+        <dl class="studio-deflist">
+          <dt>Provider</dt><dd>{{ detail.provider }}</dd>
+          <dt>Tools</dt><dd>{{ detail.tools|join(', ') if detail.tools else '—' }}</dd>
+          <dt>Guardrails</dt><dd>{{ detail.guardrails|join(', ') if detail.guardrails else '—' }}</dd>
+        </dl>
+        <h3 class="studio-subhead">Prompt</h3>
+        <pre class="studio-codeblock">{{ detail.prompt }}</pre>
+      {% else %}
+        <p class="studio-muted">Select an agent to see its prompt, tools, and guardrails.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}

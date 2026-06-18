@@ -1,0 +1,25 @@
+{% if error %}
+<div class="studio-card">
+  <p class="studio-error-text">{{ error }}</p>
+</div>
+{% else %}
+<div class="studio-card">
+  <h2>Summary</h2>
+  <pre class="studio-codeblock">{{ summary or 'No differences found.' }}</pre>
+  {% if changes %}
+  <table class="studio-table">
+    <thead><tr><th>Change</th><th>Path</th><th>Old</th><th>New</th></tr></thead>
+    <tbody>
+    {% for c in changes %}
+      <tr>
+        <td><span class="studio-pill studio-pill--{{ 'success' if c.change_type|lower == 'added' else 'failed' if c.change_type|lower == 'removed' else 'warn' }}">{{ c.change_type }}</span></td>
+        <td><code>{{ c.path }}</code></td>
+        <td>{{ c.old_value if c.old_value is not none else '—' }}</td>
+        <td>{{ c.new_value if c.new_value is not none else '—' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endif %}

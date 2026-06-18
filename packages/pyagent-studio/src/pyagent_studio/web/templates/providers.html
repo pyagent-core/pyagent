@@ -1,17 +1,35 @@
 {% extends "base.html" %}
 {% block title %}Providers — PyAgent Studio{% endblock %}
 {% block content %}
-<h1>Providers</h1>
-{% if providers %}
-<table>
-    <thead><tr><th>Model</th><th>Status</th></tr></thead>
+{% include "_bp_banner.html" %}
+
+<div class="studio-pagehead">
+  <span class="studio-section-tag">Blueprint</span>
+  <h1>Providers</h1>
+  <p>{{ providers|length }} provider binding{{ '' if providers|length == 1 else 's' }}{% if blueprint_name %} in <strong>{{ blueprint_name }}</strong>{% endif %}. Costs per 1K tokens via LiteLLM.</p>
+</div>
+
+<div class="studio-card">
+  {% if providers %}
+  <table class="studio-table">
+    <thead>
+      <tr><th>Binding</th><th>Provider</th><th>Model</th><th>Fallback</th><th>Input / 1K</th><th>Output / 1K</th></tr>
+    </thead>
     <tbody>
     {% for p in providers %}
-    <tr><td>{{ p.name }}</td><td>{{ p.status }}</td></tr>
+      <tr>
+        <td>{{ p.name }}</td>
+        <td><span class="studio-pill studio-pill--neutral">{{ p.provider }}</span></td>
+        <td><code>{{ p.model }}</code></td>
+        <td>{{ p.fallback }}</td>
+        <td>{{ p.input_cost_1k }}</td>
+        <td>{{ p.output_cost_1k }}</td>
+      </tr>
     {% endfor %}
     </tbody>
-</table>
-{% else %}
-<p>No providers configured. Install litellm and set API keys.</p>
-{% endif %}
+  </table>
+  {% else %}
+  <p class="studio-empty">No providers defined in the blueprint.</p>
+  {% endif %}
+</div>
 {% endblock %}

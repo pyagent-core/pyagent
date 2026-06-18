@@ -27,9 +27,14 @@ def test_app_factory_creates_app(app):
     assert app.title == "PyAgent Studio"
 
 
+def _all_route_paths(app):
+    """Registered route paths via the OpenAPI schema (version-robust)."""
+    return list(app.openapi()["paths"].keys())
+
+
 def test_app_has_routes(app):
     """All expected routes are registered."""
-    route_paths = [r.path for r in app.routes]
+    route_paths = _all_route_paths(app)
     for path in [
         "/",
         "/agents",
@@ -56,11 +61,130 @@ def test_overview_page_renders(client):
     assert "PyAgent Studio" in response.text
 
 
-def test_overview_shows_agent_count(client):
-    """Overview page includes card grid."""
+def test_overview_shows_kpis(client):
+    """Overview page includes the KPI row."""
     response = client.get("/")
-    assert "Agents" in response.text
-    assert "Workflows" in response.text
+    assert "Total Runs" in response.text
+    assert "Success Rate" in response.text
+
+
+def test_overview_shows_sample_data_banner_by_default(client):
+    """With no trace loaded, the sample-data banner is shown."""
+    response = client.get("/")
+    assert "Showing sample data" in response.text
+
+
+def test_overview_refresh_partial(client):
+    """GET /refresh returns just the dashboard body fragment."""
+    response = client.get("/refresh")
+    assert response.status_code == 200
+    assert "Total Runs" in response.text
+    assert "<nav" not in response.text
+
+
+def test_export_runs_csv(client):
+    """GET /export/runs.csv returns a CSV attachment."""
+    response = client.get("/export/runs.csv")
+    assert response.status_code == 200
+    assert "text/csv" in response.headers["content-type"]
+    assert "run_id" in response.text
+
+
+# --- Blueprint-backed resource tabs (bundled sample loaded by default) ---
+
+
+def test_sample_blueprint_banner(client):
+    """Resource pages show the sample-blueprint banner when no --blueprint given."""
+    response = client.get("/agents/")
+    assert "sample blueprint" in response.text
+
+
+def test_agents_page_shows_real_agents(client):
+    """Agents page lists agents from the bundled sample blueprint."""
+    response = client.get("/agents/")
+    assert "classifier" in response.text
+    assert "billing" in response.text
+
+
+def test_agent_detail_shows_prompt(client):
+    """Agent detail view shows the selected agent's prompt."""
+    response = client.get("/agents/billing")
+    assert response.status_code == 200
+    assert "billing inquiries" in response.text.lower() or "Billing" in response.text
+
+
+def test_workflows_page_shows_real_workflows(client):
+    """Workflows page lists workflows from the sample blueprint."""
+    response = client.get("/workflows/")
+    assert "customer-support" in response.text
+    assert "supervisor" in response.text
+
+
+def test_providers_page_shows_models(client):
+    """Providers page lists the blueprint's models."""
+    response = client.get("/providers/")
+    assert "claude-3-5-sonnet" in response.text
+    assert "gpt-4o-mini" in response.text
+
+
+def test_governance_uses_real_service(client):
+    """Governance page computes a real compliance score for the sample."""
+    response = client.get("/governance/")
+    assert "Compliance Score" in response.text
+    assert "100%" in response.text
+
+
+def test_docs_page_renders_markdown(client):
+    """Docs page renders auto-generated markdown from the blueprint."""
+    response = client.get("/docs/")
+    assert "customer-support" in response.text
+
+
+def test_simulate_run_returns_result(client):
+    """POST /simulate/run executes a MockLLM run and returns a result partial."""
+    response = client.post(
+        "/simulate/run",
+        data={"workflow": "customer-support", "task": "help", "mode": "mock"},
+    )
+    assert response.status_code == 200
+    assert "Success" in response.text
+    assert "Mock response" in response.text
+
+
+def test_simulate_run_requires_fields(client):
+    """POST /simulate/run with missing task returns a failure result."""
+    response = client.post("/simulate/run", data={"workflow": "", "task": "", "mode": "mock"})
+    assert response.status_code == 200
+    assert "Failed" in response.text
+
+
+def test_diff_compare_identical(client):
+    """POST /diff/compare with identical blueprints reports no changes."""
+    from pathlib import Path
+
+    bp = (
+        Path(__file__).resolve().parent.parent
+        / "src"
+        / "pyagent_studio"
+        / "data"
+        / "sample_blueprint.yaml"
+    )
+    content = bp.read_bytes()
+    response = client.post(
+        "/diff/compare",
+        files={
+            "old": ("a.yaml", content, "application/x-yaml"),
+            "new": ("b.yaml", content, "application/x-yaml"),
+        },
+    )
+    assert response.status_code == 200
+    assert "No changes" in response.text
+
+
+def test_traces_page_loads_sse_extension(client):
+    """Traces page loads the htmx SSE extension."""
+    response = client.get("/traces/")
+    assert "htmx-ext-sse" in response.text
 
 
 # --- Agents ---
@@ -208,8 +332,7 @@ def test_base_template_sidebar(client):
 
 def test_traces_live_sse_endpoint_registered(app):
     """SSE endpoint /traces/live is registered as a route."""
-    route_paths = [r.path for r in app.routes]
-    assert "/traces/live" in route_paths
+    assert "/traces/live" in _all_route_paths(app)
 
 
 def test_traces_bus_accessible():

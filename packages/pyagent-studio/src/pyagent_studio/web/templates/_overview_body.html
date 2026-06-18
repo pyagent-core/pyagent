@@ -1,0 +1,211 @@
+{% macro render_trace_node(node) %}
+<div class="trace-node trace-node--{{ node.kind }}">
+  <div class="trace-node__box">
+    <span class="trace-node__name">{{ node.name }}</span>
+    {% if node.duration_s %}<span class="trace-node__duration">{{ node.duration_s }}s</span>{% endif %}
+  </div>
+  {% if node.children %}
+  <div class="trace-node__children">
+    {% for child in node.children %}
+    {{ render_trace_node(child) }}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endmacro %}
+
+<div id="overview-body" hx-get="/refresh" hx-trigger="every 15s" hx-swap="outerHTML">
+
+{% if using_sample_data %}
+<div class="studio-banner">Showing sample data &mdash; load a trace file with <code>--trace</code> to see your own runs.</div>
+{% endif %}
+
+<div class="studio-topbar">
+  <div class="studio-topbar__title">
+    <h1>Overview</h1>
+    <span class="studio-live"><span class="studio-live__dot"></span>Live</span>
+  </div>
+  <div class="studio-topbar__controls">
+    <select class="studio-select">
+      <option>Last 1 hour</option>
+      <option>Last 24 hours</option>
+      <option>Last 7 days</option>
+    </select>
+    <span class="studio-daterange">{{ "now" if not using_sample_data else "May 20, 09:00 – 10:00 AM" }}</span>
+    <button class="studio-iconbtn" type="button" title="Refresh" hx-get="/refresh" hx-target="#overview-body" hx-swap="outerHTML">&#9696;</button>
+    <button class="studio-btn" type="button">Filters</button>
+  </div>
+</div>
+
+<div class="studio-kpis">
+  {% for key, kpi in kpis.items() %}
+  <div class="studio-kpi">
+    <span class="studio-kpi__label">{{ kpi.label }}</span>
+    <span class="studio-kpi__value">{{ kpi.value }}</span>
+    {% if kpi.delta_pct is not none %}
+    <span class="studio-kpi__delta studio-kpi__delta--{{ 'up' if kpi.delta_pct >= 0 else 'down' }}">
+      {{ '↑' if kpi.delta_pct >= 0 else '↓' }} {{ kpi.delta_pct if kpi.delta_pct >= 0 else -kpi.delta_pct }}% {{ kpi.delta_label or 'vs previous period' }}
+    </span>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="studio-grid">
+  <div class="studio-col-main">
+
+    <div class="studio-card">
+      <h2>Recent Runs</h2>
+      <input class="studio-search" type="text" placeholder="Filter runs..." onkeyup="studioFilterRuns(this.value)">
+      <table class="studio-table" id="runs-table">
+        <thead>
+          <tr><th>Run ID</th><th>Workflow</th><th>Status</th><th>Duration</th><th>Cost</th><th>Started</th></tr>
+        </thead>
+        <tbody>
+        {% for run in recent_runs %}
+        <tr>
+          <td>{{ run.run_id }}</td>
+          <td>{{ run.workflow }}</td>
+          <td><span class="studio-pill studio-pill--{{ run.status }}">{{ run.status|capitalize }}</span></td>
+          <td>{{ run.duration_s }}s</td>
+          <td>${{ "%.2f"|format(run.cost_usd) }}</td>
+          <td>{{ run.started_at }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="studio-card" id="run-trace-card">
+      <div class="studio-card__header">
+        <h2>Run Trace {% if run_trace.run_id %}<span class="studio-muted">({{ run_trace.run_id }})</span>{% endif %}</h2>
+        <div class="studio-legend">
+          <span><i class="studio-dot studio-dot--agent"></i>Agent</span>
+          <span><i class="studio-dot studio-dot--pattern"></i>Pattern</span>
+          <span><i class="studio-dot studio-dot--tool"></i>Tool</span>
+          <span><i class="studio-dot studio-dot--provider"></i>Provider</span>
+        </div>
+      </div>
+      <div class="trace-flow">
+        {{ render_trace_node(run_trace) }}
+      </div>
+    </div>
+
+    <div class="studio-charts-row">
+      <div class="studio-card">
+        <h2>Cost Over Time</h2>
+        <canvas id="costOverTimeChart" height="160"></canvas>
+      </div>
+      <div class="studio-card">
+        <h2>Cost Breakdown</h2>
+        <canvas id="costBreakdownChart" height="160"></canvas>
+      </div>
+    </div>
+
+    <div class="studio-charts-row">
+      <div class="studio-card">
+        <h2>Top Agents by Cost</h2>
+        <ul class="studio-barlist">
+        {% for agent in top_agents %}
+          <li>
+            <span class="studio-barlist__label">{{ agent.agent_name }}</span>
+            <div class="studio-barlist__bar"><div style="width: {{ (agent.cost_usd / top_agents[0].cost_usd * 100) if top_agents[0].cost_usd else 0 }}%"></div></div>
+            <span class="studio-barlist__value">${{ "%.2f"|format(agent.cost_usd) }}</span>
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
+      <div class="studio-card">
+        <h2>Provider Health</h2>
+        <ul class="studio-healthlist">
+        {% for p in provider_health %}
+          <li>
+            <span class="studio-healthlist__dot studio-healthlist__dot--{{ 'ok' if p.success_rate >= 97 else 'warn' }}"></span>
+            <span class="studio-healthlist__name">{{ p.provider }}</span>
+            <span class="studio-healthlist__rate">{{ p.success_rate }}%</span>
+            <span class="studio-healthlist__latency">{{ p.latency_ms }}ms</span>
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="studio-col-side">
+    <div class="studio-card">
+      <h2>Quick Actions</h2>
+      <ul class="studio-actions">
+      {% for action in quick_actions %}
+        {% if action.enabled %}
+        <li><a href="{{ action.href }}" class="studio-action">
+          <span class="studio-action__icon">{{ action.icon }}</span>
+          <span class="studio-action__text"><span class="studio-action__label">{{ action.label }}</span><span class="studio-action__sub">{{ action.sub }}</span></span>
+        </a></li>
+        {% else %}
+        <li><span class="studio-action studio-action--disabled">
+          <span class="studio-action__icon">{{ action.icon }}</span>
+          <span class="studio-action__text"><span class="studio-action__label">{{ action.label }} <span class="studio-badge">soon</span></span><span class="studio-action__sub">{{ action.sub }}</span></span>
+        </span></li>
+        {% endif %}
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  if (!window.Chart) return;
+
+  const costOverTime = {{ cost_over_time | tojson }};
+  const costBreakdown = {{ cost_breakdown | tojson }};
+
+  const lineCanvas = document.getElementById("costOverTimeChart");
+  if (lineCanvas) {
+    const existing = Chart.getChart(lineCanvas);
+    if (existing) existing.destroy();
+    new Chart(lineCanvas, {
+      type: "line",
+      data: {
+        labels: costOverTime.map((p) => p.label),
+        datasets: [{
+          label: "Cost ($)",
+          data: costOverTime.map((p) => p.cost_usd),
+          borderColor: "#6366f1",
+          backgroundColor: "rgba(99,102,241,0.1)",
+          fill: true,
+          tension: 0.3,
+        }],
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
+    });
+  }
+
+  const donutCanvas = document.getElementById("costBreakdownChart");
+  if (donutCanvas) {
+    const existing = Chart.getChart(donutCanvas);
+    if (existing) existing.destroy();
+    new Chart(donutCanvas, {
+      type: "doughnut",
+      data: {
+        labels: costBreakdown.map((p) => p.provider),
+        datasets: [{
+          data: costBreakdown.map((p) => p.cost_usd),
+          backgroundColor: ["#6366f1", "#f59e0b", "#10b981", "#94a3b8", "#ec4899"],
+        }],
+      },
+      options: { plugins: { legend: { position: "bottom" } } },
+    });
+  }
+
+  window.studioFilterRuns = function (query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll("#runs-table tbody tr").forEach((row) => {
+      row.style.display = row.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  };
+})();
+</script>
+
+</div>

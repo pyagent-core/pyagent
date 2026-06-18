@@ -1,16 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Workflows — PyAgent Studio{% endblock %}
 {% block content %}
-<h1>Workflows</h1>
-<table>
-    <thead><tr><th>Name</th><th>Pattern</th></tr></thead>
+{% include "_bp_banner.html" %}
+
+<div class="studio-pagehead">
+  <span class="studio-section-tag">Blueprint</span>
+  <h1>Workflows</h1>
+  <p>{{ workflows|length }} workflow{{ '' if workflows|length == 1 else 's' }} defined{% if blueprint_name %} in <strong>{{ blueprint_name }}</strong>{% endif %}.</p>
+</div>
+
+<div class="studio-card">
+  <table class="studio-table">
+    <thead>
+      <tr><th>Name</th><th>Pattern</th><th>Agents</th><th>Guardrails</th></tr>
+    </thead>
     <tbody>
     {% for name, wf in workflows.items() %}
-    <tr>
-        <td><a href="/workflows/{{ name }}">{{ name }}</a></td>
-        <td>{{ wf.pattern }}</td>
-    </tr>
+      <tr class="{{ 'is-selected' if name == selected }}">
+        <td>{{ name }}</td>
+        <td><span class="studio-pill studio-pill--pattern">{{ wf.pattern }}</span></td>
+        <td>{{ wf.agents.keys()|list|join(', ') if wf.agents else '—' }}</td>
+        <td>{{ wf.guardrails|join(', ') if wf.guardrails else '—' }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="studio-empty">No workflows defined.</td></tr>
     {% endfor %}
     </tbody>
-</table>
+  </table>
+</div>
+
+{% if mermaid %}
+<div class="studio-card">
+  <h2>Agent graph</h2>
+  <pre class="mermaid">{{ mermaid }}</pre>
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "neutral" });
+</script>
+{% endif %}
 {% endblock %}

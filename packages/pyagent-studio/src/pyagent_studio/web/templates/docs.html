@@ -1,11 +1,34 @@
 {% extends "base.html" %}
 {% block title %}Docs — PyAgent Studio{% endblock %}
 {% block content %}
-<h1>Documentation</h1>
-<p>Auto-rendered from blueprint specification.</p>
-<div id="docs-content">
-    <p>Load a blueprint to generate documentation.</p>
+{% include "_bp_banner.html" %}
+
+<div class="studio-pagehead">
+  <span class="studio-section-tag">Documentation</span>
+  <h1>Docs</h1>
+  <p>Auto-rendered from{% if blueprint_name %} <strong>{{ blueprint_name }}</strong>{% else %} the loaded blueprint{% endif %}.</p>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<script>mermaid.initialize({startOnLoad:true});</script>
+
+{% if mermaid %}
+<div class="studio-card">
+  <h2>Architecture</h2>
+  <pre class="mermaid">{{ mermaid }}</pre>
+</div>
+{% endif %}
+
+<div class="studio-card">
+  <h2>Specification</h2>
+  {% if markdown %}
+  <pre class="studio-codeblock studio-markdown">{{ markdown }}</pre>
+  {% else %}
+  <p class="studio-empty">No blueprint loaded to generate documentation.</p>
+  {% endif %}
+</div>
+
+{% if mermaid %}
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "neutral" });
+</script>
+{% endif %}
 {% endblock %}

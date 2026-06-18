@@ -1,11 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Traces — PyAgent Studio{% endblock %}
 {% block content %}
-<h1>Traces</h1>
-<div hx-ext="sse" sse-connect="/traces/live" sse-swap="message">
-    <table id="trace-table">
-        <thead><tr><th>Time</th><th>Type</th><th>Agent</th><th>Details</th></tr></thead>
-        <tbody id="trace-body"></tbody>
+<div class="studio-pagehead">
+  <span class="studio-section-tag">Observability</span>
+  <h1>Traces <span class="studio-live"><span class="studio-live__dot"></span>Live</span></h1>
+  <p>Live trace events stream here as workflows run. <a href="/simulate/" class="studio-link">Run a simulation</a> to generate activity.</p>
+</div>
+
+<div class="studio-card">
+  <div hx-ext="sse" sse-connect="/traces/live">
+    <table class="studio-table">
+      <thead><tr><th>Time</th><th>Event</th><th>Agent / Pattern</th><th>Detail</th></tr></thead>
+      <tbody id="trace-body" sse-swap="message" hx-swap="beforeend">
+      </tbody>
     </table>
+    <p class="studio-muted" id="trace-empty">Waiting for events…</p>
+  </div>
 </div>
 {% endblock %}

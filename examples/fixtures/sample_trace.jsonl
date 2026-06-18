@@ -1,0 +1,17 @@
+{"event_type": "pattern_start", "pattern_type": "customer-support", "workflow": "customer-support", "run_id": "run_fixture_1", "timestamp": "2026-06-16T09:00:00"}
+{"event_type": "agent_start", "agent_name": "Classifier", "kind": "agent", "timestamp": "2026-06-16T09:00:01"}
+{"event_type": "llm_call", "agent_name": "Classifier", "model": "gpt-4o-mini", "duration_ms": 850, "tokens": 320, "timestamp": "2026-06-16T09:00:02"}
+{"event_type": "cost_record", "agent_name": "Classifier", "model": "gpt-4o-mini", "pattern_type": "customer-support", "input_tokens": 200, "output_tokens": 120, "cost_usd": 0.0021, "timestamp": "2026-06-16T09:00:02"}
+{"event_type": "agent_end", "agent_name": "Classifier", "timestamp": "2026-06-16T09:00:03"}
+{"event_type": "agent_start", "agent_name": "Billing Agent", "kind": "agent", "timestamp": "2026-06-16T09:00:03"}
+{"event_type": "llm_call", "agent_name": "Billing Agent", "model": "claude-3-5-sonnet", "duration_ms": 1800, "tokens": 980, "timestamp": "2026-06-16T09:00:05"}
+{"event_type": "cost_record", "agent_name": "Billing Agent", "model": "claude-3-5-sonnet", "pattern_type": "customer-support", "input_tokens": 600, "output_tokens": 380, "cost_usd": 0.0185, "timestamp": "2026-06-16T09:00:05"}
+{"event_type": "agent_end", "agent_name": "Billing Agent", "timestamp": "2026-06-16T09:00:06"}
+{"event_type": "pattern_end", "pattern_type": "customer-support", "run_id": "run_fixture_1", "status": "success", "timestamp": "2026-06-16T09:00:06"}
+{"event_type": "pattern_start", "pattern_type": "refund-processor", "workflow": "refund-processor", "run_id": "run_fixture_2", "timestamp": "2026-06-16T09:01:00"}
+{"event_type": "agent_start", "agent_name": "Policy Checker", "kind": "tool", "timestamp": "2026-06-16T09:01:01"}
+{"event_type": "llm_call", "agent_name": "Policy Checker", "model": "gemini-1.5-pro", "duration_ms": 2100, "tokens": 540, "timestamp": "2026-06-16T09:01:03"}
+{"event_type": "cost_record", "agent_name": "Policy Checker", "model": "gemini-1.5-pro", "pattern_type": "refund-processor", "input_tokens": 300, "output_tokens": 240, "cost_usd": 0.0042, "timestamp": "2026-06-16T09:01:03"}
+{"event_type": "error", "agent_name": "Policy Checker", "model": "gemini-1.5-pro", "message": "policy violation detected", "timestamp": "2026-06-16T09:01:04"}
+{"event_type": "agent_end", "agent_name": "Policy Checker", "timestamp": "2026-06-16T09:01:04"}
+{"event_type": "pattern_end", "pattern_type": "refund-processor", "run_id": "run_fixture_2", "status": "failed", "timestamp": "2026-06-16T09:01:04"}

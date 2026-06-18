@@ -5,24 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}PyAgent Studio{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <link rel="stylesheet" href="/static/style.css">
-    <script src="/static/htmx.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css?v=3">
+    <link rel="stylesheet" href="/static/studio.css?v=3">
+    <script src="/static/htmx.min.js?v=3"></script>
+    <script src="/static/htmx-ext-sse.min.js?v=3"></script>
 </head>
 <body>
 <div class="dashboard-layout">
     <nav class="sidebar">
-        <h3>PyAgent Studio</h3>
+        <div class="sidebar__brand">
+            <span class="sidebar__logo">◆</span>
+            <span class="sidebar__name">PyAgent Studio</span>
+        </div>
         <ul>
-            <li><a href="/">Overview</a></li>
-            <li><a href="/agents">Agents</a></li>
-            <li><a href="/workflows">Workflows</a></li>
-            <li><a href="/simulate">Simulate</a></li>
-            <li><a href="/traces">Traces</a></li>
-            <li><a href="/governance">Governance</a></li>
-            <li><a href="/providers">Providers</a></li>
-            <li><a href="/diff">Diff</a></li>
-            <li><a href="/docs">Docs</a></li>
+            <li><a href="/"><span class="sidebar__icon">&#9635;</span>Overview</a></li>
+            <li><a href="/agents/"><span class="sidebar__icon">&#9679;</span>Agents</a></li>
+            <li><a href="/workflows/"><span class="sidebar__icon">&#9737;</span>Workflows</a></li>
+            <li><a href="/simulate/"><span class="sidebar__icon">&#9658;</span>Simulate</a></li>
+            <li><a href="/traces/"><span class="sidebar__icon">&#9881;</span>Traces</a></li>
+            <li><a href="/governance/"><span class="sidebar__icon">&#9989;</span>Governance</a></li>
+            <li><a href="/providers/"><span class="sidebar__icon">&#9729;</span>Providers</a></li>
+            <li><a href="/diff/"><span class="sidebar__icon">&#10537;</span>Diff</a></li>
+            <li><a href="/docs/"><span class="sidebar__icon">&#128196;</span>Docs</a></li>
         </ul>
+        <div class="sidebar__footer">
+            <span class="sidebar__avatar">PT</span>
+            <span class="sidebar__footer-text">
+                <span class="sidebar__footer-name">Platform Team</span>
+                <span class="sidebar__footer-role">Admin</span>
+            </span>
+        </div>
     </nav>
     <main class="content">
         {% block content %}{% endblock %}

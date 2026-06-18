@@ -1,0 +1,73 @@
+api_version: pyagent/v1
+metadata:
+  name: customer-support
+  version: 1.2.0
+  description: Production customer-support routing with billing, classification, and policy checks
+  owner: platform-team
+  tags: [support, production]
+providers:
+  primary:
+    provider: anthropic
+    model: claude-3-5-sonnet
+  classifier_provider:
+    provider: openai
+    model: gpt-4o-mini
+  fallback:
+    provider: openai
+    model: gpt-4o
+agents:
+  classifier:
+    prompt: "Classify incoming requests into: billing, technical, or general."
+    provider: classifier_provider
+    description: Routes customer requests to the right specialist
+    guardrails: [pii_redact]
+  billing:
+    prompt: "Resolve billing inquiries, refunds, and invoice questions."
+    provider: primary
+    description: Billing specialist agent
+    tools: [lookup_invoice, issue_refund]
+    guardrails: [pii_redact, cost_cap]
+  technical:
+    prompt: "Handle technical support and troubleshooting."
+    provider: primary
+    description: Technical support agent
+    tools: [search_kb]
+  policy_checker:
+    prompt: "Verify that responses comply with company policy."
+    provider: classifier_provider
+    description: Policy and compliance gate
+    guardrails: [policy_enforce]
+workflows:
+  customer-support:
+    pattern: supervisor
+    agents:
+      classifier: classifier
+      routes:
+        billing: billing
+        technical: technical
+    recovery:
+      max_retries: 2
+      timeout_seconds: 30
+      fallback_provider: fallback
+  refund-processor:
+    pattern: pipeline
+    agents:
+      stages:
+        billing: billing
+        policy_checker: policy_checker
+contracts:
+  customer-support:
+    input:
+      type: string
+      max_tokens: 2000
+    output:
+      type: string
+    sla:
+      latency_p95_ms: 5000
+      cost_max_usd: 0.05
+observability:
+  tracing:
+    enabled: true
+  cost_budget:
+    daily_usd: 100.0
+    alert_threshold: 0.8

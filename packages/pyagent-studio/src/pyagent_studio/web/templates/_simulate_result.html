@@ -1,0 +1,16 @@
+{% if result.success %}
+<div class="studio-result studio-result--ok">
+  <div class="studio-result__head">
+    <span class="studio-pill studio-pill--success">Success</span>
+    <span class="studio-muted">{{ result.elapsed_ms }}ms</span>
+  </div>
+  <pre class="studio-codeblock">{{ result.output }}</pre>
+</div>
+{% else %}
+<div class="studio-result studio-result--err">
+  <div class="studio-result__head">
+    <span class="studio-pill studio-pill--failed">Failed</span>
+  </div>
+  <p class="studio-error-text">{{ result.error }}</p>
+</div>
+{% endif %}

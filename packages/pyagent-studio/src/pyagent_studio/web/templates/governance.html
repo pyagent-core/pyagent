@@ -1,18 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Governance — PyAgent Studio{% endblock %}
 {% block content %}
-<h1>Governance</h1>
-<p>Compliance Score: <strong>{{ score }}%</strong></p>
-{% if issues %}
-<table>
-    <thead><tr><th>Severity</th><th>Path</th><th>Message</th></tr></thead>
-    <tbody>
-    {% for issue in issues %}
-    <tr><td>{{ issue.severity }}</td><td>{{ issue.path }}</td><td>{{ issue.message }}</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No issues found.</p>
-{% endif %}
+{% include "_bp_banner.html" %}
+
+<div class="studio-pagehead">
+  <span class="studio-section-tag">Compliance</span>
+  <h1>Governance</h1>
+  <p>Static validation and policy compliance for{% if blueprint_name %} <strong>{{ blueprint_name }}</strong>{% else %} the loaded blueprint{% endif %}.</p>
+</div>
+
+<div class="studio-grid studio-grid--detail">
+  <div class="studio-col-main">
+    <div class="studio-card">
+      <h2>Validation issues</h2>
+      {% if issues %}
+      <table class="studio-table">
+        <thead><tr><th>Severity</th><th>Path</th><th>Message</th></tr></thead>
+        <tbody>
+        {% for issue in issues %}
+          <tr>
+            <td><span class="studio-pill studio-pill--{{ 'failed' if issue.severity|lower == 'error' else 'warn' }}">{{ issue.severity }}</span></td>
+            <td><code>{{ issue.path }}</code></td>
+            <td>{{ issue.message }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="studio-empty">✓ No issues found. The blueprint passes all checks.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="studio-col-side">
+    <div class="studio-card studio-scorecard">
+      <span class="studio-kpi__label">Compliance Score</span>
+      <span class="studio-score studio-score--{{ 'ok' if score >= 90 else 'warn' if score >= 60 else 'bad' }}">{{ score }}%</span>
+      <span class="studio-muted">{{ passed }} of {{ total }} checks passed</span>
+    </div>
+  </div>
+</div>
 {% endblock %}

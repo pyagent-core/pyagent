@@ -270,3 +270,35 @@ def test_cli_dashboard_starts(runner):
         assert result.exit_code == 0
         assert "Starting dashboard" in result.output
         mock_uvicorn.run.assert_called_once()
+
+
+def test_cli_dashboard_with_trace(runner):
+    """dashboard --trace preloads the given trace file."""
+    trace_path = (
+        Path(__file__).resolve().parent.parent.parent.parent
+        / "examples"
+        / "fixtures"
+        / "sample_trace.jsonl"
+    )
+    if not trace_path.exists():
+        pytest.skip("fixture not found")
+
+    mock_uvicorn = MagicMock()
+    with patch.dict("sys.modules", {"uvicorn": mock_uvicorn}):
+        result = runner.invoke(main, ["dashboard", "--trace", str(trace_path)])
+        assert result.exit_code == 0
+        assert "Loading trace" in result.output
+        mock_uvicorn.run.assert_called_once()
+
+
+def test_cli_dashboard_with_blueprint(runner):
+    """dashboard --blueprint preloads the given blueprint file."""
+    if not Path(_BLUEPRINT).exists():
+        pytest.skip("fixture not found")
+
+    mock_uvicorn = MagicMock()
+    with patch.dict("sys.modules", {"uvicorn": mock_uvicorn}):
+        result = runner.invoke(main, ["dashboard", "--blueprint", _BLUEPRINT])
+        assert result.exit_code == 0
+        assert "Loading blueprint" in result.output
+        mock_uvicorn.run.assert_called_once()
