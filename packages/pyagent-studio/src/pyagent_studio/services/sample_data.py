@@ -7,11 +7,41 @@ from typing import Any
 _DELTA_LABEL = "vs previous hour"
 
 KPIS: dict[str, dict[str, Any]] = {
-    "total_runs": {"label": "Total Runs", "value": "1,248", "delta_pct": 18.7, "delta_label": _DELTA_LABEL, "direction": "up"},
-    "success_rate": {"label": "Success Rate", "value": "96.3%", "delta_pct": 2.4, "delta_label": _DELTA_LABEL, "direction": "up"},
-    "total_cost": {"label": "Total Cost", "value": "$124.58", "delta_pct": -8.2, "delta_label": _DELTA_LABEL, "direction": "down"},
-    "total_tokens": {"label": "Total Tokens", "value": "2.45M", "delta_pct": -12.6, "delta_label": _DELTA_LABEL, "direction": "down"},
-    "avg_latency": {"label": "Avg Latency", "value": "1.42s", "delta_pct": -15.3, "delta_label": _DELTA_LABEL, "direction": "down"},
+    "total_runs": {
+        "label": "Total Runs",
+        "value": "1,248",
+        "delta_pct": 18.7,
+        "delta_label": _DELTA_LABEL,
+        "direction": "up",
+    },
+    "success_rate": {
+        "label": "Success Rate",
+        "value": "96.3%",
+        "delta_pct": 2.4,
+        "delta_label": _DELTA_LABEL,
+        "direction": "up",
+    },
+    "total_cost": {
+        "label": "Total Cost",
+        "value": "$124.58",
+        "delta_pct": -8.2,
+        "delta_label": _DELTA_LABEL,
+        "direction": "down",
+    },
+    "total_tokens": {
+        "label": "Total Tokens",
+        "value": "2.45M",
+        "delta_pct": -12.6,
+        "delta_label": _DELTA_LABEL,
+        "direction": "down",
+    },
+    "avg_latency": {
+        "label": "Avg Latency",
+        "value": "1.42s",
+        "delta_pct": -15.3,
+        "delta_label": _DELTA_LABEL,
+        "direction": "down",
+    },
 }
 
 RECENT_RUNS: list[dict[str, Any]] = [

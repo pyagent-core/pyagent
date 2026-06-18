@@ -49,6 +49,4 @@ async def simulate_run(request: Request):
             "workflow": res.workflow,
         }
 
-    return templates.TemplateResponse(
-        request, "_simulate_result.html", context={"result": result}
-    )
+    return templates.TemplateResponse(request, "_simulate_result.html", context={"result": result})

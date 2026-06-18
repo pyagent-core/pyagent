@@ -198,7 +198,11 @@ class RunsService:
             return round((curr - prev) / prev * 100, 1)
 
         def _rate(window: list[Run]) -> float:
-            return (sum(1 for r in window if r.status == "success") / len(window) * 100) if window else 0.0
+            return (
+                (sum(1 for r in window if r.status == "success") / len(window) * 100)
+                if window
+                else 0.0
+            )
 
         delta_label = "vs previous period"
 
@@ -246,7 +250,9 @@ class RunsService:
 
     def _recent_runs(self, limit: int = 5) -> list[dict[str, Any]]:
         rows = []
-        for run in sorted(self._runs, key=lambda r: r.started_at or datetime.min, reverse=True)[:limit]:
+        for run in sorted(self._runs, key=lambda r: r.started_at or datetime.min, reverse=True)[
+            :limit
+        ]:
             rows.append(
                 {
                     "run_id": run.run_id,
@@ -291,9 +297,7 @@ class RunsService:
 
     def _cost_over_time(self, buckets: int = 12) -> list[dict[str, Any]]:
         """Cumulative cost across ``buckets`` evenly-spaced time intervals."""
-        parsed = [
-            (_parse_ts(r["timestamp"]), r["cost_usd"]) for r in self._cost_records
-        ]
+        parsed = [(_parse_ts(r["timestamp"]), r["cost_usd"]) for r in self._cost_records]
         parsed = [(ts, cost) for ts, cost in parsed if ts is not None]
         if not parsed:
             return []

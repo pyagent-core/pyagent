@@ -17,12 +17,15 @@ def _render_row(event: TraceEvent) -> str:
     """Render a TraceEvent as an HTML table row for the live SSE stream."""
     ts = datetime.fromtimestamp(event.timestamp).strftime("%H:%M:%S") if event.timestamp else "—"
     who = event.agent_name or event.pattern_type or "—"
-    detail = event.payload.get("task") or event.payload.get("model") or event.payload.get(
-        "result_output", ""
+    detail = (
+        event.payload.get("task")
+        or event.payload.get("model")
+        or event.payload.get("result_output", "")
     )
     cells = [ts, event.event_type, who, str(detail)[:80]]
     tds = "".join(f"<td>{html.escape(c)}</td>" for c in cells)
     return f"<tr>{tds}</tr>"
+
 
 # Global event bus for live trace streaming
 _trace_bus = TraceEventBus()

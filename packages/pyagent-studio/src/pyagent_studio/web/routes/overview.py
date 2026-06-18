@@ -50,7 +50,13 @@ QUICK_ACTIONS = [
         "href": None,
         "enabled": False,
     },
-    {"icon": "🔔", "label": "Create Alert", "sub": "Set up notifications", "href": None, "enabled": False},
+    {
+        "icon": "🔔",
+        "label": "Create Alert",
+        "sub": "Set up notifications",
+        "href": None,
+        "enabled": False,
+    },
     {
         "icon": "⬇️",
         "label": "Export Data",

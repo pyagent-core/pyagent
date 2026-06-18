@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.responses import Response
 
 from pyagent_studio.services.blueprint_service import BlueprintService
 from pyagent_studio.web.routes import (
@@ -21,6 +21,9 @@ from pyagent_studio.web.routes import (
     traces,
     workflows,
 )
+
+if TYPE_CHECKING:
+    from starlette.responses import Response
 
 _WEB_DIR = Path(__file__).parent
 _TEMPLATE_DIR = _WEB_DIR / "templates"

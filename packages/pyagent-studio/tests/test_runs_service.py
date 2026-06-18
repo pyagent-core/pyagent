@@ -8,7 +8,10 @@ import pytest
 from pyagent_studio.services.runs_service import RunsService
 
 _FIXTURE = (
-    Path(__file__).resolve().parent.parent.parent.parent / "examples" / "fixtures" / "sample_trace.jsonl"
+    Path(__file__).resolve().parent.parent.parent.parent
+    / "examples"
+    / "fixtures"
+    / "sample_trace.jsonl"
 )
 
 

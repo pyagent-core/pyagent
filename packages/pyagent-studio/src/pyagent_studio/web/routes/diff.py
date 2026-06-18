@@ -23,10 +23,9 @@ async def diff_page(request: Request):
 
 async def _save_upload(upload, suffix: str) -> Path:
     data = await upload.read()
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-    tmp.write(data)
-    tmp.close()
-    return Path(tmp.name)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(data)
+        return Path(tmp.name)
 
 
 @router.post("/compare")
@@ -38,7 +37,12 @@ async def diff_compare(request: Request):
     new_f = form.get("new")
 
     ctx: dict = {"summary": "", "changes": [], "error": None}
-    if not old_f or not new_f or not getattr(old_f, "filename", "") or not getattr(new_f, "filename", ""):
+    if (
+        not old_f
+        or not new_f
+        or not getattr(old_f, "filename", "")
+        or not getattr(new_f, "filename", "")
+    ):
         ctx["error"] = "Please choose two blueprint files to compare."
         return templates.TemplateResponse(request, "_diff_result.html", context=ctx)
 
