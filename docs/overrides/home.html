@@ -1,6 +1,7 @@
 {% extends "main.html" %}
 
 {% block extrahead %}
+{{ super() }}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -724,7 +725,7 @@ body               { overflow-x: clip; }
       Open source &nbsp;·&nbsp; Python 3.11+ &nbsp;·&nbsp; MIT License
     </div>
     <h1>A <span class="hp-grad">Production Stack</span><br>for Multi-Agent LLM Systems</h1>
-    <p class="lead">Declare, execute, remember, and observe. Four architecture pillars that take you from a YAML blueprint to production-grade observability.</p>
+    <p class="lead">Declare, execute, remember, and observe — think Kubernetes for agent orchestration. Four architecture pillars that take you from a YAML blueprint to production-grade observability and distributed tracing for multi-agent systems.</p>
     <div class="hp-ctas">
       <a href="getting-started/" class="hp-btn hp-btn--primary">Get Started →</a>
       <a href="https://github.com/pyagent-core/pyagent" class="hp-btn hp-btn--outline">GitHub</a>
@@ -801,7 +802,7 @@ result = asyncio.run(pipeline.run("Summarise the quarterly report..."))</code></
       <div class="hp-pcard__text">
         <div class="hp-pcard__label">Pillar 2 · Execution</div>
         <h2 class="hp-pcard__h2">18 patterns, one consistent API</h2>
-        <p>Pipeline, Supervisor, Debate, Fan-Out, ReAct and 13 more. Difficulty-based routing picks the right model per task. Compression middleware enforces token budgets across the pipeline.</p>
+        <p>A library of design patterns for multi-agent systems — Pipeline, Supervisor, Debate, Fan-Out, ReAct and 13 more. Not sure which to use? Each page explains when to reach for it, so you can pick the right design pattern for your multi-agent workflow. Difficulty-based routing picks the right model per task, and compression middleware enforces token budgets across the pipeline.</p>
         <div class="hp-pcard__pkgs">
           <code>pyagent-patterns</code>
           <code>pyagent-providers</code>
@@ -859,7 +860,7 @@ pyagent dashboard
       <div class="hp-pcard__text">
         <div class="hp-pcard__label">Pillar 4 · Observability</div>
         <h2 class="hp-pcard__h2">Every call traced, every cost tracked</h2>
-        <p>OTel spans, Langfuse export, record/replay for debugging. A web dashboard with trace explorer, cost analytics, governance scoring, and provider health monitoring.</p>
+        <p>Full observability in multi-agent systems: distributed tracing across every agent, pattern, and provider. OTel spans, Langfuse export, record/replay for debugging, and a web dashboard with trace explorer, cost analytics, governance scoring, and provider health monitoring.</p>
         <div class="hp-pcard__pkgs">
           <code>pyagent-trace</code>
           <code>pyagent-studio</code>

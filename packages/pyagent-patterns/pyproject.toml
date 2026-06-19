@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyagent-patterns"
-version = "0.2.3"
+version = "0.2.4"
 description = "18 reusable multi-agent orchestration patterns for LLMs"
 readme = "README.md"
 requires-python = ">=3.11"

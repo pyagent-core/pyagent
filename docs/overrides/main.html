@@ -1,0 +1,60 @@
+{#-
+  Custom theme extension. Adds SEO metadata (descriptive homepage <title>,
+  Open Graph / Twitter cards, and JSON-LD) on top of Material's base template.
+  Content pages use this template directly; the home page (home.html) extends
+  it and pulls these tags in via {{ super() }} in its extrahead block.
+-#}
+{% extends "base.html" %}
+
+{% block htmltitle %}
+  {%- if page and page.is_homepage %}
+    <title>PyAgent — Production Stack for Multi-Agent LLM Systems</title>
+  {%- else %}
+    {{ super() }}
+  {%- endif %}
+{% endblock %}
+
+{% block extrahead %}
+  {%- if page and page.is_homepage -%}
+    {%- set og_title = "PyAgent — Production Stack for Multi-Agent LLM Systems" -%}
+  {%- elif page and page.title -%}
+    {%- set og_title = page.title | striptags ~ " - " ~ config.site_name -%}
+  {%- else -%}
+    {%- set og_title = config.site_name -%}
+  {%- endif -%}
+  {%- if page and page.meta and page.meta.description -%}
+    {%- set og_desc = page.meta.description -%}
+  {%- else -%}
+    {%- set og_desc = config.site_description -%}
+  {%- endif -%}
+  {%- set og_image = "https://pyagent.org/assets/pyagent-architecture.png" -%}
+  <meta name="keywords" content="Kubernetes for agent orchestration, agent orchestration, observability in multi agents, multi-agent observability, tracing in multi agents, distributed tracing for LLM agents, design patterns for multi agent, multi-agent design patterns, suggest design pattern for multi agent, multi-agent orchestration patterns, YAML agent blueprint, OpenTelemetry LLM tracing, Python multi-agent framework">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta property="og:title" content="{{ og_title }}">
+  <meta property="og:description" content="{{ og_desc }}">
+  <meta property="og:url" content="{{ page.canonical_url }}">
+  <meta property="og:image" content="{{ og_image }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ og_title }}">
+  <meta name="twitter:description" content="{{ og_desc }}">
+  <meta name="twitter:image" content="{{ og_image }}">
+  {%- if page and page.is_homepage %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "PyAgent",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Cross-platform",
+    "description": {{ config.site_description | tojson }},
+    "keywords": "Kubernetes for agent orchestration, observability in multi-agent systems, tracing in multi-agent systems, design patterns for multi-agent systems, multi-agent orchestration patterns, YAML agent blueprint, OpenTelemetry LLM tracing, Python multi-agent framework, supervisor pattern, hierarchical agents, evaluator-optimizer, fan-out fan-in",
+    "url": "https://pyagent.org",
+    "softwareRequirements": "Python 3.11+",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "license": "https://github.com/pyagent-core/pyagent/blob/main/LICENSE",
+    "codeRepository": "https://github.com/pyagent-core/pyagent"
+  }
+  </script>
+  {%- endif %}
+{% endblock %}

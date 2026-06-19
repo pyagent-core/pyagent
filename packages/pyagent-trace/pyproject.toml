@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyagent-trace"
-version = "0.2.3"
+version = "0.2.4"
 description = "Pattern-aware OpenTelemetry tracing for multi-agent LLM systems"
 readme = "README.md"
 requires-python = ">=3.11"
