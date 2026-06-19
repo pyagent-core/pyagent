@@ -40,9 +40,9 @@ dependencies = [
 Homepage = "https://pyagent.org"
 Repository = "https://github.com/pyagent-core/pyagent"
 Documentation = "https://pyagent.org"
-"Agent Orchestration Patterns" = "https://pyagent.org/patterns/orchestrator-worker/"
-"Agent Harness Architecture" = "https://pyagent.org/architecture/multi-agent-harness/"
-"Agent Experience Optimization" = "https://pyagent.org/concepts/agent-experience-optimization/"
+"Design Patterns" = "https://pyagent.org/packages/patterns/"
+"Getting Started" = "https://pyagent.org/getting-started/"
+"Cookbook" = "https://pyagent.org/cookbook/"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.5", "mypy>=1.10"]

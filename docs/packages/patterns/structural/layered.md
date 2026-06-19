@@ -186,3 +186,18 @@ Trace: pyagent.pattern.layered (5.8s, $0.019)
 - [Pipeline](../orchestration/pipeline.md) — sequential single-agent stages
 - [Hierarchical](../orchestration/hierarchical.md) — manager/lead/worker delegation
 - [Fan-Out / Fan-In](../orchestration/fan-out-fan-in.md) — flat parallel execution with aggregator
+
+---
+
+<!-- pattern-mesh:start -->
+
+## Explore all design patterns
+
+**Orchestration:** [Supervisor](../orchestration/supervisor.md) · [Pipeline](../orchestration/pipeline.md) · [Fan-Out / Fan-In](../orchestration/fan-out-fan-in.md) · [Hierarchical](../orchestration/hierarchical.md) · [Orchestrator-Workers](../orchestration/orchestrator-workers.md)  
+**Resolution:** [Self-Reflection](../resolution/self-reflection.md) · [Cross-Reflection](../resolution/cross-reflection.md) · [Debate](../resolution/debate.md) · [Voting](../resolution/voting.md) · [Evaluator-Optimizer](../resolution/evaluator-optimizer.md)  
+**Structural:** [Role-Based](../structural/role-based.md) · **Layered** · [Topology](../structural/topology.md) · [Blackboard](../structural/blackboard.md)  
+**Iterative & Advanced:** [ReAct](../advanced/react.md) · [Talker-Reasoner](../advanced/talker-reasoner.md) · [Swarm](../advanced/swarm.md) · [Human-in-the-Loop](../advanced/human-in-the-loop.md)  
+
+[Browse the full pattern catalog →](../index.md)
+
+<!-- pattern-mesh:end -->

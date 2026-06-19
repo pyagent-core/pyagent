@@ -428,3 +428,17 @@ Trace: investment-analysis / debate (9.8s total, $0.01032)
 - [Tracing Guide](../guides/tracing.md) — production setup for Langfuse, Datadog, Grafana
 - [Compress Package](compress.md) — `pyagent.compress.savings_pct` OTel attribute
 - [API Reference](../api/trace.md)
+
+---
+
+<!-- cookbook-backlinks:start -->
+
+## Cookbook examples
+
+Complete, runnable recipes that use this package — [browse the Cookbook](../cookbook/index.md):
+
+- [Multi-agent incident triage pipeline](../cookbook/devops-sre/incident-triage.md)
+
+[Browse the full Cookbook →](../cookbook/index.md)
+
+<!-- cookbook-backlinks:end -->

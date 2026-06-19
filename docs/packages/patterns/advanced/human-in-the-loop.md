@@ -206,3 +206,18 @@ Trace: pyagent.pattern.human_in_the_loop (47.2s, $0.008)
 - [Evaluator-Optimizer](../resolution/evaluator-optimizer.md) — automated quality gate without human
 - [Cross-Reflection](../resolution/cross-reflection.md) — AI peer review before human sees it
 - [ReAct](react.md) — human-in-the-loop for tool approval rather than output approval
+
+---
+
+<!-- pattern-mesh:start -->
+
+## Explore all design patterns
+
+**Orchestration:** [Supervisor](../orchestration/supervisor.md) · [Pipeline](../orchestration/pipeline.md) · [Fan-Out / Fan-In](../orchestration/fan-out-fan-in.md) · [Hierarchical](../orchestration/hierarchical.md) · [Orchestrator-Workers](../orchestration/orchestrator-workers.md)  
+**Resolution:** [Self-Reflection](../resolution/self-reflection.md) · [Cross-Reflection](../resolution/cross-reflection.md) · [Debate](../resolution/debate.md) · [Voting](../resolution/voting.md) · [Evaluator-Optimizer](../resolution/evaluator-optimizer.md)  
+**Structural:** [Role-Based](../structural/role-based.md) · [Layered](../structural/layered.md) · [Topology](../structural/topology.md) · [Blackboard](../structural/blackboard.md)  
+**Iterative & Advanced:** [ReAct](../advanced/react.md) · [Talker-Reasoner](../advanced/talker-reasoner.md) · [Swarm](../advanced/swarm.md) · **Human-in-the-Loop**  
+
+[Browse the full pattern catalog →](../index.md)
+
+<!-- pattern-mesh:end -->

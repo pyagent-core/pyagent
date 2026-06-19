@@ -211,3 +211,18 @@ Trace: pyagent.pattern.orchestrator_workers (8.4s, $0.028)
 - [Hierarchical](hierarchical.md) — fixed team structure decided at design time
 - [Pipeline](pipeline.md) — fixed sequential stages, no dynamic planning
 - [Blackboard](../structural/blackboard.md) — workers share a state store instead of routing through orchestrator
+
+---
+
+<!-- pattern-mesh:start -->
+
+## Explore all design patterns
+
+**Orchestration:** [Supervisor](../orchestration/supervisor.md) · [Pipeline](../orchestration/pipeline.md) · [Fan-Out / Fan-In](../orchestration/fan-out-fan-in.md) · [Hierarchical](../orchestration/hierarchical.md) · **Orchestrator-Workers**  
+**Resolution:** [Self-Reflection](../resolution/self-reflection.md) · [Cross-Reflection](../resolution/cross-reflection.md) · [Debate](../resolution/debate.md) · [Voting](../resolution/voting.md) · [Evaluator-Optimizer](../resolution/evaluator-optimizer.md)  
+**Structural:** [Role-Based](../structural/role-based.md) · [Layered](../structural/layered.md) · [Topology](../structural/topology.md) · [Blackboard](../structural/blackboard.md)  
+**Iterative & Advanced:** [ReAct](../advanced/react.md) · [Talker-Reasoner](../advanced/talker-reasoner.md) · [Swarm](../advanced/swarm.md) · [Human-in-the-Loop](../advanced/human-in-the-loop.md)  
+
+[Browse the full pattern catalog →](../index.md)
+
+<!-- pattern-mesh:end -->

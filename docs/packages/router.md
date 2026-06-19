@@ -267,3 +267,18 @@ agent = model_middleware.wrap(
 - [Patterns Package](patterns/index.md) — `Agent`, `Pipeline`, `FanOutFanIn` and all orchestration patterns
 - [Providers Package](providers.md) — `ProviderRouter` for provider-level routing and fallback
 - [API Reference](../api/router.md)
+
+---
+
+<!-- cookbook-backlinks:start -->
+
+## Cookbook examples
+
+Complete, runnable recipes that use this package — [all examples using this package](../cookbook/tags.md#tag:pyagent-router):
+
+- [Multi-agent code review system](../cookbook/software-engineering/code-review.md)
+- [Multi-agent SQL analytics assistant](../cookbook/data-analytics/sql-analyst.md)
+
+[Browse the full Cookbook →](../cookbook/index.md)
+
+<!-- cookbook-backlinks:end -->

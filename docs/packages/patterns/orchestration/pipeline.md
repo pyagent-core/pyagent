@@ -178,3 +178,18 @@ Trace: pyagent.pattern.pipeline (4.1s, $0.012)
 - [Fan-Out / Fan-In](fan-out-fan-in.md) — same agents running in parallel instead of sequentially
 - [Self-Reflection](../resolution/self-reflection.md) — add a critique-refine loop at any stage
 - [Evaluator-Optimizer](../resolution/evaluator-optimizer.md) — scored quality gate between stages
+
+---
+
+<!-- pattern-mesh:start -->
+
+## Explore all design patterns
+
+**Orchestration:** [Supervisor](../orchestration/supervisor.md) · **Pipeline** · [Fan-Out / Fan-In](../orchestration/fan-out-fan-in.md) · [Hierarchical](../orchestration/hierarchical.md) · [Orchestrator-Workers](../orchestration/orchestrator-workers.md)  
+**Resolution:** [Self-Reflection](../resolution/self-reflection.md) · [Cross-Reflection](../resolution/cross-reflection.md) · [Debate](../resolution/debate.md) · [Voting](../resolution/voting.md) · [Evaluator-Optimizer](../resolution/evaluator-optimizer.md)  
+**Structural:** [Role-Based](../structural/role-based.md) · [Layered](../structural/layered.md) · [Topology](../structural/topology.md) · [Blackboard](../structural/blackboard.md)  
+**Iterative & Advanced:** [ReAct](../advanced/react.md) · [Talker-Reasoner](../advanced/talker-reasoner.md) · [Swarm](../advanced/swarm.md) · [Human-in-the-Loop](../advanced/human-in-the-loop.md)  
+
+[Browse the full pattern catalog →](../index.md)
+
+<!-- pattern-mesh:end -->

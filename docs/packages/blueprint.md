@@ -422,3 +422,17 @@ See [Studio Package](studio.md) for the full walkthrough.
 - [Context Package](context.md) — `context:` block in YAML maps to ContextLedger
 - [Providers Package](providers.md) — `providers:` block in YAML maps to ProviderRegistry
 - [API Reference](../api/blueprint.md)
+
+---
+
+<!-- cookbook-backlinks:start -->
+
+## Cookbook examples
+
+Complete, runnable recipes that use this package — [browse the Cookbook](../cookbook/index.md):
+
+- [Multi-agent marketing campaign planner](../cookbook/marketing-content/campaign-planner.md)
+
+[Browse the full Cookbook →](../cookbook/index.md)
+
+<!-- cookbook-backlinks:end -->

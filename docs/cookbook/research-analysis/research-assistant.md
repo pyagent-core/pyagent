@@ -1,4 +1,16 @@
-# Cookbook: Research Agent
+---
+description: "How to build a multi-agent research assistant in Python with PyAgent — parallel gathering, debate, synthesis, and citations within a token budget."
+tags:
+  - Research & Analysis
+  - ReAct
+  - Fan-Out / Fan-In
+  - Debate
+  - Pipeline
+  - pyagent-patterns
+  - pyagent-compress
+---
+
+# How to Build a Multi-Agent Research Assistant in Python
 
 A multi-agent research system that parallelises information gathering, debates findings to surface disagreements, synthesises into a structured report, and cites sources — all within a controlled token budget.
 
@@ -313,7 +325,7 @@ Compression saves ~40-50% vs uncompressed. At 100 research queries/day, standard
 
 ## See Also
 
-- [ReAct pattern](../packages/patterns/advanced/react.md)
-- [Fan-Out / Fan-In pattern](../packages/patterns/orchestration/fan-out-fan-in.md)
-- [Debate pattern](../packages/patterns/resolution/debate.md)
-- [Compression Guide](../guides/compression.md)
+- [ReAct pattern](../../packages/patterns/advanced/react.md)
+- [Fan-Out / Fan-In pattern](../../packages/patterns/orchestration/fan-out-fan-in.md)
+- [Debate pattern](../../packages/patterns/resolution/debate.md)
+- [Compression Guide](../../guides/compression.md)

@@ -56,7 +56,7 @@ PyAgent is built around four pillars that mirror the lifecycle of a production m
   - [Tier 1 — Orchestration](#tier-1--orchestration)
   - [Tier 2 — Resolution](#tier-2--resolution)
   - [Tier 3 — Structural](#tier-3--structural)
-  - [Tier 4 — Advanced](#tier-4--advanced)
+  - [Tier 4 — Iterative & Advanced](#tier-4--iterative--advanced)
 - [Pattern composition](#pattern-composition)
 - [Pattern Advisor](#pattern-advisor)
 - [pyagent-router](#pyagent-router)
@@ -70,6 +70,7 @@ PyAgent is built around four pillars that mirror the lifecycle of a production m
 - [pyagent-studio](#pyagent-studio)
 - [End-to-end integration](#end-to-end-integration)
 - [When to use which pattern](#when-to-use-which-pattern)
+- [Cookbook](#cookbook)
 - [Contributing](#contributing)
 
 ## Connecting your LLM
@@ -827,7 +828,7 @@ print(result.metadata["final_state"]["final_report"])
 # metadata: {"rounds": 1, "final_state": {"entity_list": ..., "sentiment": ..., ...}}
 ```
 
-### Tier 4 — Advanced
+### Tier 4 — Iterative & Advanced
 
 #### 15. Talker-Reasoner
 
@@ -1985,12 +1986,19 @@ PYTHONPATH=packages/pyagent-patterns/src:packages/pyagent-router/src:packages/py
   python -m benchmarks.run
 ```
 
+## Cookbook
+
+Complete, runnable multi-agent orchestration examples across 20 domains (Customer Support, Finance,
+Healthcare, Legal, DevOps, Security, and more) — each a copy-paste-ready recipe with full code and
+expected output: **[pyagent.org/cookbook](https://pyagent.org/cookbook/)**. Filter by pattern,
+provider, or package on the [Tags page](https://pyagent.org/cookbook/tags/).
+
 ## Documentation
 
 Full docs with Mermaid sequence diagrams, code examples, and API reference: [pyagent.org](https://pyagent.org)
 
 ```bash
-pip install mkdocs-material mkdocstrings[python]
+pip install mkdocs-material mkdocstrings[python] mkdocs-redirects mkdocs-llmstxt
 mkdocs serve  # Preview at http://localhost:8000
 ```
 
@@ -2001,6 +2009,10 @@ The easiest way to contribute is to add a new pattern:
 1. Look at an existing pattern in `packages/pyagent-patterns/src/pyagent_patterns/` for structure
 2. Open an issue describing the pattern, its use case, and the paper or source it's based on
 3. Submit a PR with: implementation + tests + docstring + entry in the pattern catalog
+
+You can also **add a [Cookbook](https://pyagent.org/cookbook/) example** — a complete, runnable
+multi-agent recipe for a domain. See the contributing guide at
+[pyagent.org/contributing](https://pyagent.org/contributing/) for the example template and tags.
 
 Other welcome contributions: new provider adapters in the docs/examples, bug reports, benchmarks, and documentation improvements.
 

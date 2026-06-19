@@ -217,3 +217,18 @@ Trace: pyagent.pattern.hierarchical (6.2s, $0.031)
 - [Orchestrator-Workers](orchestrator-workers.md) — dynamic team assignment at runtime
 - [Fan-Out / Fan-In](fan-out-fan-in.md) — flat parallel execution without hierarchy
 - [Role-Based](../structural/role-based.md) — fixed roles collaborating in shared rounds
+
+---
+
+<!-- pattern-mesh:start -->
+
+## Explore all design patterns
+
+**Orchestration:** [Supervisor](../orchestration/supervisor.md) · [Pipeline](../orchestration/pipeline.md) · [Fan-Out / Fan-In](../orchestration/fan-out-fan-in.md) · **Hierarchical** · [Orchestrator-Workers](../orchestration/orchestrator-workers.md)  
+**Resolution:** [Self-Reflection](../resolution/self-reflection.md) · [Cross-Reflection](../resolution/cross-reflection.md) · [Debate](../resolution/debate.md) · [Voting](../resolution/voting.md) · [Evaluator-Optimizer](../resolution/evaluator-optimizer.md)  
+**Structural:** [Role-Based](../structural/role-based.md) · [Layered](../structural/layered.md) · [Topology](../structural/topology.md) · [Blackboard](../structural/blackboard.md)  
+**Iterative & Advanced:** [ReAct](../advanced/react.md) · [Talker-Reasoner](../advanced/talker-reasoner.md) · [Swarm](../advanced/swarm.md) · [Human-in-the-Loop](../advanced/human-in-the-loop.md)  
+
+[Browse the full pattern catalog →](../index.md)
+
+<!-- pattern-mesh:end -->

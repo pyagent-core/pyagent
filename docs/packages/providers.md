@@ -378,3 +378,18 @@ export GOOGLE_API_KEY="..."
 - [Studio Package](studio.md) — `/providers` health dashboard in web UI
 - [Routing Guide](../guides/router.md) — difficulty-based model routing with pyagent-router
 - [API Reference](../api/providers.md)
+
+---
+
+<!-- cookbook-backlinks:start -->
+
+## Cookbook examples
+
+Complete, runnable recipes that use this package — [browse the Cookbook](../cookbook/index.md):
+
+- [Multi-agent portfolio review](../cookbook/finance-trading/portfolio-review.md)
+- [Multi-agent customer support router](../cookbook/customer-support/support-router.md)
+
+[Browse the full Cookbook →](../cookbook/index.md)
+
+<!-- cookbook-backlinks:end -->

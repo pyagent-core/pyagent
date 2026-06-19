@@ -1,4 +1,16 @@
-# Cookbook: Code Review Agent
+---
+description: "How to build a multi-agent code review system in Python with PyAgent — iterative peer review, security scanning, and human escalation."
+tags:
+  - Software Engineering
+  - Cross-Reflection
+  - Pipeline
+  - Human-in-the-Loop
+  - Router
+  - pyagent-patterns
+  - pyagent-router
+---
+
+# How to Build a Multi-Agent Code Review System in Python
 
 A production-grade multi-agent code review system that automatically guards inputs, performs iterative peer review, scans for security issues, and routes to human reviewers when needed.
 
@@ -261,7 +273,7 @@ def language_aware_prompt(code: str) -> str:
 
 ## See Also
 
-- [CrossReflection pattern](../packages/patterns/resolution/cross-reflection.md)
-- [Guardrails Guide](../guides/guardrails.md)
-- [Routing Guide](../guides/router.md)
-- [HumanInTheLoop pattern](../packages/patterns/advanced/human-in-the-loop.md)
+- [CrossReflection pattern](../../packages/patterns/resolution/cross-reflection.md)
+- [Guardrails Guide](../../guides/guardrails.md)
+- [Routing Guide](../../guides/router.md)
+- [HumanInTheLoop pattern](../../packages/patterns/advanced/human-in-the-loop.md)

@@ -1,4 +1,16 @@
-# Cookbook: Customer Support
+---
+description: "How to build a multi-agent customer support router in Python with PyAgent — classify, route to specialists, and escalate to humans."
+tags:
+  - Customer Support
+  - Supervisor
+  - Talker-Reasoner
+  - Human-in-the-Loop
+  - Router
+  - pyagent-patterns
+  - pyagent-router
+---
+
+# How to Build a Multi-Agent Customer Support Router in Python
 
 A tiered multi-agent customer support system that classifies queries, routes to specialist bots, uses cheap models for simple questions and expensive ones only for complex issues, and escalates to human agents when automated handling fails.
 
@@ -333,8 +345,8 @@ Routing saves ~70% vs always using claude-sonnet for everything.
 
 ## See Also
 
-- [Supervisor pattern](../packages/patterns/orchestration/supervisor.md)
-- [TalkerReasoner pattern](../packages/patterns/advanced/talker-reasoner.md)
-- [HumanInTheLoop pattern](../packages/patterns/advanced/human-in-the-loop.md)
-- [Guardrails Guide](../guides/guardrails.md)
-- [Recovery Guide](../guides/recovery.md)
+- [Supervisor pattern](../../packages/patterns/orchestration/supervisor.md)
+- [TalkerReasoner pattern](../../packages/patterns/advanced/talker-reasoner.md)
+- [HumanInTheLoop pattern](../../packages/patterns/advanced/human-in-the-loop.md)
+- [Guardrails Guide](../../guides/guardrails.md)
+- [Recovery Guide](../../guides/recovery.md)

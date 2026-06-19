@@ -242,3 +242,18 @@ Trace: pyagent.pattern.react (4.8s, $0.016)
 - [Orchestrator-Workers](../orchestration/orchestrator-workers.md) — parallel tool/worker execution rather than sequential steps
 - [Human-in-the-Loop](human-in-the-loop.md) — add human approval gate before executing real-world actions
 - [Talker-Reasoner](talker-reasoner.md) — ReAct as the "reasoner" in a fast/slow routing system
+
+---
+
+<!-- pattern-mesh:start -->
+
+## Explore all design patterns
+
+**Orchestration:** [Supervisor](../orchestration/supervisor.md) · [Pipeline](../orchestration/pipeline.md) · [Fan-Out / Fan-In](../orchestration/fan-out-fan-in.md) · [Hierarchical](../orchestration/hierarchical.md) · [Orchestrator-Workers](../orchestration/orchestrator-workers.md)  
+**Resolution:** [Self-Reflection](../resolution/self-reflection.md) · [Cross-Reflection](../resolution/cross-reflection.md) · [Debate](../resolution/debate.md) · [Voting](../resolution/voting.md) · [Evaluator-Optimizer](../resolution/evaluator-optimizer.md)  
+**Structural:** [Role-Based](../structural/role-based.md) · [Layered](../structural/layered.md) · [Topology](../structural/topology.md) · [Blackboard](../structural/blackboard.md)  
+**Iterative & Advanced:** **ReAct** · [Talker-Reasoner](../advanced/talker-reasoner.md) · [Swarm](../advanced/swarm.md) · [Human-in-the-Loop](../advanced/human-in-the-loop.md)  
+
+[Browse the full pattern catalog →](../index.md)
+
+<!-- pattern-mesh:end -->

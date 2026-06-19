@@ -405,3 +405,17 @@ for msg in ["I can't access my dashboard", "I already tried reloading", "Same is
 - [Trace Package](trace.md) — record agent interactions for replay and debugging
 - [Blueprint Package](blueprint.md) — declare context config in YAML with `context:` block
 - [API Reference](../api/context.md)
+
+---
+
+<!-- cookbook-backlinks:start -->
+
+## Cookbook examples
+
+Complete, runnable recipes that use this package — [browse the Cookbook](../cookbook/index.md):
+
+- [Multi-agent clinical note summarizer](../cookbook/healthcare/clinical-summary.md)
+
+[Browse the full Cookbook →](../cookbook/index.md)
+
+<!-- cookbook-backlinks:end -->

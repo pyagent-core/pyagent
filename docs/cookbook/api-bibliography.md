@@ -1,3 +1,7 @@
+---
+description: "PyAgent API & hooks bibliography — every public class, method, hook, and protocol across all pyagent-* packages."
+---
+
 # API & Hooks Bibliography
 
 **Complete reference of every public class, method, hook, and protocol across all pyagent-\* packages.**

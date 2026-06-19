@@ -578,9 +578,9 @@ only what you need, or get everything with [`pip install pyagent-all`](https://p
 | `pyagent-trace` | [Multi-agent observability & tracing](https://pyagent.org/guides/tracing/) — pattern-aware OpenTelemetry spans |
 | `pyagent-studio` | [Agent control plane dashboard](https://pyagent.org/guides/studio/) — live traces, cost, and governance |
 
-**Learn the concepts:**
-[The Orchestrator-Worker pattern](https://pyagent.org/patterns/orchestrator-worker/) ·
-[Engineering a resilient multi-agent harness](https://pyagent.org/architecture/multi-agent-harness/) ·
-[Agent Experience Optimization (AXO)](https://pyagent.org/concepts/agent-experience-optimization/)
+**Learn more:**
+[Design patterns](https://pyagent.org/packages/patterns/) ·
+[Cookbook](https://pyagent.org/cookbook/) ·
+[Get started](https://pyagent.org/getting-started/)
 
 <!-- pyagent-ecosystem-footer:end -->

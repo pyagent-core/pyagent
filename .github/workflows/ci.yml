@@ -75,7 +75,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: |
-          pip install mkdocs mkdocs-material mkdocstrings[python]
+          pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-redirects mkdocs-llmstxt
           pip install -e packages/pyagent-patterns
           pip install -e packages/pyagent-router
           pip install -e packages/pyagent-compress
@@ -84,7 +84,7 @@ jobs:
           pip install -e packages/pyagent-providers
           pip install -e "packages/pyagent-blueprint[dev]"
           pip install -e "packages/pyagent-studio[dev]"
-      - run: mkdocs build --strict
+      - run: DISABLE_MKDOCS_2_WARNING=true mkdocs build --strict
 
   # ── Stage 4a: Docs deploy (main branch only) ─────────────────────────────────
   docs-deploy:
@@ -104,7 +104,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: |
-          pip install mkdocs mkdocs-material mkdocstrings[python]
+          pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-redirects mkdocs-llmstxt
           pip install -e packages/pyagent-patterns
           pip install -e packages/pyagent-router
           pip install -e packages/pyagent-compress
@@ -113,7 +113,7 @@ jobs:
           pip install -e packages/pyagent-providers
           pip install -e "packages/pyagent-blueprint[dev]"
           pip install -e "packages/pyagent-studio[dev]"
-      - run: mkdocs build --strict
+      - run: DISABLE_MKDOCS_2_WARNING=true mkdocs build --strict
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site/

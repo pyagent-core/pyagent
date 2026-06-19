@@ -21,10 +21,15 @@ theme:
         icon: material/brightness-7
         name: Switch to dark mode
   features:
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
     - navigation.tabs
     - navigation.sections
     - navigation.expand
     - navigation.path
+    - navigation.top
+    - navigation.footer
     - content.code.copy
     - content.code.annotate
     - content.tabs.link
@@ -33,6 +38,9 @@ theme:
     - toc.follow
   icon:
     repo: fontawesome/brands/github
+
+extra_javascript:
+  - javascripts/infinite-scroll.js
 
 markdown_extensions:
   - admonition
@@ -60,6 +68,16 @@ markdown_extensions:
 
 plugins:
   - search
+  - tags
+  - redirects:
+      redirect_maps:
+        patterns/orchestrator-worker.md: packages/patterns/orchestration/orchestrator-workers.md
+        patterns/plan-act-reflect.md: packages/patterns/advanced/react.md
+        architecture/multi-agent-harness.md: guides/recovery.md
+        concepts/agent-experience-optimization.md: guides/blueprint.md
+        cookbook/code-review.md: cookbook/software-engineering/code-review.md
+        cookbook/research.md: cookbook/research-analysis/research-assistant.md
+        cookbook/customer-support.md: cookbook/customer-support/support-router.md
   - mkdocstrings:
       handlers:
         python:
@@ -76,96 +94,130 @@ plugins:
             show_source: true
             show_root_heading: true
             heading_level: 2
+  - llmstxt:
+      full_output: llms-full.txt
+      markdown_description: >-
+        PyAgent is a production stack for multi-agent LLM systems — 18 named design patterns, a
+        four-pillar framework (Blueprint, Execution & Routing, Context & Memory, Observability), and a
+        Cookbook of complete, runnable multi-agent orchestration examples across 20 domains.
+      sections:
+        Getting Started:
+          - getting-started.md
+          - getting-started/*.md
+        Design Patterns:
+          - packages/patterns/index.md
+          - packages/patterns/*/*.md
+        Framework:
+          - guides/*.md
+          - packages/*.md
+        Cookbook:
+          - cookbook/index.md
+          - cookbook/*/*.md
+        API Reference:
+          - api/*.md
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
+  - Getting Started:
+    - Quickstart: getting-started.md
+    - Core Concepts: getting-started/core-concepts.md
+    - Featured Examples: getting-started/featured-examples.md
 
-  # ── Design Patterns & Concepts (SEO landing pages) ───────────────────────────
+  # ── Design Patterns (flagship: full pattern library) ─────────────────────────
   - Design Patterns:
-    - Orchestrator-Worker: patterns/orchestrator-worker.md
-    - Plan-Act-Reflect-Repeat: patterns/plan-act-reflect.md
-  - Architecture:
-    - Multi-Agent Harness: architecture/multi-agent-harness.md
-  - Concepts:
-    - Agent Experience Optimization (AXO): concepts/agent-experience-optimization.md
-
-  # ── Pillar 1: Blueprint ──────────────────────────────────────────────────────
-  - Blueprint:
-    - Guide: guides/blueprint.md
-    - Spec Format: packages/blueprint/spec-format.md
-    - Agents: packages/blueprint/agents.md
-    - Workflows: packages/blueprint/workflows.md
-    - Providers Config: packages/blueprint/providers.md
-    - Context Config: packages/blueprint/context.md
-    - Contracts & Observability: packages/blueprint/contracts.md
-    - CLI: packages/blueprint/cli.md
-    - Python API: packages/blueprint/compiler.md
-
-  # ── Pillar 2: Execution ──────────────────────────────────────────────────────
-  - Execution:
-    - Hooks: guides/hooks.md
-    - Patterns:
-      - Overview: packages/patterns/index.md
+    - Overview: packages/patterns/index.md
+    - Orchestration:
+      - Supervisor: packages/patterns/orchestration/supervisor.md
+      - Pipeline: packages/patterns/orchestration/pipeline.md
+      - Fan-Out / Fan-In: packages/patterns/orchestration/fan-out-fan-in.md
+      - Hierarchical: packages/patterns/orchestration/hierarchical.md
+      - Orchestrator-Workers: packages/patterns/orchestration/orchestrator-workers.md
+    - Resolution:
+      - Self-Reflection: packages/patterns/resolution/self-reflection.md
+      - Cross-Reflection: packages/patterns/resolution/cross-reflection.md
+      - Debate: packages/patterns/resolution/debate.md
+      - Voting: packages/patterns/resolution/voting.md
+      - Evaluator-Optimizer: packages/patterns/resolution/evaluator-optimizer.md
+    - Structural:
+      - Role-Based: packages/patterns/structural/role-based.md
+      - Layered: packages/patterns/structural/layered.md
+      - Topology: packages/patterns/structural/topology.md
+      - Blackboard: packages/patterns/structural/blackboard.md
+    - Iterative & Advanced:
+      - ReAct: packages/patterns/advanced/react.md
+      - Talker-Reasoner: packages/patterns/advanced/talker-reasoner.md
+      - Swarm: packages/patterns/advanced/swarm.md
+      - Human-in-the-Loop: packages/patterns/advanced/human-in-the-loop.md
+    - Using Patterns:
       - Composition: guides/composition.md
       - Guardrails: guides/guardrails.md
       - Recovery: guides/recovery.md
-      - Orchestration:
-        - Supervisor: packages/patterns/orchestration/supervisor.md
-        - Pipeline: packages/patterns/orchestration/pipeline.md
-        - Fan-Out / Fan-In: packages/patterns/orchestration/fan-out-fan-in.md
-        - Hierarchical: packages/patterns/orchestration/hierarchical.md
-        - Orchestrator-Workers: packages/patterns/orchestration/orchestrator-workers.md
-      - Resolution:
-        - Self-Reflection: packages/patterns/resolution/self-reflection.md
-        - Cross-Reflection: packages/patterns/resolution/cross-reflection.md
-        - Debate: packages/patterns/resolution/debate.md
-        - Voting: packages/patterns/resolution/voting.md
-        - Evaluator-Optimizer: packages/patterns/resolution/evaluator-optimizer.md
-      - Structural:
-        - Role-Based: packages/patterns/structural/role-based.md
-        - Layered: packages/patterns/structural/layered.md
-        - Topology: packages/patterns/structural/topology.md
-        - Blackboard: packages/patterns/structural/blackboard.md
-      - Advanced:
-        - Talker-Reasoner: packages/patterns/advanced/talker-reasoner.md
-        - Swarm: packages/patterns/advanced/swarm.md
-        - Human-in-the-Loop: packages/patterns/advanced/human-in-the-loop.md
-        - ReAct: packages/patterns/advanced/react.md
-    - Providers:
-      - Guide: guides/providers.md
-      - Package: packages/providers.md
-    - Router:
-      - Guide: guides/router.md
-      - Package: packages/router.md
-    - Compress:
-      - Guide: guides/compression.md
-      - Package: packages/compress.md
 
-  # ── Pillar 3: Context & Memory ───────────────────────────────────────────────
-  - Context & Memory:
-    - Guide: guides/context.md
-    - Package: packages/context.md
+  # ── Framework (the 4 pillars) ────────────────────────────────────────────────
+  - Framework:
+    - Blueprint:
+      - Guide: guides/blueprint.md
+      - Spec Format: packages/blueprint/spec-format.md
+      - Agents: packages/blueprint/agents.md
+      - Workflows: packages/blueprint/workflows.md
+      - Providers Config: packages/blueprint/providers.md
+      - Context Config: packages/blueprint/context.md
+      - Contracts & Observability: packages/blueprint/contracts.md
+      - CLI: packages/blueprint/cli.md
+      - Python API: packages/blueprint/compiler.md
+    - Execution & Routing:
+      - Hooks: guides/hooks.md
+      - Providers:
+        - Guide: guides/providers.md
+        - Package: packages/providers.md
+      - Router:
+        - Guide: guides/router.md
+        - Package: packages/router.md
+      - Compress:
+        - Guide: guides/compression.md
+        - Package: packages/compress.md
+    - Context & Memory:
+      - Guide: guides/context.md
+      - Package: packages/context.md
+    - Observability:
+      - Tracing:
+        - Guide: guides/tracing.md
+        - Package: packages/trace.md
+      - Studio:
+        - Guide: guides/studio.md
+        - Overview: packages/studio/index.md
+        - CLI: packages/studio/cli.md
+        - Dashboard: packages/studio/dashboard.md
+        - Services: packages/studio/services.md
+        - Traces: packages/studio/traces.md
 
-  # ── Pillar 4: Observability ──────────────────────────────────────────────────
-  - Observability:
-    - Tracing:
-      - Guide: guides/tracing.md
-      - Package: packages/trace.md
-    - Studio:
-      - Guide: guides/studio.md
-      - Overview: packages/studio/index.md
-      - CLI: packages/studio/cli.md
-      - Dashboard: packages/studio/dashboard.md
-      - Services: packages/studio/services.md
-      - Traces: packages/studio/traces.md
+  # ── Cookbook (200-example program; 20 domains) ───────────────────────────────
+  - Cookbook:
+    - Overview: cookbook/index.md
+    - Browse by Tag: cookbook/tags.md
+    - API & Hooks Reference: cookbook/api-bibliography.md
+    - Customer Support: cookbook/customer-support/index.md
+    - Software Engineering: cookbook/software-engineering/index.md
+    - Research & Analysis: cookbook/research-analysis/index.md
+    - Finance & Trading: cookbook/finance-trading/index.md
+    - Healthcare & Life Sciences: cookbook/healthcare/index.md
+    - Legal & Compliance: cookbook/legal-compliance/index.md
+    - Marketing & Content: cookbook/marketing-content/index.md
+    - Data & Analytics: cookbook/data-analytics/index.md
+    - E-commerce & Retail: cookbook/ecommerce-retail/index.md
+    - Education & Training: cookbook/education/index.md
+    - DevOps & SRE: cookbook/devops-sre/index.md
+    - Sales & CRM: cookbook/sales-crm/index.md
+    - HR & Recruiting: cookbook/hr-recruiting/index.md
+    - Security & Threat Intel: cookbook/security/index.md
+    - Scientific & Academic: cookbook/scientific/index.md
+    - Media & Entertainment: cookbook/media-entertainment/index.md
+    - Real Estate & PropTech: cookbook/real-estate/index.md
+    - Travel & Hospitality: cookbook/travel-hospitality/index.md
+    - Government & Public Sector: cookbook/government/index.md
+    - Gaming & Simulation: cookbook/gaming/index.md
 
-  # ── Supporting sections ──────────────────────────────────────────────────────
-  - Examples:
-    - Code Review Agent: cookbook/code-review.md
-    - Research Agent: cookbook/research.md
-    - Customer Support: cookbook/customer-support.md
-    - API & Hooks Bibliography: cookbook/api-bibliography.md
+  # ── API Reference ────────────────────────────────────────────────────────────
   - API Reference:
     - pyagent-patterns: api/patterns.md
     - pyagent-router: api/router.md
@@ -175,5 +227,8 @@ nav:
     - pyagent-context: api/context.md
     - pyagent-blueprint: api/blueprint.md
     - pyagent-studio: api/studio.md
-  - Benchmarks: benchmarks.md
-  - Contributing: contributing.md
+
+  # ── Resources ────────────────────────────────────────────────────────────────
+  - Resources:
+    - Benchmarks: benchmarks.md
+    - Contributing: contributing.md

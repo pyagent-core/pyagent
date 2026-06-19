@@ -312,3 +312,17 @@ print(f"Cost savings vs uncompressed: ~{budget.savings_estimate()}")
 - [Tracing Guide](../guides/tracing.md) — `pyagent.compress.savings_pct` attribute in OTel spans
 - [Compression Guide](../guides/compression.md) — full integration walkthrough
 - [API Reference](../api/compress.md)
+
+---
+
+<!-- cookbook-backlinks:start -->
+
+## Cookbook examples
+
+Complete, runnable recipes that use this package — [all examples using this package](../cookbook/tags.md#tag:pyagent-compress):
+
+- [Multi-agent research assistant](../cookbook/research-analysis/research-assistant.md)
+
+[Browse the full Cookbook →](../cookbook/index.md)
+
+<!-- cookbook-backlinks:end -->
