@@ -81,6 +81,15 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
 
+  # ── Design Patterns & Concepts (SEO landing pages) ───────────────────────────
+  - Design Patterns:
+    - Orchestrator-Worker: patterns/orchestrator-worker.md
+    - Plan-Act-Reflect-Repeat: patterns/plan-act-reflect.md
+  - Architecture:
+    - Multi-Agent Harness: architecture/multi-agent-harness.md
+  - Concepts:
+    - Agent Experience Optimization (AXO): concepts/agent-experience-optimization.md
+
   # ── Pillar 1: Blueprint ──────────────────────────────────────────────────────
   - Blueprint:
     - Guide: guides/blueprint.md

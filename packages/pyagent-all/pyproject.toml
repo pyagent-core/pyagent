@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "pyagent-all"
 version = "0.2.4"
-description = "Meta-package: installs all PyAgent packages (patterns, router, compress, trace, providers, context, blueprint, studio)"
+description = "A production-grade Python framework implementing reusable multi-agent design patterns, stateful orchestration, and resilient execution harnesses for autonomous LLM systems."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [{name = "PyAgent Team", email = "team@pyagent.org"}]
-keywords = ["agents", "multi-agent", "LLM", "patterns", "orchestration"]
+keywords = ["agents", "multi-agent", "LLM", "patterns", "orchestration", "multi-agent orchestration", "multi-agent design patterns", "agent harness", "AXO", "agent-experience-optimization", "orchestrator-worker pattern", "stateful multi-actor workflows", "deterministic process orchestration"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -40,6 +40,9 @@ dependencies = [
 Homepage = "https://pyagent.org"
 Repository = "https://github.com/pyagent-core/pyagent"
 Documentation = "https://pyagent.org"
+"Agent Orchestration Patterns" = "https://pyagent.org/patterns/orchestrator-worker/"
+"Agent Harness Architecture" = "https://pyagent.org/architecture/multi-agent-harness/"
+"Agent Experience Optimization" = "https://pyagent.org/concepts/agent-experience-optimization/"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.5", "mypy>=1.10"]

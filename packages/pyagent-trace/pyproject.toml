@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [{name = "PyAgent Team", email = "team@pyagent.org"}]
-keywords = ["agents", "tracing", "OpenTelemetry", "observability", "LLM"]
+keywords = ["agents", "tracing", "OpenTelemetry", "observability", "LLM", "multi-agent observability", "agent harness", "AXO"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -31,6 +31,9 @@ dependencies = [
 Homepage = "https://pyagent.org"
 Repository = "https://github.com/pyagent-core/pyagent"
 Documentation = "https://pyagent.org"
+"Agent Orchestration Patterns" = "https://pyagent.org/patterns/orchestrator-worker/"
+"Agent Harness Architecture" = "https://pyagent.org/architecture/multi-agent-harness/"
+"Agent Experience Optimization" = "https://pyagent.org/concepts/agent-experience-optimization/"
 
 [project.optional-dependencies]
 langfuse = ["langfuse>=2.0"]
