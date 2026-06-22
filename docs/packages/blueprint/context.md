@@ -1,3 +1,7 @@
+---
+description: "Configure context and memory in a PyAgent blueprint — wire the ContextLedger into your agents."
+---
+
 # Blueprint — Context Config
 
 The `context:` block configures per-run memory, compression, and PII redaction. When present, the compiler wires a `ContextLedger` automatically — no extra Python code needed.
@@ -66,7 +70,7 @@ context:
 
 Compression triggers when the total context token count exceeds `threshold_tokens`, then reduces it toward `target_ratio × current_tokens`, with `floor_tokens` as a hard minimum.
 
-| Policy | Behaviour |
+| Policy | Behavior |
 |--------|-----------|
 | `none` | No compression — context grows unbounded |
 | `fifo` | Drop oldest items first |

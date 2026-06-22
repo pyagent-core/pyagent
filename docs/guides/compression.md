@@ -1,3 +1,7 @@
+---
+description: "Guide to inter-agent compression in PyAgent — shrink message payloads and enforce token budgets across a pipeline."
+---
+
 # Compression Guide
 
 Reduce the tokens passed between agents in pipelines and fan-outs. `pyagent-compress` intercepts inter-agent messages, extracts the highest-density content, and passes a compressed version to the next stage — saving cost without losing the signal.
@@ -89,7 +93,7 @@ pipeline = Pipeline(stages=[
     )),
     middleware.wrap(Agent(
         "analyst", OpenAILLM("gpt-4o-mini"),
-        system_prompt="Analyse the extracted data.",
+        system_prompt="Analyze the extracted data.",
     )),
     # Last stage — output goes to the user, no compression needed
     Agent(
@@ -224,7 +228,7 @@ fanout = FanOutFanIn(
     ],
     aggregator=Agent(
         "synthesis", AnthropicLLM("claude-sonnet-4-20250514"),
-        system_prompt="Synthesise all three perspectives into an investment memo.",
+        system_prompt="Synthesize all three perspectives into an investment memo.",
     ),
 )
 

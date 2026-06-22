@@ -1,3 +1,7 @@
+---
+description: "Guide to composing PyAgent patterns — nest and chain patterns into larger multi-agent workflows with CompositePattern."
+---
+
 # Composition Guide
 
 Combine multiple patterns so the system escalates automatically when output quality isn't good enough. `CompositePattern` runs patterns in order, checks quality after each, and moves to the next only when the current one falls short — giving you the cheapest adequate result rather than always using the most expensive approach.
@@ -38,7 +42,7 @@ expensive_llm = AnthropicLLM("claude-sonnet-4-20250514")
 
 # Level 0 — cheapest: quick self-reflection
 reflection = SelfReflection(
-    agent=Agent("analyst", cheap_llm, system_prompt="Analyse concisely."),
+    agent=Agent("analyst", cheap_llm, system_prompt="Analyze concisely."),
     max_rounds=2,
 )
 
@@ -179,7 +183,7 @@ from pyagent_patterns.resolution import SelfReflection, Debate, EvaluatorOptimiz
 
 # Level 0: quick reflection
 quick = SelfReflection(
-    agent=Agent("analyst", cheap_llm, system_prompt="Analyse concisely."),
+    agent=Agent("analyst", cheap_llm, system_prompt="Analyze concisely."),
     max_rounds=1,
 )
 
@@ -194,7 +198,7 @@ adversarial = Debate(
 )
 
 # Level 2: criteria-based optimization
-optimised = EvaluatorOptimizer(
+optimized = EvaluatorOptimizer(
     generator=Agent("writer",    expensive_llm, system_prompt="Write the investment memo."),
     evaluator=Agent("evaluator", expensive_llm,
                     system_prompt="Score 1-10 on: accuracy, balance, actionability."),
@@ -207,7 +211,7 @@ def has_quantitative_insight(result) -> bool:
     return any(c.isdigit() for c in result.output) and len(result.output) > 300
 
 analysis_pipeline = CompositePattern(
-    patterns=[quick, adversarial, optimised],
+    patterns=[quick, adversarial, optimized],
     quality_check=has_quantitative_insight,
 )
 ```
@@ -237,7 +241,7 @@ safe = BoundedExecution(
     timeout_seconds=60.0,
 )
 
-result = asyncio.run(safe.run("Analyse this document"))
+result = asyncio.run(safe.run("Analyze this document"))
 print(f"Escalation level: {result.metadata.get('escalation_level', 0)}")
 print(f"Recovery level:   {result.metadata.get('recovery_level', 0)}")
 ```
@@ -263,4 +267,4 @@ The result: most requests run cheap, hard requests escalate automatically.
 - [Recovery Guide](recovery.md) — failure-based recovery with `BoundedExecution`
 - [Patterns Package](../packages/patterns/index.md) — all pattern classes
 - [Routing Guide](router.md) — complement composition with model-level routing
-- [API Reference](../api/patterns.md)
+- [API Reference](../api/patterns/composition-safety.md)

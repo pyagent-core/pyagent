@@ -1,3 +1,7 @@
+---
+description: "Define agents in a PyAgent blueprint — providers, prompts, tools, and per-agent configuration."
+---
+
 # Blueprint — Agents
 
 Each entry under `agents:` defines a named agent that can be referenced in workflows.

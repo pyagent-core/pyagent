@@ -1,3 +1,7 @@
+---
+description: "pyagent-studio — a Kubernetes-style control plane and web dashboard for multi-agent systems."
+---
+
 # pyagent-studio
 
 **The Kubernetes Dashboard for Agent Systems** — CLI workbench and web control plane for designing, simulating, debugging, and governing multi-agent LLM blueprints.
@@ -220,7 +224,7 @@ Cost: $0.00 (mock)  |  Duration: 0.044s
 
 ### /traces — Trace Explorer
 
-Visualise recorded `.jsonl` trace files (from `pyagent-trace` Recorder):
+Visualize recorded `.jsonl` trace files (from `pyagent-trace` Recorder):
 
 ```
 traces/production_runs.jsonl  →  loaded 1,240 spans from 180 runs

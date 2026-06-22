@@ -28,7 +28,9 @@
     {%- set og_desc = config.site_description -%}
   {%- endif -%}
   {%- set og_image = "https://pyagent.org/assets/pyagent-architecture.png" -%}
-  <meta name="keywords" content="Kubernetes for agent orchestration, agent orchestration, observability in multi agents, multi-agent observability, tracing in multi agents, distributed tracing for LLM agents, design patterns for multi agent, multi-agent design patterns, suggest design pattern for multi agent, multi-agent orchestration patterns, YAML agent blueprint, OpenTelemetry LLM tracing, Python multi-agent framework">
+  {#- meta keywords intentionally omitted: ignored by modern search engines and
+      previously identical on every page. Per-page descriptions below carry the
+      real SEO signal. -#}
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="{{ config.site_name }}">
   <meta property="og:title" content="{{ og_title }}">

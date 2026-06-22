@@ -1,3 +1,7 @@
+---
+description: "pyagent-context — three-tier memory (working, session, semantic) shared across agents with trust and PII controls."
+---
+
 # pyagent-context
 
 **Three-tier memory with trust-aware context ledger** — working memory for a single run, session memory across turns, and semantic memory for long-term recall. Agents share context without overloading LLM context windows.
@@ -49,7 +53,7 @@ item = ContextItem(
 print(item.id)              # UUID
 print(item.token_estimate)  # rough token count
 print(item.timestamp)       # creation time (float)
-print(item.to_dict())       # serialise to JSON-compatible dict
+print(item.to_dict())       # serialize to JSON-compatible dict
 ```
 
 `TrustLevel` controls what agents can rely on:
@@ -79,7 +83,7 @@ wm.add(ContextItem(content="Fact check: VERIFIED", source="fact_checker", trust_
 
 print(f"Items: {len(wm)}")
 print(f"Tokens: {wm.total_tokens}")
-print(f"Utilisation: {wm.utilization:.1%}")
+print(f"Utilization: {wm.utilization:.1%}")
 
 # Eviction returns what was dropped
 evicted = wm.add(ContextItem(content="new item", source="agent_x"))
@@ -107,7 +111,7 @@ async def run_with_memory(task: str) -> str:
         Agent("extractor", AnthropicLLM("claude-haiku-3-5-20241022"),
               system_prompt="Extract key claims and figures."),
         Agent("analyst",   AnthropicLLM("claude-sonnet-4-20250514"),
-              system_prompt="Analyse the extracted data and give a recommendation."),
+              system_prompt="Analyze the extracted data and give a recommendation."),
     ])
 
     result = await pipeline.run(task)
@@ -117,7 +121,7 @@ async def run_with_memory(task: str) -> str:
     print(f"Memory: {len(wm)} items, {wm.total_tokens} tokens")
     return result.output
 
-asyncio.run(run_with_memory("Analyse Tesla Q3 2025 earnings"))
+asyncio.run(run_with_memory("Analyze Tesla Q3 2025 earnings"))
 ```
 
 ---
@@ -277,7 +281,7 @@ from pyagent_context.item import ContextItem, TrustLevel
 sem = SemanticMemory(collection_name="agent_knowledge_base", persist_directory=".chromadb")
 
 # Add domain knowledge
-sem.add(ContextItem(content="PCI-DSS v4 requires tokenisation of all cardholder data at rest",
+sem.add(ContextItem(content="PCI-DSS v4 requires tokenization of all cardholder data at rest",
                     source="compliance_docs", trust_level=TrustLevel.VERIFIED))
 sem.add(ContextItem(content="SOC2 Type II audit completed 2024-11, no critical findings",
                     source="audit_report", trust_level=TrustLevel.VERIFIED))
@@ -313,7 +317,7 @@ compressor = ContextCompressor(target_tokens=4000)
 # Ledger with 12k tokens of history
 large_ledger = ContextLedger(items=long_history)
 
-# Compress: summarise SPECULATIVE items, keep VERIFIED intact
+# Compress: summarize SPECULATIVE items, keep VERIFIED intact
 compressed = compressor.compress(large_ledger)
 print(f"Compressed: {large_ledger.total_tokens} → {compressed.total_tokens} tokens")
 print(f"Verified items preserved: all")

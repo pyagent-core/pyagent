@@ -1,3 +1,7 @@
+---
+description: "Guide to PyAgent guardrails — validate and sanitize agent inputs and outputs with length, PII, and content guards."
+---
+
 # Guardrails Guide
 
 Validate, sanitize, and block agent inputs and outputs before they cause downstream problems. `pyagent-patterns` ships four built-in guardrails and a composable chain — no extra package needed.
@@ -137,7 +141,7 @@ async def run_safe(user_input: str) -> str:
     out_check = output_guard.check(result.output)
     return out_check.sanitized_content or result.output
 
-print(asyncio.run(run_safe("Summarise these notes: ...")))
+print(asyncio.run(run_safe("Summarize these notes: ...")))
 ```
 
 ### Inter-Agent Guardrail
@@ -291,4 +295,4 @@ def guarded_check(guard: GuardrailChain, content: str):
 
 - [Recovery Guide](recovery.md) — handle failures when guardrails reject at runtime
 - [Patterns Package](../packages/patterns/index.md) — `Agent`, `Pipeline`, `FanOutFanIn` integration points
-- [API Reference](../api/patterns.md)
+- [API Reference](../api/patterns/composition-safety.md)

@@ -1,13 +1,14 @@
 ---
 description: "How to build a multi-agent customer support router in Python with PyAgent — classify, route to specialists, and escalate to humans."
+summary: "Classify tickets → route to specialists → escalate to a human"
+complexity: Advanced
 tags:
-  - Customer Support
-  - Supervisor
-  - Talker-Reasoner
-  - Human-in-the-Loop
-  - Router
-  - pyagent-patterns
-  - pyagent-router
+  - "Domain: Customer Support"
+  - "Pattern: Supervisor"
+  - "Pattern: Talker-Reasoner"
+  - "Pattern: Human-in-the-Loop"
+  - "Package: pyagent-patterns"
+  - "Package: pyagent-router"
 ---
 
 # How to Build a Multi-Agent Customer Support Router in Python
@@ -195,7 +196,7 @@ safe_supervisor = BoundedExecution(
         "fallback_agent", fast_llm,
         system_prompt=(
             "You are a helpful support agent. A technical issue occurred with our "
-            "routing system. Apologise briefly and ask the customer to try again "
+            "routing system. Apologize briefly and ask the customer to try again "
             "or contact support@example.com."
         ),
     ),
@@ -284,7 +285,7 @@ Response:  I've escalated your issue to our specialist team. Ticket #SUP-847291 
 
 ---
 
-## Customisation
+## Customization
 
 ### Add a knowledge base tool
 
@@ -331,13 +332,13 @@ def route_by_sla(query: str, customer_tier: str) -> str:
 
 | Query type | Typical model | Avg cost | Volume (1k/day) |
 |-----------|--------------|----------|-----------------|
-| Simple billing | gpt-4o-mini | $0.0003 | $300/mo |
-| Complex billing | claude-sonnet | $0.003 | — |
-| Simple tech | gpt-4o-mini | $0.0003 | $300/mo |
-| Complex tech | claude-sonnet | $0.004 | — |
-| GDPR / legal | claude-sonnet | $0.005 | — |
-| Human escalation | gpt-4o-mini + human | $0.0003 + agent time | — |
-| **Blended average** | mix | **~$0.001** | **~$900/mo** |
+| Simple billing | gpt-4o-mini | $0.0003 | $9/mo |
+| Complex billing | claude-sonnet | $0.003 | $90/mo |
+| Simple tech | gpt-4o-mini | $0.0003 | $9/mo |
+| Complex tech | claude-sonnet | $0.004 | $120/mo |
+| GDPR / legal | claude-sonnet | $0.005 | $150/mo |
+| Human escalation | gpt-4o-mini + human | $0.0003 + agent time | $9/mo + agent time |
+| **Blended average** | mix | **~$0.001** | **~$30/mo** |
 
 Routing saves ~70% vs always using claude-sonnet for everything.
 

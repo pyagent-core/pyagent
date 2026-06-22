@@ -1,13 +1,14 @@
 ---
 description: "How to build a multi-agent code review system in Python with PyAgent — iterative peer review, security scanning, and human escalation."
+summary: "Iterative review + security scan with a human gate"
+complexity: Advanced
 tags:
-  - Software Engineering
-  - Cross-Reflection
-  - Pipeline
-  - Human-in-the-Loop
-  - Router
-  - pyagent-patterns
-  - pyagent-router
+  - "Domain: Software Engineering"
+  - "Pattern: Cross-Reflection"
+  - "Pattern: Pipeline"
+  - "Pattern: Human-in-the-Loop"
+  - "Package: pyagent-patterns"
+  - "Package: pyagent-router"
 ---
 
 # How to Build a Multi-Agent Code Review System in Python
@@ -31,7 +32,7 @@ sequenceDiagram
 
     D->>G: Submit code
     G->>G: Length check, PII scan
-    G->>C: Sanitised code
+    G->>C: Sanitized code
     C->>R: Initial review
     R->>C: Feedback (up to 3 rounds)
     C->>R: Revised code
@@ -119,7 +120,7 @@ def needs_human_review(result) -> bool:
 
 human_escalation = HumanInTheLoop(
     agent=Agent("prep", fast_llm,
-                system_prompt="Summarise the security issues for the human reviewer."),
+                system_prompt="Summarize the security issues for the human reviewer."),
     review_fn=lambda output, meta: _queue_human_review(output),
     high_risk_keywords=["critical", "injection", "hardcoded"],
 )
@@ -204,7 +205,7 @@ Security Score: 3/10
 
 CRITICAL — SQL Injection (original code):
   Line 2: String concatenation used in SQL query.
-  Fix: Use parameterised queries (? placeholder). Applied in improved code.
+  Fix: Use parameterized queries (? placeholder). Applied in improved code.
 
 MEDIUM — Missing input validation:
   user_id is typed as `int` but callers may pass strings from HTTP params.
@@ -216,7 +217,7 @@ Escalated to human: True   ← score was 3, below threshold of 8
 
 ---
 
-## Customisation
+## Customization
 
 ### Change the review focus
 

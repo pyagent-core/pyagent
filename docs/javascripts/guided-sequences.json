@@ -1,0 +1,8 @@
+{
+  "_comment": "Curated learning paths that support Guided Mode (opt-in continuous scrolling). Guided Mode chains the next page in nav order ONLY while both the current and next page stay within the same sequence prefix. API reference and Benchmarks/Comparison are intentionally absent (and listed in exclude) so they keep stable canonical URLs.",
+  "sequences": [
+    { "name": "Getting Started", "prefix": "/getting-started" },
+    { "name": "Design Patterns", "prefix": "/packages/patterns" }
+  ],
+  "exclude": ["/api/", "/benchmarks", "/cookbook/"]
+}

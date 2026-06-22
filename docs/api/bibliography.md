@@ -4,9 +4,13 @@ description: "PyAgent API & hooks bibliography — every public class, method, h
 
 # API & Hooks Bibliography
 
-**Complete reference of every public class, method, hook, and protocol across all pyagent-\* packages.**
+**An at-a-glance map of every public class, method, hook, and protocol across all pyagent-\* packages.**
 
-Use this page as a quick-lookup cheat sheet. Each entry links to the detailed API Reference page and shows the signature at a glance.
+This is the companion overview to the per-package API Reference pages in this section — use it as a
+quick-lookup cheat sheet, then open a package page (e.g. [pyagent-patterns](patterns/base.md),
+[pyagent-trace](trace.md)) for the full generated signatures and docstrings. It also collects
+cross-cutting references you won't find on a single package page: the [Hook Event Reference](#hook-event-reference)
+and the [Cross-Package Integration Matrix](#cross-package-integration-matrix).
 
 ---
 

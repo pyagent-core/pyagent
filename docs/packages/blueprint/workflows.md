@@ -1,3 +1,7 @@
+---
+description: "Define workflows in a PyAgent blueprint — bind orchestration patterns to agents and routes."
+---
+
 # Blueprint — Workflows
 
 Each entry under `workflows:` defines a named workflow — an orchestration pattern with agents wired to specific roles.
@@ -45,7 +49,7 @@ The `pattern` field must match a registered pattern. The built-in patterns from 
 | Human-in-the-Loop | `human_in_the_loop` |
 | ReAct | `react` |
 
-The `BlueprintValidator` raises an error if the pattern key is not recognised.
+The `BlueprintValidator` raises an error if the pattern key is not recognized.
 
 ---
 
@@ -176,7 +180,7 @@ workflows:
 | `timeout_seconds` | `null` | Per-attempt timeout; null = no limit |
 | `fallback_provider` | `null` | Provider key to use when retries exhaust |
 
-### Fallback provider behaviour
+### Fallback provider behavior
 
 When `fallback_provider` is set and all retries are exhausted, the compiler substitutes that provider for all agents in the workflow and tries one final time. This lets you degrade gracefully to a cheap model rather than returning an error.
 

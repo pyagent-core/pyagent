@@ -1,3 +1,7 @@
+---
+description: "The PyAgent blueprint spec format — the full YAML schema for agents, workflows, providers, and contracts."
+---
+
 # Blueprint Spec Format
 
 A blueprint is a single YAML document. Every section is optional except `api_version`, `metadata`, `agents`, and `workflows`.

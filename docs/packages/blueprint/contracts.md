@@ -1,3 +1,7 @@
+---
+description: "Declare contracts and observability in a PyAgent blueprint — assertions and trace wiring for production runs."
+---
+
 # Blueprint — Contracts & Observability
 
 Contracts define input/output constraints and SLA requirements. The `BlueprintTester` runs contract checks against `MockLLM` before you ever hit production.
@@ -123,7 +127,7 @@ observability:
     daily_usd: 50.0
 ```
 
-The compiler wires a `CostBudget` guard that accumulates cost across calls. When the daily limit is reached, further calls raise `BudgetExceededError` from `pyagent-compress`. Studio's `/providers` dashboard shows budget utilisation in real time.
+The compiler wires a `CostBudget` guard that accumulates cost across calls. When the daily limit is reached, further calls raise `BudgetExceededError` from `pyagent-compress`. Studio's `/providers` dashboard shows budget utilization in real time.
 
 ---
 

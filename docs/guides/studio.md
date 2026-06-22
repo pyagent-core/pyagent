@@ -1,3 +1,7 @@
+---
+description: "Guide to PyAgent Studio — run the web dashboard for traces, costs, governance, and provider health."
+---
+
 # Studio Guide
 
 `pyagent-studio` is a web dashboard and CLI for designing, simulating, debugging, and governing multi-agent blueprints. Run it locally during development or deploy it as an internal tool for your team.

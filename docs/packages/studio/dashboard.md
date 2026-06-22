@@ -1,3 +1,7 @@
+---
+description: "The PyAgent Studio dashboard — overview KPIs, traces, costs, governance, and provider health in one web UI."
+---
+
 # Studio — Web Dashboard
 
 ```bash
@@ -191,7 +195,7 @@ Budget data comes from the `cost_budget.daily_usd` field in the blueprint's `obs
 
 Visual semantic diff between two blueprint versions.
 
-Upload two YAML files or paste YAML directly into the editor panels. Changes are categorised:
+Upload two YAML files or paste YAML directly into the editor panels. Changes are categorized:
 
 - **BREAKING** — pattern changed, required field removed
 - **WARNING** — prompt changed, provider swapped

@@ -1,3 +1,7 @@
+---
+description: "PyAgent benchmarks — reproducible cost, quality, latency, router-savings, and compression measurements across patterns, run with a deterministic MockLLM."
+---
+
 # Benchmarks
 
 ## Methodology
@@ -23,6 +27,7 @@ python -m benchmarks.run --suite cost
 python -m benchmarks.run --suite quality
 python -m benchmarks.run --suite latency
 python -m benchmarks.run --suite router
+python -m benchmarks.run --suite compression
 ```
 
 ## Benchmark Suites
@@ -31,6 +36,7 @@ python -m benchmarks.run --suite router
 
 Compares token usage for identical tasks across patterns.
 
+<!-- gen:cost_effectiveness:start (generated from data/benchmarks.yml — do not edit by hand) -->
 | Pattern | Avg Tokens/Task | Avg Cost/Task | Notes |
 |---------|----------------|---------------|-------|
 | single_agent | 50 | $0.000100 | Baseline |
@@ -39,11 +45,13 @@ Compares token usage for identical tasks across patterns.
 | debate | 250 | $0.000500 | 2 rounds × 2 debaters + judge |
 | voting_3 | 150 | $0.000300 | 3 parallel voters |
 | fanout_3 | 200 | $0.000400 | 3 parallel + aggregator |
+<!-- gen:cost_effectiveness:end -->
 
 ### Quality Suite
 
 Multi-pass patterns produce measurably higher quality.
 
+<!-- gen:quality:start (generated from data/benchmarks.yml — do not edit by hand) -->
 | Pattern | Avg Quality Score | Cost Multiplier | Quality/Cost Ratio |
 |---------|------------------|----------------|--------------------|
 | single_agent | 60% | 1.0× | Baseline |
@@ -52,20 +60,23 @@ Multi-pass patterns produce measurably higher quality.
 | debate | 80% | 5.0× | 0.16× |
 | voting_3 | 75% | 3.0× | 0.25× |
 | fanout_3 | 90% | 4.0× | 0.23× |
+<!-- gen:quality:end -->
 
-**Key finding:** Fan-out has the best quality/cost ratio for tasks with independent sub-analyses.
+**Key finding:** Voting has the best quality/cost ratio — 0.25× (75% quality at 3.0× cost), since three cheap parallel voters lift quality without a reflection round. Fan-out reaches the highest _absolute_ quality (90%) for tasks with independent sub-analyses, at a slightly lower 0.23× ratio.
 
 ### Router Savings Suite
 
-Difficulty-based routing reduces costs 40-60% on mixed workloads.
+Difficulty-based routing reduces costs on mixed workloads — savings scale with how many requests fall into the cheaper tiers (the trivial-heavy mix below saves ~92%).
 
+<!-- gen:router:start (generated from data/benchmarks.yml — do not edit by hand) -->
 | Task Difficulty | Without Router | With Router | Savings |
 |----------------|---------------|-------------|---------|
 | Trivial (1-2) | gpt-4o ($0.003) | gpt-4.1-nano ($0.0001) | 97% |
 | Easy (3-4) | gpt-4o ($0.003) | gpt-4o-mini ($0.0003) | 90% |
 | Medium (5-6) | gpt-4o ($0.003) | gpt-4.1-mini ($0.001) | 67% |
 | Hard (7-10) | gpt-4o ($0.003) | gpt-4o ($0.003) | 0% |
-| **Mixed (70/20/10)** | **$0.003** | **$0.0012** | **60%** |
+| **Mixed (70/20/10)** | **$0.003** | **$0.00023** | **92%** |
+<!-- gen:router:end -->
 
 ### Compression Suite
 

@@ -1,3 +1,7 @@
+---
+description: "API reference for pyagent-context — the ContextLedger and three-tier memory primitives shared across agents in a run."
+---
+
 # pyagent-context API Reference
 
 ::: pyagent_context

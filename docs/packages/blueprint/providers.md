@@ -1,3 +1,7 @@
+---
+description: "Configure providers in a PyAgent blueprint — model registries, fallback chains, and cost routing."
+---
+
 # Blueprint — Providers
 
 The `providers:` block declares the LLM provider bindings available to agents in this blueprint. Agents reference these by name — the compiler resolves them to real provider instances at runtime.
@@ -50,7 +54,7 @@ providers:
 agents:
   classifier:  { provider: fast,     prompt: "Classify into one of: ..." }
   formatter:   { provider: fast,     prompt: "Format the response." }
-  analyst:     { provider: balanced, prompt: "Analyse the data." }
+  analyst:     { provider: balanced, prompt: "Analyze the data." }
   strategist:  { provider: expert,   prompt: "Design the long-term strategy." }
 ```
 

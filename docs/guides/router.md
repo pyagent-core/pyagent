@@ -1,3 +1,7 @@
+---
+description: "Guide to PyAgent routing — score task difficulty and auto-select the cheapest capable model per request."
+---
+
 # Routing Guide
 
 Automatically route each agent call to the cheapest LLM model that can handle the task. `pyagent-router` scores task difficulty 1-10, filters by capability, and picks the lowest-cost model that meets both requirements — transparently, without changing your agent code.
@@ -16,7 +20,7 @@ In a real workflow, most tasks are easy:
 
 ```
 "What is 2+2?"                 → difficulty 1 → gpt-4.1-nano  ($0.000001)
-"Summarise this paragraph"     → difficulty 3 → gpt-4o-mini   ($0.000015)
+"Summarize this paragraph"     → difficulty 3 → gpt-4o-mini   ($0.000015)
 "Design a consensus protocol"  → difficulty 9 → claude-sonnet ($0.000180)
 ```
 
@@ -239,7 +243,7 @@ middleware = RouterMiddleware(model_registry=model_registry)
 
 # Wrap a single agent
 routed = middleware.wrap(
-    Agent("analyst", OpenAILLM("gpt-4o"), system_prompt="Analyse the data."),
+    Agent("analyst", OpenAILLM("gpt-4o"), system_prompt="Analyze the data."),
 )
 
 result = asyncio.run(routed.run([Message.user("What is 2+2?")]))
@@ -280,7 +284,7 @@ result = asyncio.run(pipeline.run(document))
 
 ## Routing Log and Cost Analysis
 
-Every routing decision is recorded — use it to analyse cost savings and tune thresholds.
+Every routing decision is recorded — use it to analyze cost savings and tune thresholds.
 
 ```python
 import asyncio
@@ -291,7 +295,7 @@ estimator = CostEstimator()
 
 tasks = [
     "What is 1+1?",
-    "Summarise the French Revolution in 3 bullet points.",
+    "Summarize the French Revolution in 3 bullet points.",
     "Design a distributed rate-limiting system. Cover CAP theorem trade-offs.",
 ]
 for task in tasks:

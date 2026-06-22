@@ -1,0 +1,85 @@
+# Raw benchmark inputs — the single source of truth for the tables on
+# docs/benchmarks.md.
+#
+# Only RAW numbers live here: token counts, quality scores, cost multipliers,
+# and per-tier model costs. Every ratio, percentage, and the weighted "Mixed"
+# router figure is COMPUTED by scripts/gen_docs.py. Do not hand-edit the
+# generated tables in docs/benchmarks.md — edit this file and regenerate:
+#
+#     python scripts/gen_docs.py
+#
+# CI fails if the committed docs are out of sync with this data.
+
+# Token price used to turn token counts into per-task costs (gpt-4o-mini rate).
+cost_per_token_usd: 0.000002
+
+# Cost-Effectiveness Suite — avg tokens per task; cost is tokens * price.
+cost_effectiveness:
+  - pattern: single_agent
+    avg_tokens: 50
+    note: Baseline
+  - pattern: pipeline_3stage
+    avg_tokens: 150
+    note: 3× tokens, structured output
+  - pattern: self_reflection
+    avg_tokens: 200
+    note: 2 rounds generate+critique
+  - pattern: debate
+    avg_tokens: 250
+    note: 2 rounds × 2 debaters + judge
+  - pattern: voting_3
+    avg_tokens: 150
+    note: 3 parallel voters
+  - pattern: fanout_3
+    avg_tokens: 200
+    note: 3 parallel + aggregator
+
+# Quality Suite — quality score (%) and cost multiplier vs the baseline.
+# Quality/Cost ratio = (quality_pct / 100) / cost_multiplier.
+quality:
+  baseline_pattern: single_agent
+  rows:
+    - pattern: single_agent
+      quality_pct: 60
+      cost_multiplier: 1.0
+    - pattern: pipeline_3stage
+      quality_pct: 70
+      cost_multiplier: 3.0
+    - pattern: self_reflection
+      quality_pct: 85
+      cost_multiplier: 4.0
+    - pattern: debate
+      quality_pct: 80
+      cost_multiplier: 5.0
+    - pattern: voting_3
+      quality_pct: 75
+      cost_multiplier: 3.0
+    - pattern: fanout_3
+      quality_pct: 90
+      cost_multiplier: 4.0
+
+# Router Savings Suite — without-router cost is always the baseline model.
+# Per-tier savings and the weighted "Mixed" row are computed.
+router:
+  baseline_model: gpt-4o
+  baseline_cost_usd: 0.003
+  tiers:
+    - difficulty: Trivial (1-2)
+      model: gpt-4.1-nano
+      cost_usd: 0.0001
+    - difficulty: Easy (3-4)
+      model: gpt-4o-mini
+      cost_usd: 0.0003
+    - difficulty: Medium (5-6)
+      model: gpt-4.1-mini
+      cost_usd: 0.001
+    - difficulty: Hard (7-10)
+      model: gpt-4o
+      cost_usd: 0.003
+  # Weighted mix; weights are matched to tiers by difficulty label.
+  mixed:
+    label: Mixed (70/20/10)
+    distribution:
+      Trivial (1-2): 0.7
+      Easy (3-4): 0.2
+      Medium (5-6): 0.1

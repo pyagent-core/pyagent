@@ -1,3 +1,7 @@
+---
+description: "Guide to PyAgent recovery — bounded execution and circuit breakers that keep multi-agent runs resilient to failures."
+---
+
 # Recovery Guide
 
 Protect multi-agent workflows from cascading failures with bounded execution, circuit breakers, and graceful degradation. `pyagent-patterns` ships recovery primitives that compose with every orchestration pattern.
@@ -8,7 +12,7 @@ Protect multi-agent workflows from cascading failures with bounded execution, ci
 
 LLM calls fail. Models time out, exceed context limits, return empty responses, or throw rate-limit errors. In a single-agent setup that's manageable. In a 5-agent pipeline it's not — one failure propagates forward and the whole workflow produces garbage or crashes.
 
-Recovery gives you bounded behaviour: retry with the same pattern, fall back to a simpler one, or degrade gracefully to a cached or static response.
+Recovery gives you bounded behavior: retry with the same pattern, fall back to a simpler one, or degrade gracefully to a cached or static response.
 
 ---
 
@@ -69,7 +73,7 @@ bounded = BoundedExecution(
     max_tokens=50_000,
 )
 
-result = asyncio.run(bounded.run("Analyse Tesla Q3 2025 earnings"))
+result = asyncio.run(bounded.run("Analyze Tesla Q3 2025 earnings"))
 print(f"Recovery level: {result.metadata.get('recovery_level', 0)}")
 # 0 = primary succeeded
 # 1 = fallback used (primary failed or timed out)
@@ -212,7 +216,7 @@ middleware = CompressMiddleware(target_ratio=0.5, budget=budget)
 
 bounded = BoundedExecution(
     pattern=middleware.wrap_all(primary_stages),
-    fallback=Pipeline(stages=[Agent("summariser", cheap_llm,
+    fallback=Pipeline(stages=[Agent("summarizer", cheap_llm,
                                     system_prompt="Give a 3-sentence summary.")]),
     max_tokens=90_000,
 )
@@ -279,4 +283,4 @@ async def monitored_run(task: str):
 - [Composition Guide](composition.md) — quality-based escalation with `CompositePattern`
 - [Compression Guide](compression.md) — prevent token-limit failures before they happen
 - [Providers Package](../packages/providers.md) — `FallbackChain` for provider-level resilience
-- [API Reference](../api/patterns.md)
+- [API Reference](../api/patterns/composition-safety.md)

@@ -1,3 +1,7 @@
+---
+description: "The BlueprintCompiler Python API — compile a blueprint spec into a runnable RuntimeGraph."
+---
+
 # Blueprint — Python API
 
 The `pyagent_blueprint` package exposes seven classes covering the full lifecycle: load → validate → compile → run → test → diff → render.

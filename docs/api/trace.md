@@ -1,3 +1,7 @@
+---
+description: "API reference for pyagent-trace — OTel spans, the TraceEventBus, cost tracking, and record/replay."
+---
+
 # pyagent-trace API Reference
 
 ## Event Bus

@@ -1,3 +1,7 @@
+---
+description: "API reference for pyagent-providers — the provider registry and LLM clients with fallback chains and cost routing."
+---
+
 # pyagent-providers API Reference
 
 ::: pyagent_providers

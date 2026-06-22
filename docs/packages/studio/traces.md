@@ -1,6 +1,10 @@
+---
+description: "Live trace streaming in PyAgent Studio — watch agent, pattern, and provider events in real time."
+---
+
 # Studio — Traces
 
-Studio's trace explorer loads `.jsonl` files produced by `pyagent-trace`'s `Recorder`. Every LLM call, agent step, and workflow run is recorded as a structured span — Studio lets you browse, filter, and analyse them visually.
+Studio's trace explorer loads `.jsonl` files produced by `pyagent-trace`'s `Recorder`. Every LLM call, agent step, and workflow run is recorded as a structured span — Studio lets you browse, filter, and analyze them visually.
 
 ---
 

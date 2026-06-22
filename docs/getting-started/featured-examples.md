@@ -5,19 +5,19 @@ description: "Featured PyAgent multi-agent examples — a few complete, runnable
 # Featured Examples
 
 A few complete, runnable multi-agent recipes to start from. Each shows the exact `pip install`, full
-code, and expected output. Browse the [full Cookbook](../cookbook/index.md) for 200+ examples across
-20 domains, or [filter by pattern, provider, or package](../cookbook/tags.md).
+code, and expected output. Browse the [full Cookbook](../cookbook/index.md) — 28 runnable recipes
+across all 20 domains — and filter by domain, design pattern, or package.
 
 ## Start here
 
-- **[Customer Support](../cookbook/customer-support/index.md)** — route, triage, and resolve tickets
-  with a supervisor + specialist agents.
-- **[Software Engineering](../cookbook/software-engineering/index.md)** — automated code review with
-  language-specific reviewer agents.
-- **[Research & Analysis](../cookbook/research-analysis/index.md)** — multi-source research agents that
-  gather, synthesize, and cite.
+- **[Customer Support](../cookbook/customer-support/support-router.md)** — route, triage, and resolve
+  tickets with a supervisor + specialist agents.
+- **[Software Engineering](../cookbook/software-engineering/code-review.md)** — automated code review
+  with language-specific reviewer agents.
+- **[Research & Analysis](../cookbook/research-analysis/research-assistant.md)** — multi-source research
+  agents that gather, synthesize, and cite.
 
 ## Browse by domain
 
-See the [Cookbook overview](../cookbook/index.md) for all 20 domains — Finance, Healthcare, Legal,
-Marketing, DevOps, Security, and more.
+See the [Cookbook overview](../cookbook/index.md) for all 28 recipes across 20 domains — Finance,
+Healthcare, Legal, Marketing, DevOps, Security, and more — with live domain/pattern/package filters.

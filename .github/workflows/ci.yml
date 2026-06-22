@@ -76,6 +76,7 @@ jobs:
           python-version: "3.12"
       - run: |
           pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-redirects mkdocs-llmstxt
+          pip install linkchecker pytest
           pip install -e packages/pyagent-patterns
           pip install -e packages/pyagent-router
           pip install -e packages/pyagent-compress
@@ -84,7 +85,18 @@ jobs:
           pip install -e packages/pyagent-providers
           pip install -e "packages/pyagent-blueprint[dev]"
           pip install -e "packages/pyagent-studio[dev]"
+      # 0. Generated docs (benchmark tables, cookbook index) must be in sync
+      #    with their data sources.
+      - run: python scripts/gen_docs.py --check
+      # 1. Strict build — broken links / bad config fail here.
       - run: DISABLE_MKDOCS_2_WARNING=true mkdocs build --strict
+      # 2. Link integrity on the built site. The Material custom_dir template is
+      #    copied to site/overrides/ as a build artifact; its links are
+      #    template-relative (resolved against the real home page), so crawling
+      #    it standalone yields false positives — ignore that path only.
+      - run: linkchecker --no-warnings --ignore-url='.*/overrides/.*' site/
+      # 3. Syntax-check every python code block in the docs.
+      - run: python -m pytest tests/docs -q
 
   # ── Stage 4a: Docs deploy (main branch only) ─────────────────────────────────
   docs-deploy:

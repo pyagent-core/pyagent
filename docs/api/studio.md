@@ -1,3 +1,7 @@
+---
+description: "API reference for pyagent-studio — the CLI and web services behind the PyAgent control-plane dashboard."
+---
+
 # pyagent-studio API Reference
 
 ::: pyagent_studio

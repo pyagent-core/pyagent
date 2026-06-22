@@ -1,3 +1,7 @@
+---
+description: "The blueprint CLI — validate, test, diff, and apply PyAgent blueprints from the command line."
+---
+
 # Blueprint — CLI
 
 ```bash

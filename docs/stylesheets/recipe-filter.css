@@ -1,0 +1,142 @@
+/* Cookbook recipe browser + faceted filter (docs/cookbook/index.md). */
+
+/* ── Filter bar ─────────────────────────────────────────────────────────────── */
+#recipe-filter-bar {
+  margin: 1rem 0 1.5rem;
+}
+.cb-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--md-default-fg-color--light);
+  margin-bottom: 0.5rem;
+}
+.cb-filter-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.cb-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+.cb-filter-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--md-default-fg-color--light);
+  min-width: 4.2rem;
+}
+.cb-filter,
+.cb-chip {
+  font-family: inherit;
+  font-size: 0.66rem;
+  line-height: 1.4;
+  padding: 0.12rem 0.55rem;
+  border-radius: 1rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color--light);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.cb-filter:hover,
+.cb-chip:hover {
+  border-color: var(--md-accent-fg-color);
+  color: var(--md-default-fg-color);
+}
+.cb-clear {
+  margin-top: 0.6rem;
+  font-size: 0.66rem;
+  padding: 0.12rem 0.6rem;
+  border: none;
+  background: none;
+  color: var(--md-accent-fg-color);
+  cursor: pointer;
+}
+
+/* Axis colors (used by both filter buttons and card chips). */
+.cb-filter--domain.is-active,
+.cb-chip--domain.is-active {
+  background: #4051b5;
+  border-color: #4051b5;
+  color: #fff;
+}
+.cb-filter--pattern.is-active,
+.cb-chip--pattern.is-active {
+  background: #00897b;
+  border-color: #00897b;
+  color: #fff;
+}
+.cb-filter--package.is-active,
+.cb-chip--package.is-active {
+  background: #8e24aa;
+  border-color: #8e24aa;
+  color: #fff;
+}
+.cb-chip--domain {
+  border-color: #4051b5;
+  color: #4051b5;
+}
+.cb-chip--pattern {
+  border-color: #00897b;
+  color: #00897b;
+}
+.cb-chip--package {
+  border-color: #8e24aa;
+  color: #8e24aa;
+}
+
+/* ── Recipe cards ───────────────────────────────────────────────────────────── */
+#recipe-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.cb-card {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.45rem;
+  padding: 0.7rem 0.9rem;
+}
+.cb-card__title {
+  margin: 0 0 0.2rem !important;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cb-summary {
+  margin: 0 0 0.45rem;
+  font-size: 0.74rem;
+  color: var(--md-default-fg-color--light);
+}
+.cb-chips {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+/* Complexity badge. */
+.cb-cx {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.7rem;
+}
+.cb-cx--beginner {
+  background: rgba(67, 160, 71, 0.16);
+  color: #2e7d32;
+}
+.cb-cx--intermediate {
+  background: rgba(251, 140, 0, 0.16);
+  color: #ef6c00;
+}
+.cb-cx--advanced {
+  background: rgba(229, 57, 53, 0.16);
+  color: #c62828;
+}

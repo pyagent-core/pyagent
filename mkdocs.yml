@@ -26,7 +26,7 @@ theme:
     - navigation.instant.progress
     - navigation.tabs
     - navigation.sections
-    - navigation.expand
+    - navigation.indexes
     - navigation.path
     - navigation.top
     - navigation.footer
@@ -39,8 +39,13 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
+extra_css:
+  - stylesheets/recipe-filter.css
+
 extra_javascript:
-  - javascripts/infinite-scroll.js
+  - javascripts/guided-mode.js
+  - javascripts/mermaid-reinit.js
+  - javascripts/recipe-filter.js
 
 markdown_extensions:
   - admonition
@@ -68,7 +73,6 @@ markdown_extensions:
 
 plugins:
   - search
-  - tags
   - redirects:
       redirect_maps:
         patterns/orchestrator-worker.md: packages/patterns/orchestration/orchestrator-workers.md
@@ -77,7 +81,29 @@ plugins:
         concepts/agent-experience-optimization.md: guides/blueprint.md
         cookbook/code-review.md: cookbook/software-engineering/code-review.md
         cookbook/research.md: cookbook/research-analysis/research-assistant.md
-        cookbook/customer-support.md: cookbook/customer-support/support-router.md
+        api/patterns.md: api/patterns/base.md
+        cookbook/api-bibliography.md: api/bibliography.md
+        cookbook/customer-support/index.md: cookbook/index.md
+        cookbook/data-analytics/index.md: cookbook/index.md
+        cookbook/devops-sre/index.md: cookbook/index.md
+        cookbook/ecommerce-retail/index.md: cookbook/index.md
+        cookbook/education/index.md: cookbook/index.md
+        cookbook/finance-trading/index.md: cookbook/index.md
+        cookbook/gaming/index.md: cookbook/index.md
+        cookbook/government/index.md: cookbook/index.md
+        cookbook/healthcare/index.md: cookbook/index.md
+        cookbook/hr-recruiting/index.md: cookbook/index.md
+        cookbook/legal-compliance/index.md: cookbook/index.md
+        cookbook/marketing-content/index.md: cookbook/index.md
+        cookbook/media-entertainment/index.md: cookbook/index.md
+        cookbook/real-estate/index.md: cookbook/index.md
+        cookbook/research-analysis/index.md: cookbook/index.md
+        cookbook/sales-crm/index.md: cookbook/index.md
+        cookbook/scientific/index.md: cookbook/index.md
+        cookbook/security/index.md: cookbook/index.md
+        cookbook/software-engineering/index.md: cookbook/index.md
+        cookbook/travel-hospitality/index.md: cookbook/index.md
+        cookbook/tags.md: cookbook/index.md
   - mkdocstrings:
       handlers:
         python:
@@ -91,7 +117,7 @@ plugins:
             - packages/pyagent-blueprint/src
             - packages/pyagent-studio/src
           options:
-            show_source: true
+            show_source: false
             show_root_heading: true
             heading_level: 2
   - llmstxt:
@@ -99,7 +125,7 @@ plugins:
       markdown_description: >-
         PyAgent is a production stack for multi-agent LLM systems — 18 named design patterns, a
         four-pillar framework (Blueprint, Execution & Routing, Context & Memory, Observability), and a
-        Cookbook of complete, runnable multi-agent orchestration examples across 20 domains.
+        Cookbook of 28 complete, runnable multi-agent orchestration examples across all 20 domains.
       sections:
         Getting Started:
           - getting-started.md
@@ -115,6 +141,7 @@ plugins:
           - cookbook/*/*.md
         API Reference:
           - api/*.md
+          - api/patterns/*.md
 
 nav:
   - Home: index.md
@@ -191,35 +218,48 @@ nav:
         - Services: packages/studio/services.md
         - Traces: packages/studio/traces.md
 
-  # ── Cookbook (200-example program; 20 domains) ───────────────────────────────
+  # ── Cookbook (20 domains scaffolded; 12 with runnable recipes today) ─────────
   - Cookbook:
     - Overview: cookbook/index.md
-    - Browse by Tag: cookbook/tags.md
-    - API & Hooks Reference: cookbook/api-bibliography.md
-    - Customer Support: cookbook/customer-support/index.md
-    - Software Engineering: cookbook/software-engineering/index.md
-    - Research & Analysis: cookbook/research-analysis/index.md
-    - Finance & Trading: cookbook/finance-trading/index.md
-    - Healthcare & Life Sciences: cookbook/healthcare/index.md
-    - Legal & Compliance: cookbook/legal-compliance/index.md
-    - Marketing & Content: cookbook/marketing-content/index.md
-    - Data & Analytics: cookbook/data-analytics/index.md
-    - E-commerce & Retail: cookbook/ecommerce-retail/index.md
-    - Education & Training: cookbook/education/index.md
-    - DevOps & SRE: cookbook/devops-sre/index.md
-    - Sales & CRM: cookbook/sales-crm/index.md
-    - HR & Recruiting: cookbook/hr-recruiting/index.md
-    - Security & Threat Intel: cookbook/security/index.md
-    - Scientific & Academic: cookbook/scientific/index.md
-    - Media & Entertainment: cookbook/media-entertainment/index.md
-    - Real Estate & PropTech: cookbook/real-estate/index.md
-    - Travel & Hospitality: cookbook/travel-hospitality/index.md
-    - Government & Public Sector: cookbook/government/index.md
-    - Gaming & Simulation: cookbook/gaming/index.md
+    - Customer Onboarding Workflow: cookbook/customer-support/onboarding.md
+    - Support Router: cookbook/customer-support/support-router.md
+    - Analytics Task Decomposer: cookbook/data-analytics/analytics-decomposer.md
+    - SQL Analyst: cookbook/data-analytics/sql-analyst.md
+    - Incident Triage: cookbook/devops-sre/incident-triage.md
+    - Product Launch Planner: cookbook/ecommerce-retail/product-launch-planner.md
+    - Essay Grading by Consensus: cookbook/education/essay-grader.md
+    - Loan Origination Workflow: cookbook/finance-trading/loan-origination.md
+    - Loan Underwriting Committee: cookbook/finance-trading/loan-underwriting.md
+    - Portfolio Review: cookbook/finance-trading/portfolio-review.md
+    - Emergent NPC World: cookbook/gaming/npc-world.md
+    - Policy Briefing Pipeline: cookbook/government/policy-briefing.md
+    - CV Screener: cookbook/hr-recruiting/cv-screener.md
+    - Clinical Summary: cookbook/healthcare/clinical-summary.md
+    - Contract Review: cookbook/legal-compliance/contract-review.md
+    - Regulatory Compliance Checker: cookbook/legal-compliance/compliance-checker.md
+    - Campaign Planner: cookbook/marketing-content/campaign-planner.md
+    - Writers' Room: cookbook/media-entertainment/writers-room.md
+    - Property Valuation Stack: cookbook/real-estate/property-valuation.md
+    - Literature Review Team: cookbook/research-analysis/literature-review.md
+    - Research Assistant: cookbook/research-analysis/research-assistant.md
+    - Lead Qualifier: cookbook/sales-crm/lead-qualifier.md
+    - Peer-Review Mesh: cookbook/scientific/peer-review.md
+    - Alert Triage: cookbook/security/log-triage.md
+    - Fraud Investigation Assistant: cookbook/security/fraud-investigation.md
+    - Code Review: cookbook/software-engineering/code-review.md
+    - Software Startup Simulation: cookbook/software-engineering/startup-simulation.md
+    - Trip-Planning Swarm: cookbook/travel-hospitality/trip-planner.md
 
   # ── API Reference ────────────────────────────────────────────────────────────
   - API Reference:
-    - pyagent-patterns: api/patterns.md
+    - API & Hooks Bibliography: api/bibliography.md
+    - pyagent-patterns:
+      - Base Classes: api/patterns/base.md
+      - Orchestration: api/patterns/orchestration.md
+      - Resolution: api/patterns/resolution.md
+      - Structural: api/patterns/structural.md
+      - Advanced: api/patterns/advanced.md
+      - Composition, Guardrails & Recovery: api/patterns/composition-safety.md
     - pyagent-router: api/router.md
     - pyagent-compress: api/compress.md
     - pyagent-trace: api/trace.md

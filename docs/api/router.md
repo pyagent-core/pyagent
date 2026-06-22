@@ -1,3 +1,7 @@
+---
+description: "API reference for pyagent-router — difficulty scoring and model-selection middleware for cost-aware routing."
+---
+
 # pyagent-router API Reference
 
 ::: pyagent_router.scorer.DifficultyScorer

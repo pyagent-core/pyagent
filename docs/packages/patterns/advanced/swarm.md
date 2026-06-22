@@ -1,6 +1,10 @@
+---
+description: "The Swarm pattern in PyAgent — many agents self-organize, producing emergent behavior from local rules. Use it for decentralized exploration at scale."
+---
+
 # Swarm Pattern
 
-Decentralised multi-agent system: agents form local views, share with neighbours across rounds, and global consensus or diversity emerges from local interaction.
+Decentralized multi-agent system: agents form local views, share with neighbors across rounds, and global consensus or diversity emerges from local interaction.
 
 **Best for:** Collective intelligence, opinion diversity, technology scanning, distributed decision-making.  
 **LLM calls:** N agents × R rounds.
@@ -23,7 +27,7 @@ sequenceDiagram
     end
 
     rect rgb(255, 245, 230)
-        Note over A1,A3: Round 1 — Neighbour interaction
+        Note over A1,A3: Round 1 — Neighbor interaction
         A1->>A2: Share view
         A2->>A3: Share view
         A3->>A1: Share view
@@ -37,7 +41,7 @@ sequenceDiagram
 
 ## Use Case 1 — Technology Trend Forecasting (Gemini)
 
-Five independent analysts form views, share with 2 neighbours each round, and refine through interaction.
+Five independent analysts form views, share with 2 neighbors each round, and refine through interaction.
 
 ```python
 import asyncio
@@ -52,7 +56,7 @@ pattern = Swarm(
             GeminiLLM("gemini-2.5-flash"),
             system_prompt="You are an ML researcher. Form views based on ML/AI research trends: "
                           "what models, architectures, and capabilities will dominate in 2 years. "
-                          "When you see a neighbour's view, update yours if their evidence is compelling.",
+                          "When you see a neighbor's view, update yours if their evidence is compelling.",
         ),
         Agent(
             "infra_engineer",
@@ -108,29 +112,29 @@ arch_swarm = Swarm(
         Agent(
             "backend_specialist",
             OpenAILLM("gpt-4o-mini"),
-            system_prompt="You specialise in backend systems. Form an architecture view "
+            system_prompt="You specialize in backend systems. Form an architecture view "
                           "considering scalability, data models, and API design. "
                           "Update your view when frontend or ops colleagues raise valid constraints.",
         ),
         Agent(
             "frontend_specialist",
             AnthropicLLM("claude-haiku-3-5-20241022"),
-            system_prompt="You specialise in frontend systems. Form an architecture view "
+            system_prompt="You specialize in frontend systems. Form an architecture view "
                           "considering UX, state management, and build complexity. "
                           "Update when backend constraints are compelling.",
         ),
         Agent(
             "ops_specialist",
             OpenAILLM("gpt-4o-mini"),
-            system_prompt="You specialise in operations and infrastructure. "
+            system_prompt="You specialize in operations and infrastructure. "
                           "Form a view considering deployment, monitoring, and reliability. "
                           "Push back on architectures that are operationally complex.",
         ),
         Agent(
             "security_specialist",
             AnthropicLLM("claude-haiku-3-5-20241022"),
-            system_prompt="You specialise in application security. "
-                          "Form a view considering authentication, authorisation, and data protection. "
+            system_prompt="You specialize in application security. "
+                          "Form a view considering authentication, authorization, and data protection. "
                           "Flag security implications of colleagues' architectural choices.",
         ),
     ],
@@ -157,11 +161,11 @@ from pyagent_providers import LiteLLM
 diverse_swarm = Swarm(
     agents=[
         Agent(f"analyst_openai", LiteLLM("gpt-4o-mini"),
-              system_prompt="Form and refine your analysis. Update when neighbours make compelling points."),
+              system_prompt="Form and refine your analysis. Update when neighbors make compelling points."),
         Agent(f"analyst_anthropic", LiteLLM("anthropic/claude-haiku-3.5"),
-              system_prompt="Form and refine your analysis. Update when neighbours make compelling points."),
+              system_prompt="Form and refine your analysis. Update when neighbors make compelling points."),
         Agent(f"analyst_gemini", LiteLLM("gemini/gemini-2.5-flash"),
-              system_prompt="Form and refine your analysis. Update when neighbours make compelling points."),
+              system_prompt="Form and refine your analysis. Update when neighbors make compelling points."),
     ],
     rounds=2,
     neighbor_count=2,
@@ -169,7 +173,7 @@ diverse_swarm = Swarm(
 )
 
 result = asyncio.run(diverse_swarm.run(
-    "Should an AI startup prioritise getting to market fast with GPT-4 "
+    "Should an AI startup prioritize getting to market fast with GPT-4 "
     "or spend 6 months building proprietary fine-tuned models?"
 ))
 ```
@@ -186,9 +190,9 @@ Trace: pyagent.pattern.swarm (8.2s, $0.021)
 │   ├── pyagent.agent.product_manager (1.2s)
 │   ├── pyagent.agent.vc_analyst (1.1s)
 │   └── pyagent.agent.enterprise_architect (1.4s)
-├── Round 1 — neighbour exchange [neighbor_count=2]
-│   └── [parallel updates with neighbour context]
-├── Round 2 — neighbour exchange
+├── Round 1 — neighbor exchange [neighbor_count=2]
+│   └── [parallel updates with neighbor context]
+├── Round 2 — neighbor exchange
 │   └── [parallel updates]
 └── aggregation: last → final swarm output
 ```
@@ -206,6 +210,16 @@ Trace: pyagent.pattern.swarm (8.2s, $0.021)
 | Fixed roles with structured rounds | ❌ Use Role-Based |
 
 ---
+
+<!-- gen:cookbooks:start (generated by scripts/gen_docs.py from docs/cookbook/ — do not edit by hand) -->
+## Cookbook recipes
+
+Complete, runnable examples that use the **Swarm** pattern:
+
+| Recipe | Domain | What it does | Complexity |
+|--------|--------|--------------|------------|
+| [Trip-Planning Swarm](../../../cookbook/travel-hospitality/trip-planner.md) | Travel & Hospitality | Self-organizing agents negotiate flights, lodging, and activities into an itinerary | Advanced |
+<!-- gen:cookbooks:end -->
 
 ## See Also
 

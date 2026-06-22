@@ -1,3 +1,7 @@
+---
+description: "Get started with PyAgent — install the packages and run your first multi-agent pattern in minutes, from a single agent to a full pipeline."
+---
+
 # Getting Started
 
 ## Installation
@@ -69,7 +73,7 @@ bus = TraceEventBus()
 bus.subscribe(lambda e: print(f"[{e.event_type}] {e.agent_name}"))
 
 agent = (
-    Agent("analyst", llm, system_prompt="Analyse data.")
+    Agent("analyst", llm, system_prompt="Analyze data.")
     .set_trace_bus(bus)                              # emit trace events
     .set_context(ContextLedger())                    # read/write context
     .set_compressor(MessageCompressor(0.5))          # compress output
@@ -89,4 +93,4 @@ All hooks are `None` by default — existing code works identically without them
 - [Router Guide](guides/router.md) — auto-select cheapest model
 - [Compression Guide](guides/compression.md) — reduce token costs
 - [Tracing Guide](guides/tracing.md) — OpenTelemetry observability
-- [API & Hooks Bibliography](cookbook/api-bibliography.md) — complete reference for all packages
+- [API & Hooks Bibliography](api/bibliography.md) — complete reference for all packages

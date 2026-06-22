@@ -1,19 +1,41 @@
 ---
-description: "How to build a multi-agent incident triage pipeline in Python with PyAgent — log analysis, root cause, and human-gated remediation."
+description: "How to build a multi-agent incident triage pipeline in Python with PyAgent — analyze logs, hypothesize a root cause, and draft a reversible remediation that a human approves before it touches production."
+summary: "Stage pipeline that triages incidents with human sign-off"
+complexity: Intermediate
 tags:
-  - DevOps & SRE
-  - Pipeline
-  - Human-in-the-Loop
-  - pyagent-patterns
+  - "Domain: DevOps & SRE"
+  - "Pattern: Pipeline"
+  - "Pattern: Human-in-the-Loop"
+  - "Package: pyagent-patterns"
 ---
 
 # How to Build a Multi-Agent Incident Triage Pipeline in Python
 
-A pipeline analyses logs, proposes a root cause, and drafts a remediation — pausing for human approval
-before any production action.
+At 3 a.m. the bottleneck is reading logs and forming a hypothesis fast — but you never want an agent
+taking production actions on its own. This recipe runs a **Pipeline** that summarizes the error
+signal, hypothesizes a root cause, and drafts a *reversible* remediation, then uses
+**Human-in-the-Loop** to require an on-call engineer's approval before anything that touches prod.
 
 **Patterns used:** [Pipeline](../../packages/patterns/orchestration/pipeline.md) ·
 [Human-in-the-Loop](../../packages/patterns/advanced/human-in-the-loop.md)
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    L[Logs + Alert] --> A[Log Analyst\nsummarize signal]
+    A --> R[Root Cause\nhypothesis]
+    R --> M[Remediation\nreversible plan]
+    M --> H[Human-in-the-Loop\non-call approval]
+    H -->|approved| X[Execute]
+    H -->|rejected| D[Discard + note]
+```
+
+---
+
+## Implementation
 
 ```bash
 pip install pyagent-patterns pyagent-providers
@@ -23,26 +45,123 @@ pip install pyagent-patterns pyagent-providers
 import asyncio
 from pyagent_patterns.base import Agent
 from pyagent_patterns.orchestration import Pipeline
-from pyagent_providers import AnthropicLLM
+from pyagent_patterns.advanced import HumanInTheLoop
+from pyagent_patterns.advanced.human_in_the_loop import HumanDecision
+from pyagent_providers import AnthropicLLM, OpenAILLM
 
-llm = AnthropicLLM("claude-sonnet-4-20250514")
+fast_llm = OpenAILLM("gpt-4o-mini")
+smart_llm = AnthropicLLM("claude-sonnet-4-20250514")
 
+# ── Triage pipeline: analyze → root cause → remediation ─────────────────────────
 triage = Pipeline(stages=[
-    Agent("log_analyst",  llm, system_prompt="Summarise the error signal from these logs."),
-    Agent("root_cause",   llm, system_prompt="Given the summary, hypothesise the most likely root cause."),
-    Agent("remediation",  llm, system_prompt="Propose a safe, reversible remediation. Flag if it touches production."),
+    Agent("log_analyst", fast_llm,
+          system_prompt="Summarize the error signal from these logs: what's failing, since when, blast radius."),
+    Agent("root_cause", smart_llm,
+          system_prompt="Given the summary, give the single most likely root cause with supporting evidence."),
+    Agent("remediation", smart_llm,
+          system_prompt=(
+              "Propose a safe, reversible remediation with exact steps and a rollback. "
+              "Begin with TOUCHES_PROD: yes/no on the first line."
+          )),
 ])
 
+# ── Human gate: any prod-touching remediation needs on-call approval ────────────
+def on_call_gate(output: str, metadata: dict) -> HumanDecision:
+    if output.lower().startswith("touches_prod: no"):
+        return HumanDecision(approved=True, modified_output=f"Auto-applied (non-prod):\n{output}")
+    approved = _page_on_call_and_wait(output)   # your PagerDuty/Slack approval integration
+    return HumanDecision(approved=approved,
+                         modified_output=output if approved else "REJECTED by on-call — escalate to IC.")
+
+triage_with_gate = HumanInTheLoop(
+    agent=Agent("runbook_writer", fast_llm,
+                system_prompt="Format the remediation as a runbook step the on-call engineer can approve."),
+    review_fn=on_call_gate,
+    high_risk_keywords=["delete", "drop", "scale to zero", "failover", "restart prod"],
+)
+
+SAMPLE_INCIDENT = (
+    "ALERT: checkout 5xx rate 12% for 8 min. Logs: 'connection pool exhausted' on payments-svc; "
+    "db connections pinned at 100/100; deploy of payments-svc 14 min ago."
+)
+
 async def main():
-    result = await triage.run(open("incident.log").read())
-    print(result.output)   # remediation proposal — gate prod actions behind human approval
+    triaged = await triage.run(SAMPLE_INCIDENT)
+    final = await triage_with_gate.run(triaged.output)
+    print(final.output)
 
 asyncio.run(main())
 ```
 
-**Expected output:** a root-cause hypothesis and a reversible remediation plan, ready for a human gate.
+---
 
-## Related examples
+## Expected Output
 
-- [Code Review System](../software-engineering/code-review.md) — guardrails + human escalation
+```text
+TOUCHES_PROD: yes
+Root cause: the 14-min-ago payments-svc deploy lowered the DB pool ceiling; pool now saturated → 5xx.
+Remediation:
+  1. Raise payments-svc DB pool 100 → 250 (config flag, no restart).
+  2. If still saturated in 3 min, roll back the payments-svc deploy.
+Rollback: revert the pool flag; redeploy prior payments-svc image.
 
+[PAGED on-call for approval — prod change]
+```
+
+A non-prod fix (e.g. clearing a stale cache in staging) applies itself; the prod pool change pages a
+human first — automation for the diagnosis, control for the action.
+
+---
+
+## Customization
+
+### Pull live context with a tool agent
+
+Replace the static log analyst with a [ReAct](../../packages/patterns/advanced/react.md) agent that
+queries your logging/metrics APIs — see the [Fraud Investigation Assistant](../security/fraud-investigation.md).
+
+### Auto-open a postmortem doc
+
+```python
+from pyagent_patterns.orchestration import Pipeline
+postmortem = Agent("postmortem", fast_llm, system_prompt="Draft a blameless postmortem from the triage result.")
+triage_plus_doc = Pipeline(stages=[triage, postmortem])
+```
+
+### Tighten the high-risk keyword gate
+
+```python
+triage_with_gate.high_risk_keywords += ["truncate", "migration", "dns", "iam"]
+```
+
+---
+
+## When to Use
+
+| Situation | Fit |
+|-----------|-----|
+| Fixed analyze → root-cause → remediate stages | ✅ Pipeline |
+| Prod actions must be human-approved | ✅ Human-in-the-Loop |
+| The agent must query tools mid-investigation | ❌ Use [ReAct](../../packages/patterns/advanced/react.md) |
+| Several responders should debate the cause | ❌ Use [Debate](../../packages/patterns/resolution/debate.md) |
+
+---
+
+## Cost Profile
+
+| Stage | Typical model | Avg cost | Volume (200 incidents/mo) |
+|-------|--------------|----------|----------------------------|
+| Log analyst | gpt-4o-mini | $0.0005 | $0.10 |
+| Root cause + remediation | claude-sonnet | $0.007 | $1.40 |
+| **Per incident** | mix | **~$0.0075** | **~$1.50/mo** |
+
+Triage cost is negligible next to the minutes of MTTR it saves; the human gate is where the real safety lives.
+
+---
+
+## See Also
+
+- [Pipeline pattern](../../packages/patterns/orchestration/pipeline.md) ·
+  [Human-in-the-Loop pattern](../../packages/patterns/advanced/human-in-the-loop.md)
+- [Alert Triage](../security/log-triage.md) — the same shape for security alerts
+- [Browse all recipes](../index.md)

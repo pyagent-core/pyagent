@@ -1,3 +1,7 @@
+---
+description: "pyagent-studio — a Kubernetes-style control plane and web dashboard for multi-agent systems."
+---
+
 # pyagent-studio
 
 **The Kubernetes Dashboard for Agent Systems** — a `kubectl`-inspired CLI and web control plane for designing, simulating, debugging, and governing multi-agent blueprints.

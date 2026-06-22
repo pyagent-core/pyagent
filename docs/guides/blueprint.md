@@ -1,3 +1,7 @@
+---
+description: "Guide to PyAgent blueprints — declare agents, workflows, providers, and contracts in typed YAML and compile them into a runnable graph."
+---
+
 # Blueprint Guide
 
 Declarative YAML specs for multi-agent LLM systems — validate, compile, test, diff, render, and generate.

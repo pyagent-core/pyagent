@@ -1,3 +1,7 @@
+---
+description: "Guide to PyAgent hooks — intercept and extend agent and pattern execution with lifecycle callbacks."
+---
+
 # Hooks Guide
 
 **Opt-in, zero-overhead integration points** for tracing, context memory, compression, and cost tracking on every Agent and Pattern.
@@ -65,7 +69,7 @@ tracker = CostTracker(event_bus=bus)
 
 # Fluent chaining
 agent = (
-    Agent("analyst", MockLLM(responses=["Revenue grew 25%"]), system_prompt="Analyse data.")
+    Agent("analyst", MockLLM(responses=["Revenue grew 25%"]), system_prompt="Analyze data.")
     .set_trace_bus(bus)
     .set_context(ledger)
     .set_compressor(compressor)

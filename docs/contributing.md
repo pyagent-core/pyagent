@@ -1,3 +1,7 @@
+---
+description: "How to contribute to PyAgent — development setup, running tests, code style, and adding new patterns or cookbook examples."
+---
+
 # Contributing
 
 ## Development Setup
@@ -58,24 +62,28 @@ organized by domain. To add one:
 1. Create `docs/cookbook/<domain>/<example-slug>.md` (e.g. `docs/cookbook/finance-trading/portfolio-review.md`).
 2. Give it a **prompt-shaped title** — phrase the `# H1` and the frontmatter `description` the way a
    developer would search or prompt for it (e.g. *"How to build a multi-agent portfolio review workflow in Python"*).
-3. Add `tags:` frontmatter on **four axes** so it's filterable on the [Tags page](cookbook/tags.md):
+3. Add `summary`, `complexity`, and prefixed `tags:` on **three axes** (Domain / Pattern / Package)
+   so the recipe appears in the [filterable Cookbook browser](cookbook/index.md) and on the
+   matching pattern pages:
 
     ```yaml
     ---
     description: "How to build a multi-agent portfolio review workflow in Python with PyAgent."
+    summary: "Analyst panel with an evaluator-optimizer quality gate"
+    complexity: Intermediate     # Beginner | Intermediate | Advanced
     tags:
-      - finance            # domain
-      - supervisor         # pattern(s) used
-      - evaluator-optimizer
-      - anthropic          # provider(s)
-      - pyagent-patterns   # package(s) used
+      - "Domain: Finance & Trading"
+      - "Pattern: Supervisor"
+      - "Pattern: Evaluator-Optimizer"
+      - "Package: pyagent-patterns"
     ---
     ```
 
 4. Follow the example template: **problem statement → pattern(s) used → full runnable code
    (open with the exact `pip install` and `import` lines) → expected output / OTel trace →
    Related examples / Patterns used cross-links.**
-5. Add a one-line link to the example from the domain's `index.md`.
+5. Run `python scripts/gen_docs.py` so the recipe is added to the Cookbook browser and the
+   "Cookbook recipes" section of every pattern it uses.
 6. Run `DISABLE_MKDOCS_2_WARNING=true mkdocs build --strict` — it must pass (catches broken links).
 
 Use real package names only (`pyagent-patterns`, `pyagent-all`, …) so the examples stay copy-paste-runnable.
@@ -85,6 +93,20 @@ Use real package names only (`pyagent-patterns`, `pyagent-all`, …) so the exam
 ```bash
 pip install mkdocs-material mkdocstrings[python] mkdocs-redirects mkdocs-llmstxt
 mkdocs serve  # Preview at http://localhost:8000
+```
+
+### Generated pages
+
+The benchmark tables on `docs/benchmarks.md`, the filterable recipe browser on
+`docs/cookbook/index.md`, and the "Cookbook recipes" sections on each pattern page
+are **generated** — the regions between `<!-- gen:NAME:start -->` /
+`<!-- gen:NAME:end -->` markers are computed from `data/benchmarks.yml` and each
+recipe's frontmatter, so tables, cards, and cross-references can't drift. Edit the
+data source (or the recipe), not the generated region, then regenerate:
+
+```bash
+python scripts/gen_docs.py          # rewrite generated regions
+python scripts/gen_docs.py --check  # CI uses this; fails if out of sync
 ```
 
 ## Package Structure

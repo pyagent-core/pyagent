@@ -1,3 +1,7 @@
+---
+description: "PyAgent Studio services — the aggregation layer behind the dashboard's runs, costs, and governance views."
+---
+
 # Studio — Python Services
 
 Studio's web dashboard and CLI both call into a set of Python service classes. You can use these directly in your own code — the web layer is just a thin HTTP wrapper over them.
@@ -196,7 +200,7 @@ for status in health:
 # Budget usage
 budget = svc.get_budget_usage(spec)
 for b in budget:
-    print(f"{b.model}: ${b.used:.2f} / ${b.limit:.2f}  ({b.utilisation:.0%})")
+    print(f"{b.model}: ${b.used:.2f} / ${b.limit:.2f}  ({b.utilization:.0%})")
 ```
 
 ---

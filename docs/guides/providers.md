@@ -1,3 +1,7 @@
+---
+description: "Guide to PyAgent providers — configure LLM clients, fallback chains, and capability negotiation across vendors."
+---
+
 # Providers Guide
 
 Multi-provider abstraction layer for LLM applications — register, route, negotiate, and optimize across providers.

@@ -1,18 +1,20 @@
 ---
 description: "How to build a multi-agent research assistant in Python with PyAgent — parallel gathering, debate, synthesis, and citations within a token budget."
+summary: "Gather sources, debate, synthesize, and cite"
+complexity: Advanced
 tags:
-  - Research & Analysis
-  - ReAct
-  - Fan-Out / Fan-In
-  - Debate
-  - Pipeline
-  - pyagent-patterns
-  - pyagent-compress
+  - "Domain: Research & Analysis"
+  - "Pattern: ReAct"
+  - "Pattern: Fan-Out / Fan-In"
+  - "Pattern: Debate"
+  - "Pattern: Pipeline"
+  - "Package: pyagent-patterns"
+  - "Package: pyagent-compress"
 ---
 
 # How to Build a Multi-Agent Research Assistant in Python
 
-A multi-agent research system that parallelises information gathering, debates findings to surface disagreements, synthesises into a structured report, and cites sources — all within a controlled token budget.
+A multi-agent research system that parallelizes information gathering, debates findings to surface disagreements, synthesizes into a structured report, and cites sources — all within a controlled token budget.
 
 **Patterns used:** ReAct, FanOutFanIn, Debate, Pipeline, CompressMiddleware
 
@@ -38,7 +40,7 @@ flowchart TD
         JDG[Judge Agent]
     end
 
-    P2 --> P3[Phase 3: Synthesise]
+    P2 --> P3[Phase 3: Synthesize]
     P3 --> RPT[Structured Report\nwith citations]
 ```
 
@@ -113,9 +115,9 @@ industry_researcher = middleware.wrap(ReAct(
 analysis_fanout = FanOutFanIn(
     agents=[
         middleware.wrap(Agent("market_analyst", fast_llm,
-                              system_prompt="Analyse market and competitive implications.")),
+                              system_prompt="Analyze market and competitive implications.")),
         middleware.wrap(Agent("tech_analyst",   fast_llm,
-                              system_prompt="Analyse technical feasibility and innovation.")),
+                              system_prompt="Analyze technical feasibility and innovation.")),
         middleware.wrap(Agent("risk_analyst",   fast_llm,
                               system_prompt="Identify risks, uncertainties, and failure modes.")),
     ],
@@ -145,10 +147,10 @@ debate = Debate(
 )
 
 # ── Phase 3: Final synthesis with citations ───────────────────────────────────
-synthesiser = Agent(
-    "synthesiser", smart_llm,
+synthesizer = Agent(
+    "synthesizer", smart_llm,
     system_prompt=(
-        "You are a research writer. Synthesise all the research, analysis, and debate "
+        "You are a research writer. Synthesize all the research, analysis, and debate "
         "into a structured report with these sections:\n"
         "1. Executive Summary (3 bullets)\n"
         "2. Key Findings (with citations)\n"
@@ -180,14 +182,14 @@ async def research(question: str) -> dict:
         f"## Industry Findings\n{industry_r.output}"
     )
 
-    # Phase 2: analyse and debate
+    # Phase 2: analyze and debate
     analysis_r = await analysis_fanout.run(combined_research)
     debate_r   = await debate.run(
         f"Based on this research:\n{analysis_r.output}\n\nDebate the implications."
     )
 
     # Phase 3: final report
-    final_r = await synthesiser.run(
+    final_r = await synthesizer.run(
         f"Research gathered:\n{combined_research}\n\n"
         f"Analysis:\n{analysis_r.output}\n\n"
         f"Debate verdict:\n{debate_r.output}"
@@ -226,7 +228,7 @@ Researching: Nvidia's position in the AI infrastructure market
 ## Key Findings
 • Revenue: $44.1B (FY Q3 2025), up 94% YoY — driven by Data Center segment ($30.8B)
 • Margins: Gross margin 74.6%, operating margin 62.4% — best-in-class for hardware
-• CUDA ecosystem: 4M+ developers, 3,000+ GPU-optimised applications (arxiv: "CUDA Dominance
+• CUDA ecosystem: 4M+ developers, 3,000+ GPU-optimized applications (arxiv: "CUDA Dominance
   in ML Workloads", Chen et al. 2024)
 • Announced partnerships with AWS, Azure, GCP for GB200 NVLink rack deployments
 
@@ -252,7 +254,7 @@ By agent: {web_agent: 8400, academic_agent: 5100, industry_agent: 3200, ...}
 
 ---
 
-## Customisation
+## Customization
 
 ### Add more research sources
 
@@ -278,7 +280,7 @@ patent_researcher = middleware.wrap(ReAct(
 ```python
 import json
 
-final_synthesiser = Agent(
+final_synthesizer = Agent(
     "structured_writer", smart_llm,
     system_prompt=(
         "Return your report as a JSON object with keys: "

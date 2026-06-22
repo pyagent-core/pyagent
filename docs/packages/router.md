@@ -1,3 +1,7 @@
+---
+description: "pyagent-router — difficulty-based model routing that picks the cheapest capable model per task."
+---
+
 # pyagent-router
 
 **Automatic model routing based on task difficulty and cost** — score each task 1-10, pick the cheapest model that can handle it, and route calls transparently without changing your agent code.
@@ -14,7 +18,7 @@ Running every task through `gpt-4o` or `claude-sonnet` is the easiest default �
 
 ```
 "What is 2+2?"          → difficulty 1  → gpt-4.1-nano    ($0.000001)
-"Summarise this email"  → difficulty 3  → gpt-4o-mini     ($0.000015)
+"Summarize this email"  → difficulty 3  → gpt-4o-mini     ($0.000015)
 "Design a distributed   → difficulty 8  → claude-sonnet   ($0.000180)
  consensus algorithm"
 ```
@@ -175,7 +179,7 @@ middleware = RouterMiddleware(model_registry=model_registry)
 
 # Wrap individual agents
 agent = Agent("analyst", OpenAILLM("gpt-4o"),
-              system_prompt="Analyse the given data.")
+              system_prompt="Analyze the given data.")
 routed = middleware.wrap(agent)
 
 result = asyncio.run(routed.run([Message.user("What is revenue growth?")]))
@@ -274,7 +278,7 @@ agent = model_middleware.wrap(
 
 ## Cookbook examples
 
-Complete, runnable recipes that use this package — [all examples using this package](../cookbook/tags.md#tag:pyagent-router):
+Complete, runnable recipes that use this package — [all examples using this package](../cookbook/index.md):
 
 - [Multi-agent code review system](../cookbook/software-engineering/code-review.md)
 - [Multi-agent SQL analytics assistant](../cookbook/data-analytics/sql-analyst.md)

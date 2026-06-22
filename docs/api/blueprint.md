@@ -1,3 +1,7 @@
+---
+description: "API reference for pyagent-blueprint — the BlueprintCompiler, loaders, and spec models that turn a YAML blueprint into a runnable agent graph."
+---
+
 # pyagent-blueprint API Reference
 
 ::: pyagent_blueprint

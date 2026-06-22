@@ -11,12 +11,36 @@ from __future__ import annotations
 import argparse
 import asyncio
 
+from pyagent_compress import MessageCompressor
 from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import FanOutFanIn, Pipeline
 from pyagent_patterns.resolution import Debate, SelfReflection, Voting
 
 from benchmarks.framework import PatternBenchmark
 from benchmarks.suites import COST_SUITE, LATENCY_SUITE, QUALITY_SUITE, ROUTER_SUITE
+
+# Representative inter-agent payloads for the compression suite. Real prose so the
+# extractive compressor has meaningful sentences to rank and drop.
+_COMPRESSION_PAYLOADS = [
+    "The user reported that the checkout page fails intermittently under load. "
+    "Investigation shows the payment service times out when the database connection "
+    "pool is exhausted. The pool is sized at ten connections, which is too small for "
+    "peak traffic. Increasing the pool to fifty connections resolved the timeouts in "
+    "staging. We should also add a circuit breaker so failures degrade gracefully. "
+    "Monitoring confirmed no further errors over a twenty-four hour soak test.",
+    "The research agent gathered twelve sources on renewable energy adoption. Solar "
+    "capacity grew thirty percent year over year, driven by falling panel costs. Wind "
+    "remains the cheapest source in regions with steady airflow. Grid storage is the "
+    "main bottleneck for further growth. Battery prices fell eighteen percent last "
+    "year, improving the economics of overnight storage. Policy incentives accelerate "
+    "deployment but vary widely between jurisdictions.",
+    "The code reviewer flagged three issues in the pull request. First, the sorting "
+    "function does not handle empty input and raises an index error. Second, duplicate "
+    "keys silently overwrite earlier values, which loses data. Third, the retry loop "
+    "has no backoff and can hammer the downstream service. Suggested fixes include a "
+    "guard clause for empty input, a merge strategy for duplicates, and exponential "
+    "backoff with jitter for retries.",
+]
 
 
 def build_patterns() -> dict[str, object]:
@@ -129,7 +153,37 @@ def build_patterns() -> dict[str, object]:
     }
 
 
+def run_compression_suite() -> None:
+    """Measure real token reduction from extractive message compression.
+
+    Runs ``MessageCompressor`` at several target ratios over representative
+    inter-agent payloads and reports the measured token reduction. Deterministic
+    (no LLM calls), so results are reproducible like the other suites.
+    """
+    print(f"\n{'#' * 90}")
+    print("# Suite: Compression")
+    print("# Token reduction from extractive compression of inter-agent messages")
+    print(f"{'#' * 90}")
+    print(
+        f"\n{'Target Ratio':<14}{'Avg Orig Tokens':>18}{'Avg Comp Tokens':>18}{'Avg Reduction':>16}"
+    )
+    print("-" * 66)
+    for target in (0.7, 0.5, 0.3):
+        compressor = MessageCompressor(target_ratio=target)
+        results = [compressor.compress(text) for text in _COMPRESSION_PAYLOADS]
+        avg_orig = sum(r.original_tokens for r in results) / len(results)
+        avg_comp = sum(r.compressed_tokens for r in results) / len(results)
+        avg_reduction = sum(r.savings_pct for r in results) / len(results)
+        label = f"{int(target * 100)}% keep"
+        print(f"{label:<14}{avg_orig:>18.0f}{avg_comp:>18.0f}{avg_reduction:>15.0%}")
+    print()
+
+
 async def main(suite_name: str | None = None) -> None:
+    if suite_name == "compression":
+        run_compression_suite()
+        return
+
     bench = PatternBenchmark()
     patterns = build_patterns()
     for name, pattern in patterns.items():
@@ -161,9 +215,17 @@ async def main(suite_name: str | None = None) -> None:
             print(f"  Best quality:  {best_quality} ({stats[best_quality]['avg_quality']:.0%})")
             print(f"  Fastest:       {fastest} ({stats[fastest]['avg_latency_s']:.3f}s)")
 
+    # The compression suite is not pattern-based; run it alongside the rest.
+    if suite_name is None:
+        run_compression_suite()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run PyAgent benchmarks")
-    parser.add_argument("--suite", choices=["cost", "quality", "latency", "router"], default=None)
+    parser.add_argument(
+        "--suite",
+        choices=["cost", "quality", "latency", "router", "compression"],
+        default=None,
+    )
     args = parser.parse_args()
     asyncio.run(main(args.suite))

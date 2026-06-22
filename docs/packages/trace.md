@@ -1,3 +1,7 @@
+---
+description: "pyagent-trace — OTel spans, cost tracking, a TraceEventBus, and record/replay for multi-agent observability."
+---
+
 # pyagent-trace
 
 **Pattern-aware OpenTelemetry instrumentation** — every agent call, pattern execution, and LLM invocation emits structured spans. Feeds cost tracking, record/replay debugging, and the Studio dashboard.
@@ -111,12 +115,12 @@ tracker = CostTracker(event_bus=bus)
 
 agent = (
     Agent("analyst", AnthropicLLM("claude-sonnet-4-20250514"),
-          system_prompt="Analyse the document.")
+          system_prompt="Analyze the document.")
     .set_trace_bus(bus)          # emits agent_start / agent_end
     .set_cost_tracker(tracker)   # emits cost_record after each LLM call
 )
 
-result = asyncio.run(agent.run("Summarise Q3 earnings"))
+result = asyncio.run(agent.run("Summarize Q3 earnings"))
 # Console output:
 # [agent_start] agent=analyst
 # [cost_record] agent=analyst tokens=... cost=...
@@ -204,7 +208,7 @@ bus.subscribe(
 
 # Wire bus to agents or patterns, then run
 # Every agent_start/end and llm_call event flows to Langfuse as a span/generation
-result = asyncio.run(pipeline.run("Analyse this document"))
+result = asyncio.run(pipeline.run("Analyze this document"))
 # Visit Langfuse dashboard to see full trace tree with token costs
 ```
 

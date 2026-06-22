@@ -1,3 +1,7 @@
+---
+description: "Guide to PyAgent tracing — capture OTel spans, track cost per call, and export or replay multi-agent runs."
+---
+
 # Tracing Guide
 
 **pyagent-trace** provides pattern-aware OpenTelemetry spans for full observability.
@@ -175,7 +179,7 @@ bus.subscribe(ConsoleExporter().export_event)
 agent = Agent("analyst", MockLLM(responses=["Revenue grew 25%"]))
 agent.set_trace_bus(bus)  # emits agent_start + agent_end
 
-result = await agent.run("Analyse revenue trends")
+result = await agent.run("Analyze revenue trends")
 # Console output:
 #   [agent_start] analyst
 #   [agent_end]   analyst  duration=0.002s  tokens=12

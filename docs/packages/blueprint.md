@@ -1,3 +1,7 @@
+---
+description: "pyagent-blueprint — declare a whole multi-agent system in typed YAML and compile, validate, diff, and generate from the spec."
+---
+
 # pyagent-blueprint
 
 **Spec-driven development for multi-agent systems** — declare your entire agent system in YAML, validate it statically, compile it to a live `RuntimeGraph`, diff versions semantically, and run it through Studio.

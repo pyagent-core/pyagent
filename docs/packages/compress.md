@@ -1,3 +1,7 @@
+---
+description: "pyagent-compress — inter-agent message compression and token-budget management for multi-agent pipelines."
+---
+
 # pyagent-compress
 
 **Token budget enforcement and inter-agent message compression** — reduce the tokens passed between agents in pipelines and fan-outs, saving cost without losing critical information.
@@ -143,7 +147,7 @@ pipeline = Pipeline(stages=[
     middleware.wrap(Agent(
         "analyst",
         OpenAILLM("gpt-4o-mini"),
-        system_prompt="Analyse the extracted data.",
+        system_prompt="Analyze the extracted data.",
     )),
     # Last stage doesn't need compression — its output goes to the user
     Agent(
@@ -192,7 +196,7 @@ agent = (
     .set_trace_bus(bus)          # optional: emits compression event to bus
 )
 
-result = asyncio.run(agent.run("Tesla Q3 2025 earnings — summarise key risks"))
+result = asyncio.run(agent.run("Tesla Q3 2025 earnings — summarize key risks"))
 # Output is compressed before being returned; trace event includes savings_pct
 ```
 
@@ -284,7 +288,7 @@ fanout = FanOutFanIn(
     aggregator=Agent(
         "analyst",
         AnthropicLLM("claude-sonnet-4-20250514"),
-        system_prompt="Synthesise all three perspectives into an investment memo.",
+        system_prompt="Synthesize all three perspectives into an investment memo.",
     ),
 )
 
@@ -319,7 +323,7 @@ print(f"Cost savings vs uncompressed: ~{budget.savings_estimate()}")
 
 ## Cookbook examples
 
-Complete, runnable recipes that use this package — [all examples using this package](../cookbook/tags.md#tag:pyagent-compress):
+Complete, runnable recipes that use this package — [all examples using this package](../cookbook/index.md):
 
 - [Multi-agent research assistant](../cookbook/research-analysis/research-assistant.md)
 

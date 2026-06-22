@@ -1,3 +1,7 @@
+---
+description: "The PyAgent design-pattern library — 18 named multi-agent orchestration patterns across orchestration, resolution, structural, and advanced tiers, with guidance on when to use each."
+---
+
 # pyagent-patterns
 
 **Core agent abstractions and multi-agent orchestration patterns** — the foundation every other package builds on. Provides `Agent`, `Message`, `Pattern`, and 18 production-ready orchestration patterns.
@@ -48,7 +52,7 @@ Immutable, typed message between agents.
 ```python
 from pyagent_patterns.base import Message
 
-user_msg   = Message.user("Summarise this earnings call")
+user_msg   = Message.user("Summarize this earnings call")
 sys_msg    = Message.system("You are a financial analyst.")
 asst_msg   = Message.assistant("Revenue grew 15% YoY...", name="analyst")
 ```
@@ -120,7 +124,7 @@ pipeline = Pipeline(stages=[
     Agent("extractor", AnthropicLLM("claude-haiku-3-5-20241022"),
           system_prompt="Extract all facts and figures from the text."),
     Agent("analyst",   OpenAILLM("gpt-4o-mini"),
-          system_prompt="Analyse the extracted data. Identify key trends."),
+          system_prompt="Analyze the extracted data. Identify key trends."),
     Agent("writer",    AnthropicLLM("claude-sonnet-4-20250514"),
           system_prompt="Write a concise 3-paragraph investment brief."),
 ])
@@ -156,7 +160,7 @@ fanout = FanOutFanIn(
     aggregator=Agent(
         "synthesis",
         AnthropicLLM("claude-sonnet-4-20250514"),
-        system_prompt="Synthesise all perspectives into a balanced investment memo.",
+        system_prompt="Synthesize all perspectives into a balanced investment memo.",
     ),
 )
 
@@ -190,38 +194,76 @@ result = asyncio.run(workflow.run("Build a Python CLI that queries the GitHub AP
 
 ### Hierarchical
 
-Multi-level hierarchy — manager delegates to sub-managers, who delegate to workers.
+Multi-level hierarchy — a manager delegates to team leads, who delegate to their workers.
 
 ```python
+import asyncio
 from pyagent_patterns.orchestration import Hierarchical
+from pyagent_patterns.orchestration.hierarchical import Team
+from pyagent_patterns.base import Agent
+from pyagent_providers import AnthropicLLM, OpenAILLM
 
 hierarchy = Hierarchical(
-    manager=cto_agent,
-    sub_managers=[backend_lead_agent, frontend_lead_agent],
-    workers=[api_agent, db_agent, ui_agent, test_agent],
+    manager=Agent(
+        "engineering_director", OpenAILLM("gpt-4o"),
+        system_prompt="Decompose the initiative into team subtasks, then synthesize "
+                      "all team outputs into one cohesive technical spec.",
+    ),
+    teams=[
+        Team(
+            name="Backend",
+            lead=Agent("backend_lead", OpenAILLM("gpt-4o-mini"),
+                       system_prompt="Coordinate the backend design."),
+            workers=[
+                Agent("api_engineer", AnthropicLLM("claude-haiku-3-5-20241022"),
+                      system_prompt="Design the REST API and schemas."),
+                Agent("db_engineer", AnthropicLLM("claude-haiku-3-5-20241022"),
+                      system_prompt="Design the database schema and indexes."),
+            ],
+        ),
+        Team(
+            name="Frontend",
+            lead=Agent("frontend_lead", OpenAILLM("gpt-4o-mini"),
+                       system_prompt="Coordinate the frontend design."),
+            workers=[
+                Agent("ui_engineer", AnthropicLLM("claude-haiku-3-5-20241022"),
+                      system_prompt="Design the component architecture."),
+            ],
+        ),
+    ],
 )
+
+result = asyncio.run(hierarchy.run("Design a real-time collaborative document editor"))
 ```
 
 ### Supervisor
 
-Evaluation loop — supervisor critiques and re-runs workers until quality passes.
+Classify → route → specialist. A coordinator classifies the request and dispatches it
+to the right expert agent, with an optional formatter for the final reply.
 
 ```python
+import asyncio
 from pyagent_patterns.orchestration import Supervisor
+from pyagent_patterns.base import Agent
+from pyagent_providers import AnthropicLLM, OpenAILLM
 
-loop = Supervisor(
-    supervisor=Agent(
-        "critic",
-        AnthropicLLM("claude-sonnet-4-20250514"),
-        system_prompt="Score the output 1-10. If < 8, explain what to improve.",
+supervisor = Supervisor(
+    classifier=Agent(
+        "router", AnthropicLLM("claude-haiku-3-5-20241022"),
+        system_prompt="Classify into exactly one of: billing, technical, general.",
     ),
-    worker=Agent("writer", OpenAILLM("gpt-4o"),
-                 system_prompt="Write a high-quality technical blog post."),
-    max_iterations=3,
-    quality_threshold=8,
+    routes={
+        "billing": Agent("billing", OpenAILLM("gpt-4o"),
+                         system_prompt="Handle billing disputes, refunds, and subscriptions."),
+        "technical": Agent("technical", OpenAILLM("gpt-4o"),
+                           system_prompt="Handle technical troubleshooting and API issues."),
+        "general": Agent("general", AnthropicLLM("claude-haiku-3-5-20241022"),
+                         system_prompt="Handle general inquiries warmly and helpfully."),
+    },
+    default_route="general",
 )
 
-result = asyncio.run(loop.run("Write about async Python patterns"))
+result = asyncio.run(supervisor.run("My invoice was charged twice this month"))
 ```
 
 ---
@@ -404,4 +446,4 @@ flowchart TD
 - [Router Package](../router.md) — automatic model selection per agent call
 - [Compress Package](../compress.md) — token budget enforcement across pipelines
 - [Guides](../../guides/composition.md) — deep-dive integration guides
-- [API Reference](../../api/patterns.md)
+- [API Reference](../../api/patterns/base.md)

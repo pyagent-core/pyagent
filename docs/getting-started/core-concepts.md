@@ -67,6 +67,6 @@ Every `pattern.run()` returns a `Result` with:
 
 ## Next
 
-- [Quickstart](../getting-started/) — install and run your first pattern
+- [Quickstart](../getting-started.md) — install and run your first pattern
 - [Design Patterns](../packages/patterns/index.md) — the full 18-pattern catalog
 - [Cookbook](../cookbook/index.md) — complete multi-agent examples by domain

@@ -1,3 +1,7 @@
+---
+description: "The pyagent-studio CLI — launch the dashboard and apply or simulate blueprints from the terminal."
+---
+
 # Studio — CLI
 
 Installing `pyagent-studio` adds the `pyagent` CLI — a `kubectl`-inspired interface for agent systems.

@@ -1,3 +1,7 @@
+---
+description: "Guide to PyAgent context and memory — share three-tier memory across agents with trust levels and PII redaction."
+---
+
 # Context Guide
 
 Structured context memory with trust metadata, three-tier storage, compression, and retrieval for LLM agent systems.

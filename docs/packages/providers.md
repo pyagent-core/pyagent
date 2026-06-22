@@ -1,6 +1,10 @@
+---
+description: "pyagent-providers — a unified LLM provider layer with registries, fallback chains, and cost-aware selection."
+---
+
 # pyagent-providers
 
-**Multi-provider abstraction layer** — unified interface across OpenAI, Anthropic, Gemini, LangChain, and LiteLLM. Capability negotiation, health checks, fallback chains, and cost-optimised routing built in.
+**Multi-provider abstraction layer** — unified interface across OpenAI, Anthropic, Gemini, LangChain, and LiteLLM. Capability negotiation, health checks, fallback chains, and cost-optimized routing built in.
 
 ```bash
 pip install pyagent-providers                  # Core (MockLLM only)
@@ -54,7 +58,7 @@ agent_b = Agent("researcher", OpenAILLM("gpt-4o-mini"),
 agent_c = Agent("fast_agent", GeminiLLM("gemini-2.5-flash"),
                 system_prompt="Answer concisely.")
 
-result = asyncio.run(agent_a.run("Analyse Tesla's Q3 2025 results"))
+result = asyncio.run(agent_a.run("Analyze Tesla's Q3 2025 results"))
 print(result.output)
 print(f"Model: {result.metadata.get('model')}")
 print(f"Tokens: {result.metadata.get('input_tokens')} in, {result.metadata.get('output_tokens')} out")
@@ -77,20 +81,20 @@ from pyagent_patterns.base import Agent
 import asyncio
 
 # OpenAI via LiteLLM
-agent_openai   = Agent("a", LiteLLM("gpt-4o"), system_prompt="Analyse this.")
+agent_openai   = Agent("a", LiteLLM("gpt-4o"), system_prompt="Analyze this.")
 
 # Anthropic via LiteLLM
-agent_anthropic = Agent("b", LiteLLM("anthropic/claude-sonnet-4-20250514"), system_prompt="Analyse this.")
+agent_anthropic = Agent("b", LiteLLM("anthropic/claude-sonnet-4-20250514"), system_prompt="Analyze this.")
 
 # Gemini via LiteLLM
-agent_gemini   = Agent("c", LiteLLM("gemini/gemini-2.5-pro"), system_prompt="Analyse this.")
+agent_gemini   = Agent("c", LiteLLM("gemini/gemini-2.5-pro"), system_prompt="Analyze this.")
 
 # Mistral, Cohere, Together, Groq — same interface
-agent_groq     = Agent("d", LiteLLM("groq/llama-3.1-70b-versatile"), system_prompt="Analyse this.")
-agent_together = Agent("e", LiteLLM("together_ai/meta-llama/Llama-3-70b-chat-hf"), system_prompt="Analyse this.")
+agent_groq     = Agent("d", LiteLLM("groq/llama-3.1-70b-versatile"), system_prompt="Analyze this.")
+agent_together = Agent("e", LiteLLM("together_ai/meta-llama/Llama-3-70b-chat-hf"), system_prompt="Analyze this.")
 
 # Cost tracking built-in
-result = asyncio.run(agent_anthropic.run("Summarise Q3 earnings"))
+result = asyncio.run(agent_anthropic.run("Summarize Q3 earnings"))
 print(f"Cost: ${result.cost_estimate:.5f}")
 ```
 
@@ -119,9 +123,9 @@ agent_ant = Agent("reviewer",
                   LangChainLLM(ChatAnthropic(model="claude-sonnet-4-20250514", temperature=0)),
                   system_prompt="Review for accuracy and clarity.")
 
-agent_gem = Agent("summariser",
+agent_gem = Agent("summarizer",
                   LangChainLLM(ChatGoogleGenerativeAI(model="gemini-2.5-flash")),
-                  system_prompt="Summarise concisely.")
+                  system_prompt="Summarize concisely.")
 
 # LangChain streaming passes through
 result = asyncio.run(agent_oai.run("Write a technical post about RAG"))
@@ -129,7 +133,7 @@ result = asyncio.run(agent_oai.run("Write a technical post about RAG"))
 
 ---
 
-## ProviderRegistry — Centralised Provider Management
+## ProviderRegistry — Centralized Provider Management
 
 Register providers once; look them up by name throughout your codebase.
 
@@ -148,7 +152,7 @@ registry.register("vision",   GeminiLLM("gemini-2.5-pro"))
 from pyagent_patterns.base import Agent
 
 extractor = Agent("extractor", registry.get("fast"),   system_prompt="Extract facts.")
-analyst   = Agent("analyst",   registry.get("expert"), system_prompt="Analyse deeply.")
+analyst   = Agent("analyst",   registry.get("expert"), system_prompt="Analyze deeply.")
 ```
 
 ### Registry from Blueprint providers block
@@ -210,8 +214,8 @@ chain = FallbackChain([
 from pyagent_patterns.base import Agent
 import asyncio
 
-agent = Agent("resilient_agent", chain, system_prompt="Analyse this document.")
-result = asyncio.run(agent.run("Analyse Tesla Q3 earnings"))
+agent = Agent("resilient_agent", chain, system_prompt="Analyze this document.")
+result = asyncio.run(agent.run("Analyze Tesla Q3 earnings"))
 print(f"Provider used: {result.metadata.get('provider_used')}")
 print(f"Fallback triggered: {result.metadata.get('fallback_triggered', False)}")
 ```
@@ -288,7 +292,7 @@ pipeline = Pipeline(stages=[
 ])
 
 async def stream():
-    async for chunk in pipeline.stream("Analyse the impact of AI on software engineering"):
+    async for chunk in pipeline.stream("Analyze the impact of AI on software engineering"):
         print(chunk, end="", flush=True)
     print()
 
@@ -316,7 +320,7 @@ bus.subscribe(JsonlExporter("traces/run.jsonl").export_event)
 traced = TracedProvider(AnthropicLLM("claude-sonnet-4-20250514"), trace_bus=bus)
 
 from pyagent_patterns.base import Agent
-agent = Agent("analyst", llm=traced, system_prompt="Analyse this document.")
+agent = Agent("analyst", llm=traced, system_prompt="Analyze this document.")
 
 result = asyncio.run(agent.run("Tesla Q3 2025 earnings"))
 # Bus receives: provider_call_start → provider_call_end (or provider_call_error)

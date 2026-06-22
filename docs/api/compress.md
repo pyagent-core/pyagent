@@ -1,3 +1,7 @@
+---
+description: "API reference for pyagent-compress — MessageCompressor, token budgets, and pruners for inter-agent message compression."
+---
+
 # pyagent-compress API Reference
 
 ::: pyagent_compress.compressor.MessageCompressor
