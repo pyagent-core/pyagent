@@ -214,6 +214,7 @@ Complete, runnable examples that use the **Human-in-the-Loop** pattern:
 |--------|--------|--------------|------------|
 | [Alert Triage](../../../cookbook/security/log-triage.md) | Security & Threat Intel | Triage security alerts; escalate true positives to a human | Intermediate |
 | [Incident Triage](../../../cookbook/devops-sre/incident-triage.md) | DevOps & SRE | Stage pipeline that triages incidents with human sign-off | Intermediate |
+| [AML Transaction Monitoring](../../../cookbook/finance-trading/aml-monitoring.md) | Finance & Trading | Screen → score → enrich pipeline gates high-risk transactions to a human reviewer | Advanced |
 | [Code Review](../../../cookbook/software-engineering/code-review.md) | Software Engineering | Iterative review + security scan with a human gate | Advanced |
 | [Support Router](../../../cookbook/customer-support/support-router.md) | Customer Support | Classify tickets → route to specialists → escalate to a human | Advanced |
 <!-- gen:cookbooks:end -->

@@ -219,6 +219,7 @@ Complete, runnable examples that use the **Orchestrator-Workers** pattern:
 |--------|--------|--------------|------------|
 | [Analytics Task Decomposer](../../../cookbook/data-analytics/analytics-decomposer.md) | Data & Analytics | Orchestrator breaks an analytics request into query, transform, and chart workers | Intermediate |
 | [Product Launch Planner](../../../cookbook/ecommerce-retail/product-launch-planner.md) | E-commerce & Retail | Orchestrator splits a launch into pricing/copy/SEO/inventory subtasks for workers | Intermediate |
+| [ESG Report Analyzer](../../../cookbook/finance-trading/esg-analyzer.md) | Finance & Trading | Orchestrator dispatches ratings, disclosure, and SFDR-scoring workers into an ESG summary | Advanced |
 <!-- gen:cookbooks:end -->
 
 ## See Also

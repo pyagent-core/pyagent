@@ -208,6 +208,7 @@ Complete, runnable examples that use the **Role-Based** pattern:
 | Recipe | Domain | What it does | Complexity |
 |--------|--------|--------------|------------|
 | [Customer Onboarding Workflow](../../../cookbook/customer-support/onboarding.md) | Customer Support | Verification, setup, FAQ, and success roles onboard a new customer end to end | Intermediate |
+| [Robo-Advisor Onboarding](../../../cookbook/finance-trading/robo-advisor.md) | Finance & Trading | Intake, risk, suitability, and planning roles rotate to build a client investment plan | Intermediate |
 | [Writers' Room](../../../cookbook/media-entertainment/writers-room.md) | Media & Entertainment | Showrunner, writer, editor, and continuity roles collaborate on an episode outline | Intermediate |
 | [Software Startup Simulation](../../../cookbook/software-engineering/startup-simulation.md) | Software Engineering | PM, Architect, Engineer, and QA role-play an idea into PRD, design, code, and tests | Advanced |
 <!-- gen:cookbooks:end -->

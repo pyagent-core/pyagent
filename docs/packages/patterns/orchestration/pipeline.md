@@ -188,6 +188,8 @@ Complete, runnable examples that use the **Pipeline** pattern:
 | [Clinical Summary](../../../cookbook/healthcare/clinical-summary.md) | Healthcare & Life Sciences | Summarize clinical notes, then self-critique for accuracy | Intermediate |
 | [Incident Triage](../../../cookbook/devops-sre/incident-triage.md) | DevOps & SRE | Stage pipeline that triages incidents with human sign-off | Intermediate |
 | [Lead Qualifier](../../../cookbook/sales-crm/lead-qualifier.md) | Sales & CRM | Score and route inbound leads to the right play | Intermediate |
+| [Wealth Rebalancing Crew](../../../cookbook/finance-trading/wealth-rebalancing.md) | Finance & Trading | Risk → market scan → allocation → compliance pipeline proposes a rebalance | Intermediate |
+| [AML Transaction Monitoring](../../../cookbook/finance-trading/aml-monitoring.md) | Finance & Trading | Screen → score → enrich pipeline gates high-risk transactions to a human reviewer | Advanced |
 | [Code Review](../../../cookbook/software-engineering/code-review.md) | Software Engineering | Iterative review + security scan with a human gate | Advanced |
 | [Research Assistant](../../../cookbook/research-analysis/research-assistant.md) | Research & Analysis | Gather sources, debate, synthesize, and cite | Advanced |
 <!-- gen:cookbooks:end -->

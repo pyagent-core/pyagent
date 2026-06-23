@@ -228,9 +228,15 @@ nav:
     - Incident Triage: cookbook/devops-sre/incident-triage.md
     - Product Launch Planner: cookbook/ecommerce-retail/product-launch-planner.md
     - Essay Grading by Consensus: cookbook/education/essay-grader.md
+    - AML Transaction Monitoring: cookbook/finance-trading/aml-monitoring.md
+    - Earnings Call Analyzer: cookbook/finance-trading/earnings-call.md
+    - ESG Report Analyzer: cookbook/finance-trading/esg-analyzer.md
     - Loan Origination Workflow: cookbook/finance-trading/loan-origination.md
     - Loan Underwriting Committee: cookbook/finance-trading/loan-underwriting.md
     - Portfolio Review: cookbook/finance-trading/portfolio-review.md
+    - Robo-Advisor Onboarding: cookbook/finance-trading/robo-advisor.md
+    - Trading Signal Desk: cookbook/finance-trading/trading-signals.md
+    - Wealth Rebalancing Crew: cookbook/finance-trading/wealth-rebalancing.md
     - Emergent NPC World: cookbook/gaming/npc-world.md
     - Policy Briefing Pipeline: cookbook/government/policy-briefing.md
     - CV Screener: cookbook/hr-recruiting/cv-screener.md

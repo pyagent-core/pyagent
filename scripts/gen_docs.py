@@ -251,6 +251,13 @@ _RECIPE_SLUG_TO_TITLE = {
     "fraud-investigation": "Fraud Investigation Assistant",
     "literature-review": "Literature Review Team",
     "analytics-decomposer": "Analytics Task Decomposer",
+    # Finance & Trading deep-dive recipes
+    "wealth-rebalancing": "Wealth Rebalancing Crew",
+    "esg-analyzer": "ESG Report Analyzer",
+    "aml-monitoring": "AML Transaction Monitoring",
+    "trading-signals": "Trading Signal Desk",
+    "earnings-call": "Earnings Call Analyzer",
+    "robo-advisor": "Robo-Advisor Onboarding",
 }
 
 _COMPLEXITY_ORDER = {"Beginner": 0, "Intermediate": 1, "Advanced": 2}

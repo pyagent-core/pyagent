@@ -230,6 +230,7 @@ Complete, runnable examples that use the **Fan-Out / Fan-In** pattern:
 | [Campaign Planner](../../../cookbook/marketing-content/campaign-planner.md) | Marketing & Content | Parallel channel ideas aggregated into one campaign plan | Beginner |
 | [CV Screener](../../../cookbook/hr-recruiting/cv-screener.md) | HR & Recruiting | Parallel reviewers score a CV; aggregate into one verdict | Intermediate |
 | [Research Assistant](../../../cookbook/research-analysis/research-assistant.md) | Research & Analysis | Gather sources, debate, synthesize, and cite | Advanced |
+| [Trading Signal Desk](../../../cookbook/finance-trading/trading-signals.md) | Finance & Trading | Momentum, mean-reversion, and sentiment agents fan out then aggregate into a trade idea | Advanced |
 <!-- gen:cookbooks:end -->
 
 ## See Also

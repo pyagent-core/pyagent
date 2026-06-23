@@ -164,6 +164,7 @@ Complete, runnable examples that use the **Self-Reflection** pattern:
 | Recipe | Domain | What it does | Complexity |
 |--------|--------|--------------|------------|
 | [Clinical Summary](../../../cookbook/healthcare/clinical-summary.md) | Healthcare & Life Sciences | Summarize clinical notes, then self-critique for accuracy | Intermediate |
+| [Earnings Call Analyzer](../../../cookbook/finance-trading/earnings-call.md) | Finance & Trading | A self-reflecting agent iterates on an earnings transcript until the analysis clears a quality bar | Intermediate |
 <!-- gen:cookbooks:end -->
 
 ## See Also
