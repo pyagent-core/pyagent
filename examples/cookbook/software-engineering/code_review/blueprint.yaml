@@ -1,0 +1,33 @@
+api_version: pyagent/v1
+metadata:
+  name: code-review
+  version: 1.0.0
+  description: Iterative review + security scan with human escalation
+
+providers:
+  fast:     { model: gpt-4o-mini }
+  smart:    { model: claude-sonnet-4-20250514 }
+  security: { model: gpt-4o }
+
+agents:
+  code_agent:       { provider: smart,    prompt: "Review for correctness, maintainability, best practices." }
+  review_agent:     { provider: smart,    prompt: "Review clarity, test gaps, design. Return APPROVED when ready." }
+  security_agent:   { provider: security, prompt: "Scan for vulns. Score 1-10. If < 8, escalate." }
+  escalation_agent: { provider: fast,     prompt: "Summarize security finding for human review." }
+
+workflows:
+  review:
+    pattern: cross_reflection
+    agents: [code_agent, review_agent]
+    max_rounds: 3
+    stop_phrase: APPROVED
+  security:
+    pattern: pipeline
+    stages: [security_agent]
+  escalate:
+    pattern: human_in_the_loop
+    agent: escalation_agent
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

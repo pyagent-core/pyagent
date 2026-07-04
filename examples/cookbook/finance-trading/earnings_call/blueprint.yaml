@@ -1,0 +1,28 @@
+api_version: pyagent/v1
+metadata:
+  name: earnings-call
+  version: 1.0.0
+  description: Self-reflecting earnings analyst iterates until all 5 criteria are covered
+
+providers:
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  earnings_analyst:
+    provider: smart
+    prompt: >
+      Analyze earnings call transcripts for buy-side investors. Each iteration:
+      1. Extract EPS beat/miss, revenue growth YoY, guidance revision.
+      2. Flag management tone and one key risk.
+      3. Self-check all five criteria. End with "ANALYSIS COMPLETE" when done.
+
+workflows:
+  analyze:
+    pattern: self_reflection
+    agent: earnings_analyst
+    max_rounds: 3
+    stop_phrase: "ANALYSIS COMPLETE"
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

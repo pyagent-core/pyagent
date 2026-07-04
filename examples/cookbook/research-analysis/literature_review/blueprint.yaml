@@ -1,0 +1,30 @@
+api_version: pyagent/v1
+metadata:
+  name: literature-review
+  version: 1.0.0
+  description: Research lead delegates discovery + synthesis teams
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  research_lead:     { provider: smart, prompt: "Decompose question, delegate teams, synthesize review." }
+  discovery_lead:    { provider: fast,  prompt: "Coordinate source finding and relevance triage." }
+  synthesis_lead:    { provider: fast,  prompt: "Coordinate findings extraction and citation writing." }
+  source_finder:     { provider: fast,  prompt: "Find 5-7 relevant papers. List title, author, year." }
+  relevance_triage:  { provider: fast,  prompt: "Score each source 1-5 for relevance. Keep 3+ only." }
+  findings_extractor:{ provider: smart, prompt: "Extract key empirical findings. Quote statistics." }
+  citation_writer:   { provider: fast,  prompt: "Format all citations in APA style." }
+
+workflows:
+  review:
+    pattern: hierarchical
+    manager: research_lead
+    teams:
+      - { name: Discovery,  lead: discovery_lead,  workers: [source_finder, relevance_triage] }
+      - { name: Synthesis,  lead: synthesis_lead,  workers: [findings_extractor, citation_writer] }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

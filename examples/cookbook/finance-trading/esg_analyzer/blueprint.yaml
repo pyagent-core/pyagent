@@ -1,0 +1,38 @@
+api_version: pyagent/v1
+metadata:
+  name: esg-analyzer
+  version: 1.0.0
+  description: Orchestrator dispatches ESG workers and synthesizes a sustainability summary
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  esg_lead:
+    provider: smart
+    prompt: >
+      Analyze a company's ESG profile. Assign workers as needed, synthesize results
+      into an overall ESG rating (A-E), top strength, top controversy, SFDR article fit.
+  ratings:
+    provider: fast
+    prompt: Summarize third-party ESG ratings and any disagreements.
+  disclosure_extractor:
+    provider: smart
+    prompt: Extract Scope 1/2/3 emissions, net-zero targets, board-diversity data.
+  sfdr_scorer:
+    provider: smart
+    prompt: Score SFDR/CSRD alignment — PAI coverage, taxonomy eligibility, gaps.
+  controversy:
+    provider: fast
+    prompt: List recent ESG controversies (labor, governance, environmental) with severity.
+
+workflows:
+  analyze:
+    pattern: orchestrator_workers
+    orchestrator: esg_lead
+    workers: [ratings, disclosure_extractor, sfdr_scorer, controversy]
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

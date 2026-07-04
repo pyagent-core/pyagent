@@ -1,0 +1,9 @@
+pyagent-all
+fastapi
+uvicorn[standard]
+httpx
+tenacity
+pydantic
+python-dotenv
+pytest
+pytest-asyncio

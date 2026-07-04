@@ -1,0 +1,25 @@
+api_version: pyagent/v1
+metadata:
+  name: cv-screener
+  version: 1.0.0
+  description: Parallel rubric scoring with FanOut/FanIn aggregation
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  skills:       { provider: smart, prompt: "Score 0-10 on technical skills. Quote evidence." }
+  experience:   { provider: smart, prompt: "Score 0-10 on experience and impact. Quote evidence." }
+  collaboration:{ provider: fast,  prompt: "Score 0-10 on collaboration and ownership signals." }
+  panel:        { provider: smart, prompt: "Combine scores into STRONG HIRE / HIRE / NO HIRE." }
+
+workflows:
+  screen:
+    pattern: fan_out_fan_in
+    agents: [skills, experience, collaboration]
+    aggregator: panel
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

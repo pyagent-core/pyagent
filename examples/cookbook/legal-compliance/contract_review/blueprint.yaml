@@ -1,0 +1,23 @@
+api_version: pyagent/v1
+metadata:
+  name: contract-review
+  version: 1.0.0
+  description: Counsel proposes redlines, partner critiques, iterate until approved
+
+providers:
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  counsel: { provider: smart, prompt: "Propose specific redlines and explain risk for each." }
+  partner: { provider: smart, prompt: "Critique redlines. Return APPROVED when review is solid." }
+
+workflows:
+  review:
+    pattern: cross_reflection
+    agents: [counsel, partner]
+    max_rounds: 3
+    stop_phrase: APPROVED
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

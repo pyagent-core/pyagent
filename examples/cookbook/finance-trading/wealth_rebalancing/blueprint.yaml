@@ -1,0 +1,40 @@
+api_version: pyagent/v1
+metadata:
+  name: wealth-rebalancing
+  version: 1.0.0
+  description: Risk → market scan → allocation → compliance pipeline for portfolio rebalancing
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  risk_profiler:
+    provider: fast
+    prompt: >
+      Summarize the client mandate: risk tolerance, time horizon, liquidity needs,
+      and hard constraints (no tobacco, ESG-only, max single-name 5%). Be explicit.
+  market_scanner:
+    provider: smart
+    prompt: >
+      Given the mandate, assess current market regime: equity risk premium, rates direction,
+      credit spreads, and sector tailwinds/headwinds relevant to the portfolio.
+  allocation_strategist:
+    provider: smart
+    prompt: >
+      Propose a new target allocation: asset classes, target weights (%),
+      and specific trades to reach from current holdings.
+  compliance_checker:
+    provider: fast
+    prompt: >
+      Review the proposed allocation against mandate constraints.
+      Mark COMPLIANT or list specific violations.
+
+workflows:
+  rebalance:
+    pattern: pipeline
+    stages: [risk_profiler, market_scanner, allocation_strategist, compliance_checker]
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

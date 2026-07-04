@@ -1,0 +1,26 @@
+api_version: pyagent/v1
+metadata:
+  name: product-launch-planner
+  version: 1.0.0
+  description: Orchestrator splits launch into pricing/copy/SEO/inventory workers
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  launch_lead: { provider: smart, prompt: "Plan launch. Assign workers as JSON. Synthesize into launch plan." }
+  pricing:     { provider: fast,  prompt: "Set pricing strategy: price, discounts, positioning." }
+  copywriter:  { provider: fast,  prompt: "Write headline, 3 bullet features, short description." }
+  seo:         { provider: fast,  prompt: "5 target keywords + meta title + meta description." }
+  inventory:   { provider: fast,  prompt: "Estimate launch quantity, reorder point, lead time." }
+
+workflows:
+  launch:
+    pattern: orchestrator_workers
+    orchestrator: launch_lead
+    workers: [pricing, copywriter, seo, inventory]
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

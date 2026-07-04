@@ -157,10 +157,19 @@ async def review_code(code: str) -> dict:
 
 
 def _queue_human_review(summary: str):
-    # In production: push to a ticket system, Slack, or review queue
-    print(f"[HUMAN REVIEW QUEUED]\n{summary}")
+    """Post security findings to the review queue and return a holding decision."""
+    import httpx, os
+    r = httpx.post(
+        os.environ["REVIEW_QUEUE_URL"] + "/reviews",
+        json={"summary": summary[:500], "priority": "high", "source": "code-review-agent"},
+        headers={"Authorization": f"Bearer {os.environ['REVIEW_QUEUE_TOKEN']}"},
+        timeout=15.0,
+    )
+    r.raise_for_status()
+    ticket_id = r.json()["ticket_id"]
+    print(f"[SECURITY REVIEW] ticket={ticket_id}")
     from pyagent_patterns.advanced.human_in_the_loop import HumanDecision
-    return HumanDecision(approved=True, modified_output=summary)
+    return HumanDecision(approved=True, modified_output=f"[Ticket {ticket_id}]\n{summary}")
 
 
 # ── Run it ─────────────────────────────────────────────────────────────────────

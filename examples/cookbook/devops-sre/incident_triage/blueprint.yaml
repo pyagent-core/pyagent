@@ -1,0 +1,28 @@
+api_version: pyagent/v1
+metadata:
+  name: incident-triage
+  version: 1.0.0
+  description: Pipeline that triages incidents with human sign-off before prod changes
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  log_analyst:    { provider: fast,  prompt: "Summarize error signal: what's failing, since when, blast radius." }
+  root_cause:     { provider: smart, prompt: "Most likely root cause with supporting evidence." }
+  remediation:    { provider: smart, prompt: "Safe reversible remediation. Start with TOUCHES_PROD: yes/no." }
+  runbook_writer: { provider: fast,  prompt: "Format as runbook step for on-call approval." }
+
+workflows:
+  triage:
+    pattern: pipeline
+    stages: [log_analyst, root_cause, remediation]
+  gate:
+    pattern: human_in_the_loop
+    agent: runbook_writer
+    high_risk_keywords: ["delete", "drop", "scale to zero", "failover", "restart prod"]
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

@@ -1,0 +1,27 @@
+api_version: pyagent/v1
+metadata:
+  name: peer-review
+  version: 1.0.0
+  description: Mesh topology connects all reviewers to surface consensus recommendation
+
+providers:
+  openai:    { model: gpt-4o }
+  anthropic: { model: claude-sonnet-4-20250514 }
+  fast:      { model: gpt-4o-mini }
+
+agents:
+  methodology_reviewer:{ provider: anthropic, prompt: "Review methods: design, stats, reproducibility, validity threats." }
+  novelty_reviewer:    { provider: openai,    prompt: "Review novelty and contribution vs. prior work." }
+  clarity_reviewer:    { provider: fast,      prompt: "Review writing clarity, figures, structure. Draft consensus." }
+  stats_reviewer:      { provider: openai,    prompt: "Check stats: power, multiple comparisons, test appropriateness." }
+
+workflows:
+  review:
+    pattern: topology
+    topology_type: MESH
+    agents: [methodology_reviewer, novelty_reviewer, clarity_reviewer, stats_reviewer]
+    rounds: 2
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

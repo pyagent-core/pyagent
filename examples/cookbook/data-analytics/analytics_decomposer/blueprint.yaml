@@ -1,0 +1,25 @@
+api_version: pyagent/v1
+metadata:
+  name: analytics-decomposer
+  version: 1.0.0
+  description: Orchestrator breaks analytics request into query, transform, and chart workers
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  analytics_lead: { provider: smart, prompt: "Plan analytics work. Assign workers. Synthesize answer." }
+  query:          { provider: fast,  prompt: "Write SQL for the subtask." }
+  transform:      { provider: fast,  prompt: "Describe transforms needed for the analysis." }
+  chart:          { provider: fast,  prompt: "Recommend chart type and encodings." }
+
+workflows:
+  analyze:
+    pattern: orchestrator_workers
+    orchestrator: analytics_lead
+    workers: [query, transform, chart]
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

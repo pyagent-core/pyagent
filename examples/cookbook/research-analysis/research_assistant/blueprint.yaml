@@ -1,0 +1,35 @@
+api_version: pyagent/v1
+metadata:
+  name: research-assistant
+  version: 1.0.0
+  description: Parallel research, debate, and synthesis pipeline
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  web_agent:      { provider: smart, prompt: "Web research specialist — gather facts with web_search tool." }
+  academic_agent: { provider: smart, prompt: "Academic specialist — find papers with arxiv_search tool." }
+  industry_agent: { provider: fast,  prompt: "Industry analyst — find news with news_search tool." }
+  optimist:       { provider: smart, prompt: "Argue positive interpretation with evidence." }
+  sceptic:        { provider: smart, prompt: "Challenge findings with counter-evidence and limitations." }
+  judge:          { provider: smart, prompt: "Weigh arguments and produce balanced verdict." }
+  synthesizer:    { provider: smart, prompt: "Write structured research report under 500 words." }
+
+workflows:
+  gather:
+    pattern: fan_out_fan_in
+    agents: [web_agent, academic_agent, industry_agent]
+  debate:
+    pattern: debate
+    debaters: [optimist, sceptic]
+    judge: judge
+    rounds: 2
+  synthesize:
+    pattern: pipeline
+    stages: [synthesizer]
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

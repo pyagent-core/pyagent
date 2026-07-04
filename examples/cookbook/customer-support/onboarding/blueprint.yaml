@@ -1,0 +1,24 @@
+api_version: pyagent/v1
+metadata:
+  name: customer-onboarding
+  version: 1.0.0
+  description: Verification, setup, FAQ, and success roles onboard a new customer
+
+providers:
+  fast: { model: gpt-4o-mini }
+
+agents:
+  verification:  { provider: fast, prompt: "Confirm email, org, KYC tier. List missing items." }
+  account_setup: { provider: fast, prompt: "Configure plan, seats, integrations, defaults. Checklist." }
+  faq:           { provider: fast, prompt: "Answer common questions: billing, retention, SLAs, docs." }
+  success:       { provider: fast, prompt: "Set 30-day check-in, first milestone, CSM contact. Welcome." }
+
+workflows:
+  onboard:
+    pattern: role_based
+    agents: [verification, account_setup, faq, success]
+    rounds: 1
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

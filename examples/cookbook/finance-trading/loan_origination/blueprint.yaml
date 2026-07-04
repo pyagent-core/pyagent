@@ -1,0 +1,33 @@
+api_version: pyagent/v1
+metadata:
+  name: loan-origination
+  version: 1.0.0
+  description: Document → income → credit → approval chain topology
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  document_collection:
+    provider: fast
+    prompt: "Stage 1 — confirm required documents. Mark INCOMPLETE if missing."
+  income_verification:
+    provider: fast
+    prompt: "Stage 2 — verify income, compute DTI, pass forward."
+  credit_scoring:
+    provider: smart
+    prompt: "Stage 3 — credit risk tier A-E with key drivers."
+  approval:
+    provider: smart
+    prompt: "Stage 4 — decide APPROVE, REFER, or DECLINE."
+
+workflows:
+  originate:
+    pattern: topology
+    topology_type: chain
+    agents: [document_collection, income_verification, credit_scoring, approval]
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

@@ -1,0 +1,25 @@
+api_version: pyagent/v1
+metadata:
+  name: robo-advisor
+  version: 1.0.0
+  description: Role-based onboarding conversation — intake, risk, suitability, planning
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  intake:       { provider: fast,  prompt: "Extract client facts: age, income, assets, goal, timeline." }
+  risk_profiler:{ provider: smart, prompt: "Assign risk tolerance (Conservative/Moderate/Aggressive), max drawdown, horizon." }
+  suitability:  { provider: fast,  prompt: "Check suitability rules. Confirm SUITABLE or flag concerns." }
+  planner:      { provider: smart, prompt: "Output model allocation, IPS paragraph, three next steps." }
+
+workflows:
+  onboard:
+    pattern: role_based
+    agents: [intake, risk_profiler, suitability, planner]
+    rounds: 1
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

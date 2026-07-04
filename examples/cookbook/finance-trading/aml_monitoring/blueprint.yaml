@@ -1,0 +1,50 @@
+api_version: pyagent/v1
+metadata:
+  name: aml-monitoring
+  version: 1.0.0
+  description: AML transaction screening pipeline with compliance officer gate
+  owner: compliance-team
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  rule_screener:
+    provider: fast
+    prompt: >
+      Screen the transaction for rule-based red flags: sanctions matches, velocity breaches
+      (>3 transactions in 1h), structuring (amounts just under $10k), and high-risk jurisdictions.
+      Output a bullet list of flags found (or NONE).
+  risk_scorer:
+    provider: smart
+    prompt: >
+      Given the rule flags, assign a risk score 0-100 and a risk tier:
+      Low (<30), Medium (30-70), High (>70). Explain the top two scoring drivers.
+  enrichment:
+    provider: fast
+    prompt: >
+      Enrich the alert with counterparty context: known business type, jurisdiction risk,
+      prior SAR history. Produce a one-paragraph case summary.
+  sar_drafter:
+    provider: smart
+    prompt: >
+      Draft a FinCEN SAR narrative from the case summary: subject, activity description,
+      dates, amounts, and why the activity is suspicious. Be factual and concise.
+
+workflows:
+  triage:
+    pattern: pipeline
+    stages: [rule_screener, risk_scorer, enrichment]
+
+observability:
+  tracing:
+    enabled: true
+  cost_budget:
+    daily_usd: 500.0
+    alert_threshold: 0.8
+
+context:
+  compression:
+    policy: semantic_lossless
+    target_ratio: 0.6

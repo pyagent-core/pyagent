@@ -1,0 +1,26 @@
+api_version: pyagent/v1
+metadata:
+  name: writers-room
+  version: 1.0.0
+  description: Showrunner, writer, editor, continuity, and network exec collaborate on episode
+
+providers:
+  smart: { model: claude-sonnet-4-20250514 }
+  fast:  { model: claude-haiku-3-5-20241022 }
+
+agents:
+  showrunner:  { provider: smart, prompt: "Hold arc and tone. Set emotional throughline. Make final call." }
+  staff_writer:{ provider: smart, prompt: "Break premise into act beats. Propose story turns." }
+  script_editor:{ provider: fast, prompt: "Tighten pacing, flag slow scenes. Keep to 42 min." }
+  continuity:  { provider: fast,  prompt: "Guard canon: character knowledge, timeline, facts. Flag contradictions." }
+  network_exec:{ provider: fast,  prompt: "Network notes: broad appeal, ad breaks, S&P flags." }
+
+workflows:
+  write:
+    pattern: role_based
+    agents: [showrunner, staff_writer, script_editor, continuity, network_exec]
+    rounds: 2
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

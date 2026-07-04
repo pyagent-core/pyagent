@@ -1,0 +1,28 @@
+api_version: pyagent/v1
+metadata:
+  name: log-triage
+  version: 1.0.0
+  description: Enrich, correlate, classify security alerts; escalate true positives
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  enricher:    { provider: fast,  prompt: "Enrich alert: asset, owner, severity 1-5." }
+  correlator:  { provider: smart, prompt: "Match against MITRE ATT&CK. Confidence 0-100." }
+  classifier:  { provider: smart, prompt: "Decide FALSE_POSITIVE or ESCALATE with 3-line case." }
+  case_writer: { provider: fast,  prompt: "Format triage result as SOC case note." }
+
+workflows:
+  triage:
+    pattern: pipeline
+    stages: [enricher, correlator, classifier]
+  escalate:
+    pattern: human_in_the_loop
+    agent: case_writer
+    high_risk_keywords: ["ransomware", "exfiltration", "domain admin", "lateral movement"]
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

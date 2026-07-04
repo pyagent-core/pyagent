@@ -1,0 +1,28 @@
+api_version: pyagent/v1
+metadata:
+  name: npc-world
+  version: 1.0.0
+  description: NPCs share a Blackboard to evolve an emergent world state
+
+providers:
+  fast: { model: gpt-4o-mini }
+
+agents:
+  explorer:   { provider: fast, prompt: "Scout unexplored tiles, report terrain and resources." }
+  builder:    { provider: fast, prompt: "Build structures from known resources. Update world map." }
+  trader:     { provider: fast, prompt: "Set prices and propose trades. Update economy." }
+  chronicler: { provider: fast, prompt: "Write a one-line journal entry for what changed this round." }
+
+workflows:
+  simulate:
+    pattern: blackboard
+    agents:
+      - { agent: explorer,   reads: [world_map],                        writes: [world_map, resources] }
+      - { agent: builder,    reads: [world_map, resources],             writes: [world_map, resources] }
+      - { agent: trader,     reads: [resources, world_map],             writes: [economy] }
+      - { agent: chronicler, reads: [world_map, resources, economy],    writes: [chronicle] }
+    rounds: 3
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

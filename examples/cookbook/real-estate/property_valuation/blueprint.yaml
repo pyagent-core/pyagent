@@ -1,0 +1,30 @@
+api_version: pyagent/v1
+metadata:
+  name: property-valuation
+  version: 1.0.0
+  description: Layered gather → analyze → narrate → QA valuation pipeline
+
+providers:
+  gemini: { model: gemini-2.5-flash }
+  smart:  { model: claude-sonnet-4-20250514 }
+
+agents:
+  property_facts:{ provider: gemini, prompt: "Extract beds, baths, sqft, lot, year built, condition." }
+  market_facts:  { provider: gemini, prompt: "Summarize local market: median price/sqft, DOM, trend." }
+  comps:         { provider: smart,  prompt: "Select 3-5 comparable sales and explain each." }
+  adjustments:   { provider: smart,  prompt: "Adjust comps for sqft delta, condition, location." }
+  report_writer: { provider: smart,  prompt: "Write valuation report: value range, comps, risks, confidence." }
+  reviewer:      { provider: smart,  prompt: "Sanity-check value range against comps; flag unsupported adjustments." }
+
+workflows:
+  value:
+    pattern: layered
+    layers:
+      - { name: gather,  agents: [property_facts, market_facts] }
+      - { name: analyze, agents: [comps, adjustments] }
+      - { name: narrate, agents: [report_writer] }
+      - { name: qa,      agents: [reviewer] }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

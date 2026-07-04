@@ -42,7 +42,8 @@ pip install pyagent-patterns pyagent-providers
 ```
 
 ```python
-import asyncio
+import asyncio, os
+import httpx
 from pyagent_patterns.base import Agent
 from pyagent_patterns.orchestration import Pipeline
 from pyagent_patterns.advanced import HumanInTheLoop
@@ -69,7 +70,7 @@ triage = Pipeline(stages=[
 def on_call_gate(output: str, metadata: dict) -> HumanDecision:
     if output.lower().startswith("touches_prod: no"):
         return HumanDecision(approved=True, modified_output=f"Auto-applied (non-prod):\n{output}")
-    approved = _page_on_call_and_wait(output)   # your PagerDuty/Slack approval integration
+    approved = asyncio.get_event_loop().run_until_complete(_page_on_call_and_wait(output))
     return HumanDecision(approved=approved,
                          modified_output=output if approved else "REJECTED by on-call — escalate to IC.")
 
@@ -89,6 +90,33 @@ async def main():
     triaged = await triage.run(SAMPLE_INCIDENT)
     final = await triage_with_gate.run(triaged.output)
     print(final.output)
+
+async def _page_on_call_and_wait(summary: str, timeout_s: float = 300.0) -> bool:
+    """Post incident to PagerDuty and poll for on-call approval. Returns True = approved."""
+    routing_key = os.environ["PAGERDUTY_ROUTING_KEY"]
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        r = await client.post(
+            "https://events.pagerduty.com/v2/enqueue",
+            json={
+                "routing_key": routing_key,
+                "event_action": "trigger",
+                "payload": {"summary": summary[:200], "severity": "critical", "source": "pyagent"},
+            },
+        )
+        r.raise_for_status()
+        dedup_key = r.json()["dedup_key"]
+
+        deadline = asyncio.get_event_loop().time() + timeout_s
+        while asyncio.get_event_loop().time() < deadline:
+            resp = await client.get(
+                f"https://api.pagerduty.com/incidents?incident_key={dedup_key}",
+                headers={"Authorization": f"Token token={os.environ['PAGERDUTY_API_KEY']}"},
+            )
+            incidents = resp.json().get("incidents", [])
+            if incidents and incidents[0].get("status") == "acknowledged":
+                return True
+            await asyncio.sleep(5.0)
+    return False  # timed out — escalate manually
 
 asyncio.run(main())
 ```

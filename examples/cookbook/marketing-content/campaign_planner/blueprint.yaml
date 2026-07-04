@@ -1,0 +1,25 @@
+api_version: pyagent/v1
+metadata:
+  name: campaign-planner
+  version: 1.0.0
+  description: Parallel email/social/blog drafting with campaign director aggregation
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  email:             { provider: fast,  prompt: "Draft 3-email launch sequence: teaser, launch, follow-up." }
+  social:            { provider: fast,  prompt: "Draft 1-week social calendar: 5 posts with hooks and CTAs." }
+  blog:              { provider: fast,  prompt: "Outline launch blog post: title, 5 headers, key takeaway." }
+  campaign_director: { provider: smart, prompt: "Merge email/social/blog into coherent campaign brief with calendar." }
+
+workflows:
+  plan:
+    pattern: fan_out_fan_in
+    agents: [email, social, blog]
+    aggregator: campaign_director
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

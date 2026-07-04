@@ -1,0 +1,29 @@
+api_version: pyagent/v1
+metadata:
+  name: fraud-investigation
+  version: 1.0.0
+  description: ReAct agent investigates fraud alerts with tools
+
+providers:
+  gpt4o: { model: gpt-4o }
+
+agents:
+  fraud_analyst:
+    provider: gpt4o
+    prompt: "Investigate fraud alerts step by step using tools. Write a case file with risk level."
+
+tools:
+  transaction_lookup: { description: "Return recent transactions for an account." }
+  anomaly_score:      { description: "Score a transaction pattern 0-100 for fraud likelihood." }
+  sanctions_check:    { description: "Check a payee against OFAC/PEP sanctions list." }
+
+workflows:
+  investigate:
+    pattern: react
+    agent: fraud_analyst
+    tools: [transaction_lookup, anomaly_score, sanctions_check]
+    max_steps: 6
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 200.0, alert_threshold: 0.8 }

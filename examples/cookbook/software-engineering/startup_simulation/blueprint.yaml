@@ -1,0 +1,26 @@
+api_version: pyagent/v1
+metadata:
+  name: startup-simulation
+  version: 1.0.0
+  description: PM, Architect, Engineer, QA role-play an idea into a build-ready plan
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+  gpt4o: { model: gpt-4o }
+
+agents:
+  product_manager: { provider: smart, prompt: "Write PRD: problem, user stories, success metrics." }
+  architect:       { provider: smart, prompt: "Define components, data model, APIs, tech stack." }
+  engineer:        { provider: gpt4o, prompt: "Sketch core modules and code skeleton." }
+  qa:              { provider: fast,  prompt: "Write test plan: critical paths, edge cases, acceptance criteria." }
+
+workflows:
+  simulate:
+    pattern: role_based
+    agents: [product_manager, architect, engineer, qa]
+    rounds: 2
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

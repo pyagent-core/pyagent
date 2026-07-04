@@ -1,0 +1,30 @@
+api_version: pyagent/v1
+metadata:
+  name: compliance-checker
+  version: 1.0.0
+  description: Director delegates obligations + controls teams; synthesizes gap analysis
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  compliance_director:   { provider: smart, prompt: "Decompose, delegate, then synthesize gap-analysis report." }
+  obligations_lead:      { provider: fast,  prompt: "Extract and structure all legal obligations." }
+  controls_lead:         { provider: fast,  prompt: "Map obligations to controls; flag gaps." }
+  requirement_extractor: { provider: fast,  prompt: "Extract every MUST/SHALL requirement." }
+  scope_analyst:         { provider: fast,  prompt: "Identify departments, systems, data in scope." }
+  policy_mapper:         { provider: fast,  prompt: "Map obligations to existing policies." }
+  evidence_checker:      { provider: fast,  prompt: "Assess whether audit evidence exists for each control." }
+
+workflows:
+  check:
+    pattern: hierarchical
+    manager: compliance_director
+    teams:
+      - { name: Obligations, lead: obligations_lead, workers: [requirement_extractor, scope_analyst] }
+      - { name: Controls,    lead: controls_lead,    workers: [policy_mapper, evidence_checker] }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

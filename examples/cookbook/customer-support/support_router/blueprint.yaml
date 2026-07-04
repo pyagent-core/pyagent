@@ -1,0 +1,33 @@
+api_version: pyagent/v1
+metadata:
+  name: support-router
+  version: 1.0.0
+  description: Classify customer queries, route to specialist bots, escalate to human when needed
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  supervisor:    { provider: fast,  prompt: "Classify as: billing, technical, account, escalate." }
+  billing_fast:  { provider: fast,  prompt: "Billing support agent — concise answers." }
+  billing_deep:  { provider: smart, prompt: "Senior billing specialist — complex cases." }
+  tech_fast:     { provider: fast,  prompt: "Tech support agent — step-by-step fixes." }
+  tech_deep:     { provider: smart, prompt: "Senior engineer — deep technical debug." }
+  account_fast:  { provider: fast,  prompt: "Account support — username, email, teams." }
+  account_deep:  { provider: smart, prompt: "Senior account specialist — SSO, compliance." }
+  escalation_writer: { provider: fast, prompt: "Summarize for human handoff." }
+
+workflows:
+  route:
+    pattern: supervisor
+    classifier: supervisor
+    routes:
+      billing:   { pattern: talker_reasoner, talker: billing_fast, reasoner: billing_deep, threshold: 5 }
+      technical: { pattern: talker_reasoner, talker: tech_fast,    reasoner: tech_deep,    threshold: 4 }
+      account:   { pattern: talker_reasoner, talker: account_fast, reasoner: account_deep, threshold: 5 }
+      escalate:  { pattern: human_in_the_loop, agent: escalation_writer }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 200.0, alert_threshold: 0.8 }

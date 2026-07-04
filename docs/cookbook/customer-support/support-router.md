@@ -225,8 +225,17 @@ async def handle_query(customer_query: str) -> dict:
 
 
 def _create_support_ticket(summary: str, priority: str, metadata: dict) -> str:
-    # Replace with your ticketing system integration
-    return "SUP-" + str(hash(summary))[-6:]
+    """Create a Zendesk ticket and return the ticket number as a string."""
+    import httpx, os
+    r = httpx.post(
+        os.environ["ZENDESK_URL"] + "/api/v2/tickets.json",
+        json={"ticket": {"subject": summary[:80], "priority": priority,
+                         "comment": {"body": summary}}},
+        auth=(os.environ["ZENDESK_EMAIL"] + "/token", os.environ["ZENDESK_TOKEN"]),
+        timeout=15.0,
+    )
+    r.raise_for_status()
+    return str(r.json()["ticket"]["id"])
 
 
 # ── Run it ────────────────────────────────────────────────────────────────────

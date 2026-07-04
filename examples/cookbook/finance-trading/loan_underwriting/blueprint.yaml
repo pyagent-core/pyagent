@@ -1,0 +1,31 @@
+api_version: pyagent/v1
+metadata:
+  name: loan-underwriting
+  version: 1.0.0
+  description: Approve and decline advocates debate a loan; senior underwriter decides
+
+providers:
+  debate: { model: gemini-2.5-pro }
+  judge:  { model: claude-sonnet-4-20250514 }
+
+agents:
+  approve_advocate:
+    provider: debate
+    prompt: "Argue to APPROVE. Cite DTI, credit history, collateral, stable income."
+  decline_advocate:
+    provider: debate
+    prompt: "Argue to DECLINE. Focus on repayment risk, thin file, downside scenarios."
+  senior_underwriter:
+    provider: judge
+    prompt: "Weigh both arguments. Decide APPROVE, APPROVE WITH CONDITIONS, or DECLINE."
+
+workflows:
+  underwrite:
+    pattern: debate
+    debaters: [approve_advocate, decline_advocate]
+    judge: senior_underwriter
+    rounds: 2
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

@@ -1,0 +1,28 @@
+api_version: pyagent/v1
+metadata:
+  name: clinical-summary
+  version: 1.0.0
+  description: Extract, draft, and self-reflect clinical notes for accuracy
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  extractor:       { provider: fast,  prompt: "Extract diagnoses, meds, allergies, vitals verbatim." }
+  drafter:         { provider: smart, prompt: "Write clinician-ready summary under 150 words." }
+  summary_reviewer:{ provider: smart, prompt: "Correct errors vs source. Reply ACCURATE when done." }
+
+workflows:
+  summarize:
+    pattern: pipeline
+    stages: [extractor, drafter]
+  reflect:
+    pattern: self_reflection
+    agent: summary_reviewer
+    stop_phrase: ACCURATE
+    max_rounds: 2
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }

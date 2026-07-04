@@ -1,0 +1,29 @@
+api_version: pyagent/v1
+metadata:
+  name: sql-analyst
+  version: 1.0.0
+  description: ReAct agent writes and runs SQL to answer analytics questions
+
+providers:
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  sql_analyst:
+    provider: smart
+    prompt: "Reason step by step. Use tools to explore schema and run SQL. Answer in plain English + show SQL."
+
+tools:
+  list_tables:    { description: "Return available tables." }
+  describe_table: { description: "Return columns for a table." }
+  run_sql:        { description: "Execute SQL and return result rows." }
+
+workflows:
+  query:
+    pattern: react
+    agent: sql_analyst
+    tools: [list_tables, describe_table, run_sql]
+    max_steps: 5
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

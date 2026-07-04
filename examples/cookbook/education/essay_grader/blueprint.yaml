@@ -1,0 +1,27 @@
+api_version: pyagent/v1
+metadata:
+  name: essay-grader
+  version: 1.0.0
+  description: Voting consensus across three LLMs for fair, consistent essay grading
+
+providers:
+  openai:    { model: gpt-4o }
+  anthropic: { model: claude-sonnet-4-20250514 }
+  gemini:    { model: gemini-2.5-pro }
+  fast:      { model: gpt-4o-mini }
+
+agents:
+  grader_openai:    { provider: openai,    prompt: "Grade A-F: thesis, evidence, argument, style. Letter line 1, rationale line 2." }
+  grader_anthropic: { provider: anthropic, prompt: "Grade A-F: thesis, evidence, argument, style. Letter line 1, rationale line 2." }
+  grader_gemini:    { provider: gemini,    prompt: "Grade A-F: thesis, evidence, argument, style. Letter line 1, rationale line 2." }
+  grammar_grader:   { provider: fast,      prompt: "Grade ONLY grammar and mechanics A-F. Letter line 1, reason line 2." }
+
+workflows:
+  grade:
+    pattern: voting
+    voters: [grader_openai, grader_anthropic, grader_gemini]
+    strategy: majority
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }

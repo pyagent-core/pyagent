@@ -44,7 +44,9 @@ pip install pyagent-patterns pyagent-providers
 ```
 
 ```python
-import asyncio
+import asyncio, os
+from typing import Literal
+import httpx
 from pyagent_patterns.base import Agent
 from pyagent_patterns.orchestration import Pipeline
 from pyagent_patterns.advanced import HumanInTheLoop
@@ -80,12 +82,45 @@ aml_pipeline = Pipeline(stages=[
     ),
 ])
 
-# Simulated human review function
+def _parse_tier(output: str) -> Literal["Low", "Medium", "High"]:
+    for tier in ("High", "Medium", "Low"):
+        if f"— {tier}" in output or f"tier: {tier}" in output.lower():
+            return tier
+    return "Medium"
+
+async def _post_case(output: str) -> str:
+    """Submit case to compliance queue; returns ticket_id."""
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        r = await client.post(
+            os.environ["COMPLIANCE_API_URL"] + "/cases",
+            json={"summary": output[:500], "source": "aml-agent"},
+            headers={"Authorization": f"Bearer {os.environ['COMPLIANCE_API_KEY']}"},
+        )
+        r.raise_for_status()
+        return r.json()["ticket_id"]
+
+async def _poll_decision(ticket_id: str, timeout_s: float = 300.0) -> bool:
+    """Poll until a compliance officer approves or rejects. Returns True = approved."""
+    async with httpx.AsyncClient(timeout=timeout_s) as client:
+        deadline = asyncio.get_event_loop().time() + timeout_s
+        while asyncio.get_event_loop().time() < deadline:
+            r = await client.get(
+                f"{os.environ['COMPLIANCE_API_URL']}/cases/{ticket_id}",
+                headers={"Authorization": f"Bearer {os.environ['COMPLIANCE_API_KEY']}"},
+            )
+            data = r.json()
+            if data["status"] in ("approved", "rejected"):
+                return data["status"] == "approved"
+            await asyncio.sleep(5.0)
+    return False  # timed out → conservative reject
+
 def compliance_review(output: str, metadata: dict) -> HumanDecision:
-    """In production, surface the case in your compliance UI and await officer input."""
-    print(f"\n[COMPLIANCE REVIEW REQUIRED]\n{output}\n")
-    answer = input("File SAR? (yes/no): ").strip().lower()
-    return HumanDecision(approved=(answer == "yes"), modified_output=output)
+    """Route high-risk cases to the compliance API and wait for an officer decision."""
+    loop = asyncio.get_event_loop()
+    ticket_id = loop.run_until_complete(_post_case(output))
+    approved  = loop.run_until_complete(_poll_decision(ticket_id))
+    print(f"[COMPLIANCE] ticket={ticket_id} approved={approved}")
+    return HumanDecision(approved=approved, modified_output=output)
 
 # Stage 2 — gated human review for high-risk alerts
 sar_writer = HumanInTheLoop(
@@ -104,8 +139,8 @@ async def monitor(alert: str) -> None:
     triage = await aml_pipeline.run(alert)
     print(triage.output)
 
-    # Route to human review only for high-risk
-    if "High" in triage.output or "sanctions" in triage.output.lower():
+    # Route to human review only for high-risk (Pydantic parse — no fragile string match)
+    if _parse_tier(triage.output) == "High":
         sar_result = await sar_writer.run(triage.output)
         if sar_result.metadata.get("approved"):
             print("\nSAR filed:\n", sar_result.output)
