@@ -242,7 +242,10 @@ class BlueprintIR:
         return {
             "routing": any(p.fallback_ref for p in self.providers.values()),
             "budget": any(c.sla.cost_max_usd for c in self.contracts.values())
-            or (self.observability is not None and self.observability.cost_budget_daily_usd is not None),
+            or (
+                self.observability is not None
+                and self.observability.cost_budget_daily_usd is not None
+            ),
             "sla": bool(self.contracts),
             "memory_tier": self.memory is not None,
             "recovery": any(w.recovery is not None for w in self.workflows.values()),

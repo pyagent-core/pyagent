@@ -214,7 +214,9 @@ def adapters_cmd() -> None:
 
 @cli.command("adapter-template")
 @click.option("--framework", required=True, help="Human-readable SDK name, e.g. 'LangGraph'")
-@click.option("--adapter-name", default=None, help="entry-point/RuntimeAdapter.name (default: derived)")
+@click.option(
+    "--adapter-name", default=None, help="entry-point/RuntimeAdapter.name (default: derived)"
+)
 @click.option("--dist-name", default=None, help="PyPI distribution name (default: derived)")
 @click.option(
     "-o", "--output", "output_dir", type=click.Path(), required=True, help="Output directory"
@@ -236,4 +238,3 @@ def adapter_template_cmd(
         dist_name=dist_name,
     )
     click.echo(f"✓ Adapter template for '{framework}' scaffolded at {out_dir}")
-

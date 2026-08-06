@@ -7,7 +7,7 @@ from pyagent_blueprint.contract import (
     blueprint_contracts_json_schema,
     contract_json_schema,
 )
-from pyagent_blueprint.ir import ContractIR, SLAIR
+from pyagent_blueprint.ir import SLAIR, ContractIR
 
 
 def test_contract_json_schema_shape() -> None:

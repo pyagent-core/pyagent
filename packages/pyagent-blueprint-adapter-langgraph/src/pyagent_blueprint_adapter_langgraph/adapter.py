@@ -18,10 +18,9 @@ graph-execution engine (nodes, edges, compiled `Runnable`, `.ainvoke`,
 
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
-
 from pyagent_blueprint.adapter import (
     AdapterResult,
     Capability,
@@ -34,7 +33,9 @@ from pyagent_blueprint.adapters.reference._common import (
     flatten_agent_refs,
     mock_call,
 )
-from pyagent_blueprint.ir import BlueprintIR
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.ir import BlueprintIR
 
 
 class _GraphState(TypedDict):
@@ -108,9 +109,7 @@ class LangGraphAdapter(RuntimeAdapter):
         if app is None:
             raise UnknownWorkflowError(f"Unknown workflow: {workflow!r}")
 
-        final_state: _GraphState = await app.ainvoke(
-            {"input": input_, "output": "", "trace": []}
-        )
+        final_state: _GraphState = await app.ainvoke({"input": input_, "output": "", "trace": []})
         return AdapterResult(
             output=final_state["output"],
             raw=final_state,

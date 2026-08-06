@@ -12,7 +12,7 @@ agent's mock output chunk as it completes its turn in the loop.
 
 from __future__ import annotations
 
-from typing import Any, AsyncIterator
+from typing import TYPE_CHECKING, Any
 
 from pyagent_blueprint.adapter import (
     AdapterResult,
@@ -26,7 +26,11 @@ from pyagent_blueprint.adapters.reference._common import (
     flatten_agent_refs,
     mock_call,
 )
-from pyagent_blueprint.ir import BlueprintIR
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from pyagent_blueprint.ir import BlueprintIR
 
 #: Hard ceiling so a misconfigured blueprint can never spin forever —
 #: this is the loop-based adapter's only nod to "recovery," and it's a
@@ -63,7 +67,9 @@ class SimpleLoopAdapter(RuntimeAdapter):
                 steps.append((agent_name, agent_ir.prompt if agent_ir else ""))
             loops[wf_name] = steps
 
-        return CompiledArtifact(handle=SimpleLoopHandle(loops), diagnostics=diagnostics, intent=intent)
+        return CompiledArtifact(
+            handle=SimpleLoopHandle(loops), diagnostics=diagnostics, intent=intent
+        )
 
     async def run(
         self, compiled: CompiledArtifact, workflow: str, input_: str, **kwargs: Any

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-_PYPROJECT_TEMPLATE = '''\
+_PYPROJECT_TEMPLATE = """\
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -39,7 +39,7 @@ test = ["pytest>=8.0", "pytest-asyncio>=0.23"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/{module_name}"]
-'''
+"""
 
 _ADAPTER_MODULE_TEMPLATE = '''\
 """{class_name}: a pyagent-blueprint RuntimeAdapter for {framework_name}.
@@ -115,7 +115,7 @@ class Test{class_name}Conformance(AdapterConformanceSuite):
         return {class_name}()
 '''
 
-_README_TEMPLATE = '''\
+_README_TEMPLATE = """\
 # {dist_name}
 
 A [pyagent-blueprint](https://pyagent.org) `RuntimeAdapter` for **{framework_name}**.
@@ -146,7 +146,7 @@ pytest tests/
 
 This runs the shared `AdapterConformanceSuite` against your adapter.
 Passing it is the acceptance bar for publishing on pyagent.org.
-'''
+"""
 
 
 def render_adapter_template(

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pyagent_blueprint.adapters.reference.state_machine import StateMachineAdapter
 from pyagent_blueprint.conformance import AdapterConformanceSuite
 

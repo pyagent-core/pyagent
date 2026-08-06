@@ -24,11 +24,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Flag, auto
-from typing import TYPE_CHECKING, Any, AsyncIterator
-
-from pyagent_blueprint.diagnostics import DiagnosticCode
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from pyagent_blueprint.diagnostics import DiagnosticCode
     from pyagent_blueprint.ir import BlueprintIR
 
 
@@ -225,7 +226,5 @@ class AdapterRegistry:
         """
         adapters = AdapterRegistry.discover()
         if name not in adapters:
-            raise KeyError(
-                f"No adapter registered as '{name}'. Installed: {sorted(adapters)}"
-            )
+            raise KeyError(f"No adapter registered as '{name}'. Installed: {sorted(adapters)}")
         return adapters[name]

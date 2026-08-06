@@ -24,12 +24,7 @@ execution path, not a bypass.
 
 from __future__ import annotations
 
-from typing import Any
-
-from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent
+from typing import TYPE_CHECKING
 
 from pyagent_blueprint.adapter import (
     AdapterResult,
@@ -43,7 +38,13 @@ from pyagent_blueprint.adapters.reference._common import (
     flatten_agent_refs,
     mock_call,
 )
-from pyagent_blueprint.ir import BlueprintIR
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.ir import BlueprintIR
 
 
 class _FakeDeterministicService(ChatCompletionClientBase):

@@ -13,7 +13,6 @@ while wiring the examples/cookbook blueprints correctly.
 from __future__ import annotations
 
 import pytest
-
 from pyagent_blueprint.adapters.pyagent_adapter import PyAgentAdapter
 from pyagent_blueprint.ir import BlueprintIR
 from pyagent_blueprint.loader import load_blueprint_from_str

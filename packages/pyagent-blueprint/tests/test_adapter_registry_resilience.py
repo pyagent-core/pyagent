@@ -26,13 +26,15 @@ def test_discover_skips_entry_point_with_missing_dependency() -> None:
     working_ep.name = "single_agent"
     working_ep.load.return_value = SingleAgentAdapter
 
-    with patch(
-        "pyagent_blueprint.adapter.entry_points",
-        return_value=[broken_ep, working_ep],
-        create=True,
+    with (
+        patch(
+            "pyagent_blueprint.adapter.entry_points",
+            return_value=[broken_ep, working_ep],
+            create=True,
+        ),
+        patch("importlib.metadata.entry_points", return_value=[broken_ep, working_ep]),
     ):
-        with patch("importlib.metadata.entry_points", return_value=[broken_ep, working_ep]):
-            found = AdapterRegistry.discover()
+        found = AdapterRegistry.discover()
 
     assert "broken_adapter" not in found
     assert found.get("single_agent") is SingleAgentAdapter

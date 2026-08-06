@@ -9,6 +9,8 @@ engines — see TRANSFORMATION-PLAN.md Section 6).
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pyagent_blueprint.adapter import CompileDiagnostic
 from pyagent_blueprint.diagnostics import (
     BUDGET_UNSUPPORTED,
@@ -19,7 +21,9 @@ from pyagent_blueprint.diagnostics import (
     ROUTING_UNSUPPORTED,
     SLA_UNSUPPORTED,
 )
-from pyagent_blueprint.ir import BlueprintIR
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.ir import BlueprintIR
 
 
 def flatten_agent_refs(agents_config: dict) -> list[str]:

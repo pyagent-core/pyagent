@@ -11,7 +11,7 @@ absolute floor of what an adapter must support."
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pyagent_blueprint.adapter import (
     AdapterResult,
@@ -25,7 +25,9 @@ from pyagent_blueprint.adapters.reference._common import (
     flatten_agent_refs,
     mock_call,
 )
-from pyagent_blueprint.ir import BlueprintIR
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.ir import BlueprintIR
 
 
 class SequentialChainHandle:

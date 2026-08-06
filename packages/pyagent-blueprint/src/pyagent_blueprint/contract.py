@@ -21,9 +21,10 @@ dicts (see `ir.py`); this module adds:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pyagent_blueprint.ir import BlueprintIR, ContractIR
+if TYPE_CHECKING:
+    from pyagent_blueprint.ir import BlueprintIR, ContractIR
 
 CONTRACT_SCHEMA_VERSION = "pyagent-contract/v1"
 

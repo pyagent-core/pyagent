@@ -22,11 +22,10 @@ a bypass.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from crewai import Agent, Crew, Process, Task
 from crewai.llms.base_llm import BaseLLM
-
 from pyagent_blueprint.adapter import (
     AdapterResult,
     Capability,
@@ -39,7 +38,9 @@ from pyagent_blueprint.adapters.reference._common import (
     flatten_agent_refs,
     mock_call,
 )
-from pyagent_blueprint.ir import BlueprintIR
+
+if TYPE_CHECKING:
+    from pyagent_blueprint.ir import BlueprintIR
 
 
 class _FakeDeterministicLLM(BaseLLM):
@@ -116,16 +117,16 @@ class CrewAIAdapter(RuntimeAdapter):
                     llm=_make_llm(agent_name, prompt),
                 )
                 task = Task(
-                    description="{input}" if i == 0 else f"Continue based on the previous step for: {{input}}",
+                    description="{input}"
+                    if i == 0
+                    else "Continue based on the previous step for: {input}",
                     expected_output="A response from this step of the workflow.",
                     agent=sdk_agent,
                 )
                 crew_agents.append(sdk_agent)
                 crew_tasks.append(task)
 
-            crews[wf_name] = Crew(
-                agents=crew_agents, tasks=crew_tasks, process=Process.sequential
-            )
+            crews[wf_name] = Crew(agents=crew_agents, tasks=crew_tasks, process=Process.sequential)
 
         return CompiledArtifact(handle=CrewAIHandle(crews), diagnostics=diagnostics, intent=intent)
 

@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import subprocess
 import sys
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pyagent_blueprint.adapter_template import render_adapter_template, write_adapter_template
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_render_adapter_template_derives_names() -> None:

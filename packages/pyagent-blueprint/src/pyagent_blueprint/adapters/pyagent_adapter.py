@@ -10,15 +10,15 @@ built or judged against it.
 from __future__ import annotations
 
 import logging
-from typing import Any, AsyncIterator
+from typing import TYPE_CHECKING, Any
 
 from pyagent_patterns.base import Agent, MockLLM
 
 from pyagent_blueprint.adapter import (
     AdapterResult,
     Capability,
-    CompileDiagnostic,
     CompiledArtifact,
+    CompileDiagnostic,
     RuntimeAdapter,
     UnknownWorkflowError,
 )
@@ -31,8 +31,12 @@ from pyagent_blueprint.diagnostics import (
     ROUTING_UNSUPPORTED,
     SLA_UNSUPPORTED,
 )
-from pyagent_blueprint.ir import BlueprintIR
 from pyagent_blueprint.runtime import RuntimeGraph
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from pyagent_blueprint.ir import BlueprintIR
 
 logger = logging.getLogger(__name__)
 

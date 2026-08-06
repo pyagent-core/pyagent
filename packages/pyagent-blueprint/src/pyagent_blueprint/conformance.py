@@ -36,12 +36,12 @@ import pytest
 
 from pyagent_blueprint.adapter import Capability, RuntimeAdapter, UnknownWorkflowError
 from pyagent_blueprint.ir import (
+    SLAIR,
     AgentIR,
     BlueprintIR,
     ContractIR,
     MemoryPolicyIR,
     RecoveryIR,
-    SLAIR,
     WorkflowIR,
 )
 
@@ -86,9 +86,7 @@ def _governance_ir() -> BlueprintIR:
         name="governance-min",
         version="0.1.0",
         agents={
-            "worker": AgentIR(
-                name="worker", prompt="Do the work.", guardrails=("pii_redact",)
-            )
+            "worker": AgentIR(name="worker", prompt="Do the work.", guardrails=("pii_redact",))
         },
         workflows={
             "main": WorkflowIR(
@@ -123,9 +121,7 @@ def _sla_budget_ir() -> BlueprintIR:
         name="sla-budget-min",
         version="0.1.0",
         agents={"worker": AgentIR(name="worker", prompt="Do the work.")},
-        workflows={
-            "main": WorkflowIR(name="main", pattern="single", agents={"agent": "worker"})
-        },
+        workflows={"main": WorkflowIR(name="main", pattern="single", agents={"agent": "worker"})},
         contracts={
             "main": ContractIR(
                 workflow="main",
@@ -142,9 +138,7 @@ def _memory_tiers_ir() -> BlueprintIR:
         name="memory-tiers-min",
         version="0.1.0",
         agents={"worker": AgentIR(name="worker", prompt="Do the work.")},
-        workflows={
-            "main": WorkflowIR(name="main", pattern="single", agents={"agent": "worker"})
-        },
+        workflows={"main": WorkflowIR(name="main", pattern="single", agents={"agent": "worker"})},
         memory=MemoryPolicyIR(
             semantic_enabled=True,
             compression_policy="semantic_lossless",
@@ -183,7 +177,9 @@ def _recovery_policy_ir() -> BlueprintIR:
                 name="main",
                 pattern="single",
                 agents={"agent": "worker"},
-                recovery=RecoveryIR(max_retries=3, timeout_seconds=10.0, fallback_provider="fallback"),
+                recovery=RecoveryIR(
+                    max_retries=3, timeout_seconds=10.0, fallback_provider="fallback"
+                ),
             )
         },
     )
@@ -302,7 +298,9 @@ class AdapterConformanceSuite:
         assert streamed == "" or isinstance(result.output, str)
 
     @pytest.mark.asyncio
-    async def test_sync_execution_still_awaitable_if_declared(self, adapter: RuntimeAdapter) -> None:
+    async def test_sync_execution_still_awaitable_if_declared(
+        self, adapter: RuntimeAdapter
+    ) -> None:
         if not (adapter.capabilities & Capability.SYNC_EXECUTION):
             pytest.skip(f"{adapter.name} does not declare Capability.SYNC_EXECUTION")
 

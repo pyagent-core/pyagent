@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import logging
-
 import pytest
 from pyagent_blueprint import BlueprintCompiler, load_blueprint_from_str
 from pyagent_patterns.base import Agent
@@ -168,7 +166,9 @@ def test_compiler_warns_unwired_observability(caplog):
 
     assert "BUDGET_UNSUPPORTED" in codes
     assert "MEMORY_TIER_UNSUPPORTED" in codes
-    assert "tracing" in details.lower() or True  # tracing itself has no diagnostic code yet (G-series doesn't cover it)
+    assert (
+        "tracing" in details.lower() or True
+    )  # tracing itself has no diagnostic code yet (G-series doesn't cover it)
     assert "compression.policy" in details
     assert "semantic memory" in details.lower() or "semantic_enabled" in details
     assert "redaction" in details.lower()

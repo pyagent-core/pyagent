@@ -7,7 +7,6 @@ import zipfile
 from pathlib import Path
 
 import pytest
-
 from pyagent_blueprint.loader import load_blueprint
 from pyagent_blueprint.packaging import (
     AgentUnitMetadata,
@@ -39,7 +38,9 @@ def test_build_metadata_success() -> None:
 
 def test_build_metadata_rejects_unknown_runtime() -> None:
     spec = load_blueprint(FIXTURES / "packaged_research_agent.yaml")
-    spec = spec.model_copy(update={"package": spec.package.model_copy(update={"runtime": "nonexistent_adapter_xyz"})})
+    spec = spec.model_copy(
+        update={"package": spec.package.model_copy(update={"runtime": "nonexistent_adapter_xyz"})}
+    )
     raw = (FIXTURES / "packaged_research_agent.yaml").read_text()
 
     with pytest.raises(PackagingError, match="does not match any discoverable adapter"):
@@ -50,9 +51,7 @@ def test_package_blueprint_writes_archive(tmp_path: Path) -> None:
     spec = load_blueprint(FIXTURES / "packaged_research_agent.yaml")
     raw = (FIXTURES / "packaged_research_agent.yaml").read_text()
 
-    archive_path = package_blueprint(
-        spec, raw, "packaged_research_agent.yaml", output_dir=tmp_path
-    )
+    archive_path = package_blueprint(spec, raw, "packaged_research_agent.yaml", output_dir=tmp_path)
 
     assert archive_path.exists()
     assert archive_path.name == "research-agent-unit-1.0.0.agentunit.zip"

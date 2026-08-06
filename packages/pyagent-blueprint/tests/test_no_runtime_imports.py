@@ -49,21 +49,19 @@ def _imported_module_names(tree: ast.Module) -> set[str]:
         test = node.test
         if isinstance(test, ast.Name) and test.id == "TYPE_CHECKING":
             return True
-        if isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING":
-            return True
-        return False
+        return bool(isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING")
 
     class _Visitor(ast.NodeVisitor):
-        def visit_If(self, node: ast.If) -> None:  # noqa: N802 - ast API
+        def visit_If(self, node: ast.If) -> None:
             if _is_type_checking_guard(node):
                 return  # skip the guarded body entirely
             self.generic_visit(node)
 
-        def visit_Import(self, node: ast.Import) -> None:  # noqa: N802 - ast API
+        def visit_Import(self, node: ast.Import) -> None:
             for alias in node.names:
                 names.add(alias.name)
 
-        def visit_ImportFrom(self, node: ast.ImportFrom) -> None:  # noqa: N802 - ast API
+        def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
             if node.module:
                 names.add(node.module)
 
@@ -79,7 +77,9 @@ def test_core_module_has_no_runtime_imports(path: Path) -> None:
     offending = [
         name
         for name in imported
-        if any(name == prefix or name.startswith(prefix + ".") for prefix in RUNTIME_IMPORT_PREFIXES)
+        if any(
+            name == prefix or name.startswith(prefix + ".") for prefix in RUNTIME_IMPORT_PREFIXES
+        )
     ]
     assert not offending, (
         f"{path.relative_to(SRC_ROOT.parent.parent)} imports runtime framework module(s) "
