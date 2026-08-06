@@ -34,46 +34,81 @@ sequenceDiagram
 
 ## Use Case 1 — Cost-Efficient Conversational Agent (Haiku + Sonnet)
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.advanced import TalkerReasoner
-from pyagent_providers import AnthropicLLM
+=== "Python"
 
-pattern = TalkerReasoner(
-    talker=Agent(
-        "talker",
-        AnthropicLLM("claude-haiku-3-5-20241022"),
-        system_prompt="You are a helpful assistant. For simple, factual questions: "
-                      "answer directly and concisely. "
-                      "For complex questions requiring deep reasoning, multi-step analysis, "
-                      "or specialized expertise, respond ONLY with: "
-                      "ESCALATE: <one-sentence reason why this needs deeper analysis>",
-    ),
-    reasoner=Agent(
-        "reasoner",
-        AnthropicLLM("claude-sonnet-4-20250514"),
-        system_prompt="You are a senior technical expert. Provide thorough, accurate analysis. "
-                      "Show your reasoning. Use concrete examples. "
-                      "Your response will be the user's final answer.",
-    ),
-    escalation_signal="ESCALATE:",
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.advanced import TalkerReasoner
+    from pyagent_providers import AnthropicLLM
 
-queries = [
-    "What is the capital of France?",
-    "How do I reverse a string in Python?",
-    "Design a fault-tolerant distributed rate limiter for 1 million RPS with sub-millisecond latency",
-    "What are the trade-offs between B-tree and LSM-tree storage engines for a write-heavy workload?",
-]
+    pattern = TalkerReasoner(
+        talker=Agent(
+            "talker",
+            AnthropicLLM("claude-haiku-3-5-20241022"),
+            system_prompt="You are a helpful assistant. For simple, factual questions: "
+                          "answer directly and concisely. "
+                          "For complex questions requiring deep reasoning, multi-step analysis, "
+                          "or specialized expertise, respond ONLY with: "
+                          "ESCALATE: <one-sentence reason why this needs deeper analysis>",
+        ),
+        reasoner=Agent(
+            "reasoner",
+            AnthropicLLM("claude-sonnet-4-20250514"),
+            system_prompt="You are a senior technical expert. Provide thorough, accurate analysis. "
+                          "Show your reasoning. Use concrete examples. "
+                          "Your response will be the user's final answer.",
+        ),
+        escalation_signal="ESCALATE:",
+    )
 
-for query in queries:
-    result = asyncio.run(pattern.run(query))
-    system = result.metadata["system"]
-    escalated = result.metadata["escalated"]
-    print(f"[System {system}{'↑' if escalated else ''}] {query[:60]}")
-    print(f"  Cost: ${result.cost_estimate:.5f}")
-```
+    queries = [
+        "What is the capital of France?",
+        "How do I reverse a string in Python?",
+        "Design a fault-tolerant distributed rate limiter for 1 million RPS with sub-millisecond latency",
+        "What are the trade-offs between B-tree and LSM-tree storage engines for a write-heavy workload?",
+    ]
+
+    for query in queries:
+        result = asyncio.run(pattern.run(query))
+        system = result.metadata["system"]
+        escalated = result.metadata["escalated"]
+        print(f"[System {system}{'↑' if escalated else ''}] {query[:60]}")
+        print(f"  Cost: ${result.cost_estimate:.5f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same talker/reasoner pair as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: cost-efficient-chat
+      version: 1.0.0
+      description: Fast talker handles routine queries; slow reasoner activates only on uncertainty
+    providers:
+      fast: { model: claude-haiku-3-5-20241022 }
+      smart: { model: claude-sonnet-4-20250514 }
+    agents:
+      talker:
+        provider: fast
+        prompt: "Answer simple questions directly. For complex questions, respond ONLY with: ESCALATE: <reason>"
+      reasoner:
+        provider: smart
+        prompt: "Provide thorough, accurate analysis with reasoning and examples."
+    workflows:
+      chat:
+        pattern: talker_reasoner
+        agents:
+          talker: talker
+          reasoner: reasoner
+    ```
+
+    ```bash
+    pyagent-blueprint validate cost-efficient-chat.yaml
+    pyagent-blueprint test cost-efficient-chat.yaml
+    ```
 
 ---
 

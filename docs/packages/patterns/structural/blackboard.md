@@ -34,78 +34,111 @@ sequenceDiagram
 
 Agents chain through the blackboard — each builds on the previous agent's committed state.
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.structural import Blackboard
-from pyagent_patterns.structural.blackboard import BlackboardAgent
-from pyagent_providers import OpenAILLM
+=== "Python"
 
-pattern = Blackboard(
-    agents=[
-        BlackboardAgent(
-            agent=Agent(
-                "alpha_generator",
-                OpenAILLM("gpt-4o"),
-                system_prompt="Generate alpha signals for each asset in the watchlist. "
-                              "For each asset: state direction (long/short/neutral), "
-                              "conviction (high/medium/low), and 2-sentence rationale. "
-                              "Format as structured data.",
-            ),
-            reads=["task"],
-            writes=["alpha_signals"],
-        ),
-        BlackboardAgent(
-            agent=Agent(
-                "risk_manager",
-                OpenAILLM("gpt-4o"),
-                system_prompt="Given the alpha signals, assess portfolio-level risk: "
-                              "calculate correlation exposure, sector concentration, "
-                              "tail risk scenarios, and max position sizes. "
-                              "Recommend position limits for each asset.",
-            ),
-            reads=["task", "alpha_signals"],
-            writes=["risk_metrics"],
-        ),
-        BlackboardAgent(
-            agent=Agent(
-                "portfolio_optimizer",
-                OpenAILLM("gpt-4o"),
-                system_prompt="Given alpha signals AND risk constraints, "
-                              "construct the optimal portfolio allocation. "
-                              "Respect position limits. Maximize risk-adjusted return. "
-                              "Output allocation as percentages summing to 100%.",
-            ),
-            reads=["alpha_signals", "risk_metrics"],
-            writes=["portfolio_weights"],
-        ),
-        BlackboardAgent(
-            agent=Agent(
-                "order_generator",
-                OpenAILLM("gpt-4o-mini"),
-                system_prompt="Given the portfolio weights, "
-                              "generate execution orders: asset, direction, size, "
-                              "and suggested order type (market/limit). "
-                              "Flag any large moves that need staged execution.",
-            ),
-            reads=["portfolio_weights", "risk_metrics"],
-            writes=["trade_orders"],
-        ),
-    ],
-    rounds=1,
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.structural import Blackboard
+    from pyagent_patterns.structural.blackboard import BlackboardAgent
+    from pyagent_providers import OpenAILLM
 
-result = asyncio.run(pattern.run(
-    "Watchlist: NVDA, MSFT, AMZN, META, GOOGL. "
-    "Portfolio size: $10M. Max single position: 25%. "
-    "Optimize for risk-adjusted return over 3-month horizon."
-))
-print(result.output)
-print("Final blackboard state:")
-for key, value in result.metadata["final_state"].items():
-    print(f"  [{key}]: {str(value)[:80]}...")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    pattern = Blackboard(
+        agents=[
+            BlackboardAgent(
+                agent=Agent(
+                    "alpha_generator",
+                    OpenAILLM("gpt-4o"),
+                    system_prompt="Generate alpha signals for each asset in the watchlist. "
+                                  "For each asset: state direction (long/short/neutral), "
+                                  "conviction (high/medium/low), and 2-sentence rationale. "
+                                  "Format as structured data.",
+                ),
+                reads=["task"],
+                writes=["alpha_signals"],
+            ),
+            BlackboardAgent(
+                agent=Agent(
+                    "risk_manager",
+                    OpenAILLM("gpt-4o"),
+                    system_prompt="Given the alpha signals, assess portfolio-level risk: "
+                                  "calculate correlation exposure, sector concentration, "
+                                  "tail risk scenarios, and max position sizes. "
+                                  "Recommend position limits for each asset.",
+                ),
+                reads=["task", "alpha_signals"],
+                writes=["risk_metrics"],
+            ),
+            BlackboardAgent(
+                agent=Agent(
+                    "portfolio_optimizer",
+                    OpenAILLM("gpt-4o"),
+                    system_prompt="Given alpha signals AND risk constraints, "
+                                  "construct the optimal portfolio allocation. "
+                                  "Respect position limits. Maximize risk-adjusted return. "
+                                  "Output allocation as percentages summing to 100%.",
+                ),
+                reads=["alpha_signals", "risk_metrics"],
+                writes=["portfolio_weights"],
+            ),
+            BlackboardAgent(
+                agent=Agent(
+                    "order_generator",
+                    OpenAILLM("gpt-4o-mini"),
+                    system_prompt="Given the portfolio weights, "
+                                  "generate execution orders: asset, direction, size, "
+                                  "and suggested order type (market/limit). "
+                                  "Flag any large moves that need staged execution.",
+                ),
+                reads=["portfolio_weights", "risk_metrics"],
+                writes=["trade_orders"],
+            ),
+        ],
+        rounds=1,
+    )
+
+    result = asyncio.run(pattern.run(
+        "Watchlist: NVDA, MSFT, AMZN, META, GOOGL. "
+        "Portfolio size: $10M. Max single position: 25%. "
+        "Optimize for risk-adjusted return over 3-month horizon."
+    ))
+    print(result.output)
+    print("Final blackboard state:")
+    for key, value in result.metadata["final_state"].items():
+        print(f"  [{key}]: {str(value)[:80]}...")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same blackboard chain as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: portfolio-blackboard
+      version: 1.0.0
+      description: Agents chain through a shared blackboard — each builds on prior committed state
+    providers:
+      primary: { model: gpt-4o }
+    agents:
+      alpha_generator: { provider: primary, prompt: "Generate alpha signals for each asset." }
+      risk_manager: { provider: primary, prompt: "Assess portfolio risk given the alpha signals." }
+      portfolio_optimizer: { provider: primary, prompt: "Construct the optimal allocation given signals and risk." }
+    workflows:
+      construct:
+        pattern: blackboard
+        agents:
+          agents:
+            - { agent: alpha_generator, reads: [task], writes: [alpha_signals] }
+            - { agent: risk_manager, reads: [task, alpha_signals], writes: [risk_metrics] }
+            - { agent: portfolio_optimizer, reads: [alpha_signals, risk_metrics], writes: [portfolio_weights] }
+    ```
+
+    ```bash
+    pyagent-blueprint validate portfolio-blackboard.yaml
+    pyagent-blueprint test portfolio-blackboard.yaml
+    ```
 
 ---
 

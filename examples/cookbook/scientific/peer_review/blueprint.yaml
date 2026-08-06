@@ -10,7 +10,7 @@ providers:
   fast:      { model: gpt-4o-mini }
 
 agents:
-  methodology_reviewer:{ provider: anthropic, prompt: "Review methods: design, stats, reproducibility, validity threats." }
+  methodology_reviewer: { provider: anthropic, prompt: "Review methods: design, stats, reproducibility, validity threats." }
   novelty_reviewer:    { provider: openai,    prompt: "Review novelty and contribution vs. prior work." }
   clarity_reviewer:    { provider: fast,      prompt: "Review writing clarity, figures, structure. Draft consensus." }
   stats_reviewer:      { provider: openai,    prompt: "Check stats: power, multiple comparisons, test appropriateness." }
@@ -18,9 +18,11 @@ agents:
 workflows:
   review:
     pattern: topology
-    topology_type: MESH
-    agents: [methodology_reviewer, novelty_reviewer, clarity_reviewer, stats_reviewer]
-    rounds: 2
+    agents:
+      agents: [methodology_reviewer, novelty_reviewer, clarity_reviewer, stats_reviewer]
+    config:
+      topology: mesh
+      rounds: 2
 
 observability:
   tracing: { enabled: true }

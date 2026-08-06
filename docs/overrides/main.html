@@ -41,6 +41,44 @@
   <meta name="twitter:title" content="{{ og_title }}">
   <meta name="twitter:description" content="{{ og_desc }}">
   <meta name="twitter:image" content="{{ og_image }}">
+  {%- if page and not page.is_homepage %}
+  {#- BreadcrumbList JSON-LD: walk the nav ancestor chain (mkdocs-material
+      exposes `page.parent` on each Page pointing at its enclosing Section). -#}
+  {%- set ns = namespace(crumbs=[], ancestor=page.parent) -%}
+  {%- for _ in range(10) -%}
+    {%- if ns.ancestor -%}
+      {%- set ns.crumbs = ns.crumbs + [ns.ancestor] -%}
+      {%- set ns.ancestor = ns.ancestor.parent -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- set crumbs = ns.crumbs | reverse | list -%}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "{{ config.site_name }}",
+        "item": "{{ config.site_url }}"
+      }{%- for crumb in crumbs -%}
+      ,{
+        "@type": "ListItem",
+        "position": {{ loop.index + 1 }},
+        "name": "{{ crumb.title | striptags }}"{%- if crumb.url %},
+        "item": "{{ (config.site_url ~ '/' ~ crumb.url) | replace('//', '/') | replace(':/', '://') }}"{%- endif %}
+      }{%- endfor -%}
+      ,{
+        "@type": "ListItem",
+        "position": {{ crumbs | length + 2 }},
+        "name": "{{ page.title | striptags }}",
+        "item": "{{ page.canonical_url }}"
+      }
+    ]
+  }
+  </script>
+  {%- endif %}
   {%- if page and page.is_homepage %}
   <script type="application/ld+json">
   {

@@ -32,42 +32,86 @@ sequenceDiagram
 
 Route cheap extraction to Haiku, fact-checking to GPT-4o-mini, final brief to Sonnet.
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.orchestration import Pipeline
-from pyagent_providers import AnthropicLLM, OpenAILLM
+=== "Python"
 
-pipeline = Pipeline(stages=[
-    Agent(
-        "extractor",
-        AnthropicLLM("claude-haiku-3-5-20241022"),
-        system_prompt="Extract every claim, figure, and named entity from the text. "
-                      "Be exhaustive — list all revenue figures, percentages, and named companies.",
-    ),
-    Agent(
-        "fact_checker",
-        OpenAILLM("gpt-4o-mini"),
-        system_prompt="Identify which extracted items are verifiable facts vs opinions or speculation. "
-                      "Label each: FACT, OPINION, or UNVERIFIABLE.",
-    ),
-    Agent(
-        "writer",
-        AnthropicLLM("claude-sonnet-4-20250514"),
-        system_prompt="Write a concise, structured brief for a portfolio manager. "
-                      "Lead with the single most important fact. Use bullet points. Max 200 words.",
-    ),
-])
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.orchestration import Pipeline
+    from pyagent_providers import AnthropicLLM, OpenAILLM
 
-result = asyncio.run(pipeline.run(
-    "Tesla Q3 2025 earnings: Revenue $25.2B (+8% YoY), auto gross margin 17.1%, "
-    "energy storage deployments up 73% YoY, FSD miles driven passed 2B total. "
-    "CEO commented margins will recover in Q4 as production ramps."
-))
-print(result.output)
-print(f"Stages: {result.metadata['stages']}, Stage names: {result.metadata['stage_names']}")
-print(f"Duration: {result.duration_seconds:.1f}s, Cost: ${result.cost_estimate:.4f}")
-```
+    pipeline = Pipeline(stages=[
+        Agent(
+            "extractor",
+            AnthropicLLM("claude-haiku-3-5-20241022"),
+            system_prompt="Extract every claim, figure, and named entity from the text. "
+                          "Be exhaustive — list all revenue figures, percentages, and named companies.",
+        ),
+        Agent(
+            "fact_checker",
+            OpenAILLM("gpt-4o-mini"),
+            system_prompt="Identify which extracted items are verifiable facts vs opinions or speculation. "
+                          "Label each: FACT, OPINION, or UNVERIFIABLE.",
+        ),
+        Agent(
+            "writer",
+            AnthropicLLM("claude-sonnet-4-20250514"),
+            system_prompt="Write a concise, structured brief for a portfolio manager. "
+                          "Lead with the single most important fact. Use bullet points. Max 200 words.",
+        ),
+    ])
+
+    result = asyncio.run(pipeline.run(
+        "Tesla Q3 2025 earnings: Revenue $25.2B (+8% YoY), auto gross margin 17.1%, "
+        "energy storage deployments up 73% YoY, FSD miles driven passed 2B total. "
+        "CEO commented margins will recover in Q4 as production ramps."
+    ))
+    print(result.output)
+    print(f"Stages: {result.metadata['stages']}, Stage names: {result.metadata['stage_names']}")
+    print(f"Duration: {result.duration_seconds:.1f}s, Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same stage chain as a `pyagent-blueprint` manifest — validate, diff, and compile it
+    against any registered runtime adapter with the `pyagent-blueprint` CLI:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: earnings-pipeline
+      version: 1.0.0
+      description: Extract, fact-check, and write a brief from an earnings report
+      owner: portfolio-team
+    providers:
+      fast:
+        model: claude-haiku-3-5-20241022
+      smart:
+        model: claude-sonnet-4-20250514
+    agents:
+      extractor:
+        provider: fast
+        prompt: "Extract every claim, figure, and named entity from the text."
+      fact_checker:
+        provider: fast
+        prompt: "Label each extracted item FACT, OPINION, or UNVERIFIABLE."
+      writer:
+        provider: smart
+        prompt: "Write a concise, structured brief for a portfolio manager. Max 200 words."
+    workflows:
+      process:
+        pattern: pipeline
+        agents:
+          stages:
+            - extractor
+            - fact_checker
+            - writer
+    ```
+
+    ```bash
+    pyagent-blueprint validate earnings-pipeline.yaml
+    pyagent-blueprint test earnings-pipeline.yaml
+    ```
 
 ### Stream stage completions as they arrive
 
@@ -184,6 +228,7 @@ Complete, runnable examples that use the **Pipeline** pattern:
 
 | Recipe | Domain | What it does | Complexity |
 |--------|--------|--------------|------------|
+| [Contract Testing](../../../cookbook/blueprint-ops/contract-testing.md) | Blueprint Ops | Run pyagent-blueprint's built-in MockLLM contract tests in CI before any real model call | Beginner |
 | [Alert Triage](../../../cookbook/security/log-triage.md) | Security & Threat Intel | Triage security alerts; escalate true positives to a human | Intermediate |
 | [Clinical Summary](../../../cookbook/healthcare/clinical-summary.md) | Healthcare & Life Sciences | Summarize clinical notes, then self-critique for accuracy | Intermediate |
 | [Incident Triage](../../../cookbook/devops-sre/incident-triage.md) | DevOps & SRE | Stage pipeline that triages incidents with human sign-off | Intermediate |

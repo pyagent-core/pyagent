@@ -19,9 +19,11 @@ agents:
 workflows:
   analyze:
     pattern: self_reflection
-    agent: earnings_analyst
-    max_rounds: 3
-    stop_phrase: "ANALYSIS COMPLETE"
+    agents:
+      agent: earnings_analyst
+    config:
+      max_rounds: 3
+      stop_phrase: "ANALYSIS COMPLETE"
 
 observability:
   tracing: { enabled: true }

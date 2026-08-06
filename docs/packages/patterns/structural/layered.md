@@ -34,78 +34,116 @@ sequenceDiagram
 
 Use Flash agents for fast parallel collection, Pro agents for deeper analysis, Sonnet for executive synthesis.
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.structural import Layered
-from pyagent_patterns.structural.layered import Layer
-from pyagent_providers import GeminiLLM, AnthropicLLM
+=== "Python"
 
-pattern = Layered(
-    layers=[
-        Layer(
-            name="gather",
-            agents=[
-                Agent(
-                    "financial_collector",
-                    GeminiLLM("gemini-2.5-flash"),
-                    system_prompt="Extract all financial metrics, KPIs, and quantitative data "
-                                  "from the input. Format as a structured list.",
-                ),
-                Agent(
-                    "qualitative_collector",
-                    GeminiLLM("gemini-2.5-flash"),
-                    system_prompt="Extract all qualitative signals: management tone, strategic language, "
-                                  "risk language, and forward-looking statements.",
-                ),
-                Agent(
-                    "competitive_collector",
-                    GeminiLLM("gemini-2.5-flash"),
-                    system_prompt="Extract all references to competitors, market position, "
-                                  "competitive advantages, and market share data.",
-                ),
-            ],
-        ),
-        Layer(
-            name="analyze",
-            agents=[
-                Agent(
-                    "trend_analyst",
-                    GeminiLLM("gemini-2.5-pro"),
-                    system_prompt="Given the collected data, identify the 3 most significant trends "
-                                  "and their implications. Support with specific data points.",
-                ),
-                Agent(
-                    "risk_analyst",
-                    GeminiLLM("gemini-2.5-pro"),
-                    system_prompt="Given the collected data, identify the top 3 risks "
-                                  "and rate each: HIGH / MEDIUM / LOW with rationale.",
-                ),
-            ],
-        ),
-        Layer(
-            name="synthesize",
-            agents=[
-                Agent(
-                    "exec_writer",
-                    AnthropicLLM("claude-sonnet-4-20250514"),
-                    system_prompt="Synthesize all analyses into a crisp executive briefing: "
-                                  "1) One-paragraph summary, "
-                                  "2) Top 3 opportunities, "
-                                  "3) Top 3 risks, "
-                                  "4) Recommended actions. "
-                                  "Keep the total under 400 words.",
-                ),
-            ],
-        ),
-    ],
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.structural import Layered
+    from pyagent_patterns.structural.layered import Layer
+    from pyagent_providers import GeminiLLM, AnthropicLLM
 
-result = asyncio.run(pattern.run(open("earnings_transcript.txt").read()))
-print(result.output)
-print(f"Layers: {result.metadata['layers']}, Total agents: {result.metadata['total_agents']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    pattern = Layered(
+        layers=[
+            Layer(
+                name="gather",
+                agents=[
+                    Agent(
+                        "financial_collector",
+                        GeminiLLM("gemini-2.5-flash"),
+                        system_prompt="Extract all financial metrics, KPIs, and quantitative data "
+                                      "from the input. Format as a structured list.",
+                    ),
+                    Agent(
+                        "qualitative_collector",
+                        GeminiLLM("gemini-2.5-flash"),
+                        system_prompt="Extract all qualitative signals: management tone, strategic language, "
+                                      "risk language, and forward-looking statements.",
+                    ),
+                    Agent(
+                        "competitive_collector",
+                        GeminiLLM("gemini-2.5-flash"),
+                        system_prompt="Extract all references to competitors, market position, "
+                                      "competitive advantages, and market share data.",
+                    ),
+                ],
+            ),
+            Layer(
+                name="analyze",
+                agents=[
+                    Agent(
+                        "trend_analyst",
+                        GeminiLLM("gemini-2.5-pro"),
+                        system_prompt="Given the collected data, identify the 3 most significant trends "
+                                      "and their implications. Support with specific data points.",
+                    ),
+                    Agent(
+                        "risk_analyst",
+                        GeminiLLM("gemini-2.5-pro"),
+                        system_prompt="Given the collected data, identify the top 3 risks "
+                                      "and rate each: HIGH / MEDIUM / LOW with rationale.",
+                    ),
+                ],
+            ),
+            Layer(
+                name="synthesize",
+                agents=[
+                    Agent(
+                        "exec_writer",
+                        AnthropicLLM("claude-sonnet-4-20250514"),
+                        system_prompt="Synthesize all analyses into a crisp executive briefing: "
+                                      "1) One-paragraph summary, "
+                                      "2) Top 3 opportunities, "
+                                      "3) Top 3 risks, "
+                                      "4) Recommended actions. "
+                                      "Keep the total under 400 words.",
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    result = asyncio.run(pattern.run(open("earnings_transcript.txt").read()))
+    print(result.output)
+    print(f"Layers: {result.metadata['layers']}, Total agents: {result.metadata['total_agents']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same three-layer pipeline as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: bi-report
+      version: 1.0.0
+      description: Parallel collectors gather signals, an analysis layer finds trends, and a writer synthesizes an executive briefing
+    providers:
+      fast: { model: gemini-2.5-flash }
+      smart: { model: gemini-2.5-pro }
+      writer_model: { model: claude-sonnet-4-20250514 }
+    agents:
+      financial_collector: { provider: fast, prompt: "Extract financial metrics and KPIs." }
+      qualitative_collector: { provider: fast, prompt: "Extract qualitative signals and risk language." }
+      competitive_collector: { provider: fast, prompt: "Extract competitor and market position references." }
+      trend_analyst: { provider: smart, prompt: "Identify the top 3 trends and implications." }
+      risk_analyst: { provider: smart, prompt: "Identify the top 3 risks, rated HIGH/MEDIUM/LOW." }
+      exec_writer: { provider: writer_model, prompt: "Synthesize all analyses into a crisp executive briefing." }
+    workflows:
+      analyze:
+        pattern: layered
+        agents:
+          layers:
+            - { name: gather, agents: [financial_collector, qualitative_collector, competitive_collector] }
+            - { name: analyze, agents: [trend_analyst, risk_analyst] }
+            - { name: synthesize, agents: [exec_writer] }
+    ```
+
+    ```bash
+    pyagent-blueprint validate bi-report.yaml
+    pyagent-blueprint test bi-report.yaml
+    ```
 
 ---
 

@@ -407,7 +407,7 @@ for msg in ["I can't access my dashboard", "I already tried reloading", "Same is
 
 - [Compress Package](compress.md) — token budget enforcement between pattern stages
 - [Trace Package](trace.md) — record agent interactions for replay and debugging
-- [Blueprint Package](blueprint.md) — declare context config in YAML with `context:` block
+- [Blueprint Package](blueprint/index.md) — declare context config in YAML with `context:` block
 - [API Reference](../api/context.md)
 
 ---

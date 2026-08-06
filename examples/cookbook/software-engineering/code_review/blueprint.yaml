@@ -18,15 +18,20 @@ agents:
 workflows:
   review:
     pattern: cross_reflection
-    agents: [code_agent, review_agent]
-    max_rounds: 3
-    stop_phrase: APPROVED
+    agents:
+      generator: code_agent
+      reviewer: review_agent
+    config:
+      max_rounds: 3
+      stop_phrase: APPROVED
   security:
     pattern: pipeline
-    stages: [security_agent]
+    agents:
+      stages: [security_agent]
   escalate:
     pattern: human_in_the_loop
-    agent: escalation_agent
+    agents:
+      agent: escalation_agent
 
 observability:
   tracing: { enabled: true }

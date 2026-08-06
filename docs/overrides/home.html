@@ -218,6 +218,67 @@ body               { overflow-x: clip; }
   border: 1px solid rgba(128,128,128,0.12);
 }
 
+/* ── Terminal-loop asset (validate → diff → apply → simulate → dashboard) ── */
+.hp-terminal {
+  width: 100%;
+  max-width: 620px;
+  margin: 2.2rem auto 0;
+  border-radius: 10px;
+  overflow: hidden;
+  text-align: left;
+  background: #0d1117;
+  border: 1px solid rgba(128,128,128,0.18);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  animation: hp-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both 0.65s;
+}
+.hp-terminal__bar {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: #161b22;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.hp-terminal__dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.hp-terminal__dot--r { background: #ff5f56; }
+.hp-terminal__dot--y { background: #ffbd2e; }
+.hp-terminal__dot--g { background: #27c93f; }
+.hp-terminal__title {
+  margin-left: 0.4rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.4);
+}
+.hp-terminal__body {
+  margin: 0;
+  padding: 1rem 1.1rem 1.2rem;
+  height: 190px;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: #c9d1d9;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.hp-term-prompt { color: #58a6ff; }
+.hp-term-out     { color: #8b949e; }
+.hp-term-ok      { color: #3fb950; }
+.hp-term-cursor {
+  display: inline-block;
+  width: 0.5em;
+  color: #58a6ff;
+  animation: hp-term-blink 1s step-end infinite;
+}
+@keyframes hp-term-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hp-term-cursor { animation: none; }
+}
+
 /* Scroll chevron */
 .hp-hero__scroll {
   position: absolute; bottom: 2.2rem;
@@ -730,6 +791,17 @@ body               { overflow-x: clip; }
       <a href="getting-started/" class="hp-btn hp-btn--primary">Get Started →</a>
       <a href="https://github.com/pyagent-core/pyagent" class="hp-btn hp-btn--outline">GitHub</a>
       <span class="hp-install"><code>pip install pyagent-all</code></span>
+    </div>
+
+    <!-- Terminal-loop asset: real pyagent CLI output, typed and looped -->
+    <div class="hp-terminal" aria-hidden="true">
+      <div class="hp-terminal__bar">
+        <span class="hp-terminal__dot hp-terminal__dot--r"></span>
+        <span class="hp-terminal__dot hp-terminal__dot--y"></span>
+        <span class="hp-terminal__dot hp-terminal__dot--g"></span>
+        <span class="hp-terminal__title">pyagent — customer-support.yaml</span>
+      </div>
+      <pre class="hp-terminal__body" id="hp-term-body"></pre>
     </div>
   </div>
 
@@ -1246,6 +1318,129 @@ result = asyncio.run(graph.run("main", "Analyse Q3 revenue trends"))
     bg.style.transform = 'translateY(' + (window.scrollY * 0.38) + 'px)';
   }
   window.addEventListener('scroll', parallax, { passive: true });
+})();
+
+/* ── Terminal-loop asset ─────────────────────────────────────────────────
+   Real `pyagent` CLI output (validate/apply/diff/simulate/dashboard),
+   captured by actually running each command against
+   examples/fixtures/sample_blueprint.yaml — not fabricated. See
+   packages/pyagent-blueprint/IMPLEMENTATION-STATUS.md for how it was
+   verified. Typed out, held, then looped, Terraform-plan style.        */
+(function() {
+  var el = document.getElementById('hp-term-body');
+  if (!el) return;
+
+  var steps = [
+    {
+      cmd: 'pyagent validate customer-support.yaml',
+      out: [{ t: 'ok', s: 'Valid' }],
+    },
+    {
+      cmd: 'pyagent apply customer-support.yaml',
+      out: [{ t: 'ok', s: "✓ Blueprint 'customer-support' v1.2.0 loaded and valid." }],
+    },
+    {
+      cmd: 'pyagent diff customer-support.yaml customer-support.v2.yaml',
+      out: [
+        { t: 'out', s: 'INFO (1):' },
+        { t: 'out', s: '  [modified] workflows.customer-support.recovery.timeout_seconds' },
+      ],
+    },
+    {
+      cmd: 'pyagent simulate customer-support.yaml customer-support "My invoice looks wrong"',
+      out: [
+        { t: 'out', s: 'Output: [claude-3-5-sonnet] Mock response' },
+        { t: 'out', s: 'Elapsed: 0.0ms' },
+      ],
+    },
+    {
+      cmd: 'pyagent dashboard',
+      out: [{ t: 'ok', s: 'Starting dashboard at http://127.0.0.1:8420' }],
+    },
+  ];
+
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var TYPE_MS = 32;       // per-character typing speed
+  var LINE_PAUSE_MS = 340; // pause after each output line appears
+  var HOLD_MS = 1500;     // hold fully-typed step before clearing
+  var CLEAR_PAUSE_MS = 400;
+
+  function esc(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function render(promptText, outLines) {
+    var html = '<span class="hp-term-prompt">$</span> ' + esc(promptText) +
+      '<span class="hp-term-cursor">▍</span>';
+    outLines.forEach(function(line) {
+      html += '\n<span class="hp-term-' + line.t + '">' + esc(line.s) + '</span>';
+    });
+    el.innerHTML = html;
+  }
+
+  var stepIndex = 0;
+  var timer = null;
+
+  function runStep() {
+    var step = steps[stepIndex % steps.length];
+    var charIndex = 0;
+
+    if (reduceMotion) {
+      render(step.cmd, step.out);
+      timer = setTimeout(nextStep, HOLD_MS);
+      return;
+    }
+
+    function typeChar() {
+      charIndex++;
+      render(step.cmd.slice(0, charIndex), []);
+      if (charIndex < step.cmd.length) {
+        timer = setTimeout(typeChar, TYPE_MS);
+      } else {
+        revealOutput(0);
+      }
+    }
+
+    function revealOutput(lineIndex) {
+      render(step.cmd, step.out.slice(0, lineIndex));
+      if (lineIndex < step.out.length) {
+        timer = setTimeout(function() { revealOutput(lineIndex + 1); }, LINE_PAUSE_MS);
+      } else {
+        timer = setTimeout(nextStep, HOLD_MS);
+      }
+    }
+
+    typeChar();
+  }
+
+  function nextStep() {
+    el.style.opacity = '0';
+    timer = setTimeout(function() {
+      stepIndex++;
+      el.style.opacity = '1';
+      runStep();
+    }, CLEAR_PAUSE_MS);
+  }
+
+  el.style.transition = 'opacity 0.25s ease';
+  runStep();
+
+  /* Pause the loop when the hero scrolls out of view. */
+  var hero = document.querySelector('.hp-hero');
+  if (hero && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (!e.isIntersecting && timer) {
+          clearTimeout(timer);
+          timer = null;
+        } else if (e.isIntersecting && !timer) {
+          runStep();
+        }
+      });
+    }, { threshold: 0.1 }).observe(hero);
+  }
 })();
 
 /* ── Tab switching ───────────────────────────────────────────────────────── */

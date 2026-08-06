@@ -144,6 +144,13 @@ def _esc(s: str) -> str:
 def render_recipe_browser() -> str:
     """Filterable recipe cards for the Cookbook landing page.
 
+    Each card also embeds a live Mermaid topology diagram rendered straight
+    from the recipe's example ``blueprint.yaml`` via ``BlueprintRenderer``
+    (never hand-drawn), when a parseable example exists for it — folded in
+    from the former standalone Gallery page, which was near-duplicate
+    content (same 34 recipes, same filter UI) with no framing explaining
+    why it was a separate destination.
+
     Pure HTML (no inner markdown) so md_in_html passes it through verbatim;
     `recipe-filter.js` builds the facet bar from the cards' ``data-*`` and the
     hrefs are directory URLs (validated by linkchecker, not by mkdocs --strict).
@@ -179,6 +186,10 @@ def render_recipe_browser() -> str:
             f'<h3 class="cb-card__title"><a href="{r["rel"]}/">{_esc(r["title"])}</a>'
             f' <span class="cb-cx cb-cx--{cx.lower()}">{_esc(cx)}</span></h3>',
             f'<p class="cb-summary">{_esc(r["summary"])}</p>',
+        ]
+        if r.get("mermaid"):
+            out += ["```mermaid", r["mermaid"], "```"]
+        out += [
             '<p class="cb-chips">' + "".join(chips) + "</p>",
             "</article>",
         ]
@@ -271,6 +282,29 @@ def _recipe_frontmatter(path: Path) -> dict:
     return yaml.safe_load(text[3:end]) or {}
 
 
+EXAMPLES_DIR = ROOT / "examples" / "cookbook"
+
+
+def _example_mermaid(dir_domain: str, slug: str) -> str | None:
+    """Best-effort: render the Mermaid diagram from this recipe's example
+    ``blueprint.yaml``, if one exists and still parses against the current
+    schema. Returns None otherwise (the recipe card just omits the diagram
+    rather than guessing at one) — some example files predate the current
+    schema and fail validation; see IMPLEMENTATION-STATUS.md.
+    """
+    path = EXAMPLES_DIR / dir_domain / slug.replace("-", "_") / "blueprint.yaml"
+    if not path.exists():
+        return None
+    try:
+        from pyagent_blueprint.loader import load_blueprint
+        from pyagent_blueprint.renderer import BlueprintRenderer
+
+        spec = load_blueprint(str(path.relative_to(ROOT)))
+        return BlueprintRenderer().to_mermaid(spec)
+    except Exception:
+        return None
+
+
 def _load_recipes() -> list[dict]:
     """Parse each cookbook recipe's tags/summary/complexity into a flat record."""
     recipes: list[dict] = []
@@ -297,6 +331,7 @@ def _load_recipes() -> list[dict]:
                 "summary": fm.get("summary", ""),
                 "complexity": fm.get("complexity", "Intermediate"),
                 "rel": f"{md.parent.name}/{slug}",  # relative path under docs/cookbook/
+                "mermaid": _example_mermaid(md.parent.name, slug),
             }
         )
     return recipes

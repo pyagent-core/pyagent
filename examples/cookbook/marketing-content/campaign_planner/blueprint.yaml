@@ -17,8 +17,9 @@ agents:
 workflows:
   plan:
     pattern: fan_out_fan_in
-    agents: [email, social, blog]
-    aggregator: campaign_director
+    agents:
+      agents: [email, social, blog]
+      aggregator: campaign_director
 
 observability:
   tracing: { enabled: true }

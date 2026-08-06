@@ -9,6 +9,7 @@ from pyagent_blueprint.schema import (
     ContractSpec,
     MetadataSpec,
     ProviderBindingSpec,
+    RecoverySpec,
     WorkflowSpec,
 )
 from pydantic import ValidationError
@@ -43,6 +44,26 @@ def test_missing_agents_fails() -> None:
             metadata=MetadataSpec(name="test"),
             workflows={"w": WorkflowSpec(pattern="p")},
         )
+
+
+def test_workflow_misplaced_wiring_key_rejected() -> None:
+    """A pattern-wiring key (e.g. `classifier:`/`routes:`) placed as a
+    sibling of `pattern:` instead of nested under `agents:` must raise a
+    clear ValidationError, not silently produce an empty `agents={}` that
+    only fails later at run time (see PyAgentAdapter.run -> AttributeError:
+    'NoneType' object has no attribute 'run')."""
+    with pytest.raises(ValidationError, match="classifier"):
+        WorkflowSpec(pattern="supervisor", classifier="scorer", routes={"hot": "account_exec"})
+
+
+def test_workflow_agents_config_recovery_guardrails_still_allowed() -> None:
+    WorkflowSpec(
+        pattern="pipeline",
+        agents={"stages": ["a", "b"]},
+        config={"rounds": 2},
+        recovery=RecoverySpec(max_retries=1),
+        guardrails=["pii"],
+    )
 
 
 def test_optional_fields_default() -> None:

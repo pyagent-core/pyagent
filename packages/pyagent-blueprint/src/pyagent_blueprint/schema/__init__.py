@@ -14,6 +14,7 @@ from pyagent_blueprint.schema.observability import (
     ObservabilitySpec,
     TracingConfig,
 )
+from pyagent_blueprint.schema.package import PackageSpec
 from pyagent_blueprint.schema.providers import ProviderBindingSpec
 from pyagent_blueprint.schema.spec import BlueprintSpec
 from pyagent_blueprint.schema.workflows import RecoverySpec, WorkflowSpec
@@ -28,6 +29,7 @@ __all__ = [
     "MemoryConfig",
     "MetadataSpec",
     "ObservabilitySpec",
+    "PackageSpec",
     "ProviderBindingSpec",
     "RecoverySpec",
     "RedactionConfig",

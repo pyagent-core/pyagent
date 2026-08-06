@@ -18,17 +18,24 @@ agents:
   synthesizer:    { provider: smart, prompt: "Write structured research report under 500 words." }
 
 workflows:
+  # gather -> debate -> synthesize are independently runnable workflows;
+  # a caller chains them by feeding one's output as the next's input.
   gather:
     pattern: fan_out_fan_in
-    agents: [web_agent, academic_agent, industry_agent]
+    agents:
+      agents: [web_agent, academic_agent, industry_agent]
+      aggregator: synthesizer
   debate:
     pattern: debate
-    debaters: [optimist, sceptic]
-    judge: judge
-    rounds: 2
+    agents:
+      debaters: [optimist, sceptic]
+      judge: judge
+    config:
+      rounds: 2
   synthesize:
     pattern: pipeline
-    stages: [synthesizer]
+    agents:
+      stages: [synthesizer]
 
 observability:
   tracing: { enabled: true }

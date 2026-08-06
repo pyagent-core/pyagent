@@ -30,36 +30,70 @@ sequenceDiagram
 
 ## Use Case 1 — Code Generation with Self-Review
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.resolution import SelfReflection
-from pyagent_providers import OpenAILLM
+=== "Python"
 
-pattern = SelfReflection(
-    agent=Agent(
-        "coder",
-        OpenAILLM("gpt-4o-mini"),
-        system_prompt="Write clean, idiomatic Python with type hints and docstrings.",
-    ),
-    critic_prompt="Review the code you just wrote. Check for: "
-                  "1) Missing edge cases (null, empty, negative inputs), "
-                  "2) Missing error handling, "
-                  "3) Type hint completeness, "
-                  "4) Potential off-by-one errors. "
-                  "If all issues are resolved, respond exactly with APPROVED. "
-                  "Otherwise list specific problems to fix.",
-    max_rounds=3,
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.resolution import SelfReflection
+    from pyagent_providers import OpenAILLM
 
-result = asyncio.run(pattern.run(
-    "Write a robust function that merges two sorted lists into a single sorted list. "
-    "Handle all edge cases."
-))
-print(result.output)
-print(f"Rounds: {result.metadata['rounds']}, Early stop: {result.metadata['early_stop']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    pattern = SelfReflection(
+        agent=Agent(
+            "coder",
+            OpenAILLM("gpt-4o-mini"),
+            system_prompt="Write clean, idiomatic Python with type hints and docstrings.",
+        ),
+        critic_prompt="Review the code you just wrote. Check for: "
+                      "1) Missing edge cases (null, empty, negative inputs), "
+                      "2) Missing error handling, "
+                      "3) Type hint completeness, "
+                      "4) Potential off-by-one errors. "
+                      "If all issues are resolved, respond exactly with APPROVED. "
+                      "Otherwise list specific problems to fix.",
+        max_rounds=3,
+    )
+
+    result = asyncio.run(pattern.run(
+        "Write a robust function that merges two sorted lists into a single sorted list. "
+        "Handle all edge cases."
+    ))
+    print(result.output)
+    print(f"Rounds: {result.metadata['rounds']}, Early stop: {result.metadata['early_stop']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same generate-critique loop as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: code-self-review
+      version: 1.0.0
+      description: Agent writes code, critiques its own work, and refines until approved
+    providers:
+      primary:
+        model: gpt-4o-mini
+    agents:
+      coder:
+        prompt: "Write clean, idiomatic Python with type hints and docstrings. When critiquing, check for missing edge cases and error handling. Respond APPROVED when satisfied."
+        provider: primary
+    workflows:
+      refine:
+        pattern: self_reflection
+        agents:
+          agent: coder
+        config:
+          max_rounds: 3
+          stop_phrase: APPROVED
+    ```
+
+    ```bash
+    pyagent-blueprint validate code-self-review.yaml
+    pyagent-blueprint test code-self-review.yaml
+    ```
 
 ---
 

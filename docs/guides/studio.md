@@ -306,7 +306,7 @@ main_app.mount("/studio", studio)
 
 ## See Also
 
-- [Blueprint Package](../packages/blueprint.md) — spec format and compilation
+- [Blueprint Package](../packages/blueprint/index.md) — spec format and compilation
 - [Trace Package](../packages/trace.md) — `TraceEventBus` and exporters
 - [Blueprint Guide](blueprint.md) — writing and validating blueprints
 - [Tracing Guide](tracing.md) — wiring exporters and reading spans

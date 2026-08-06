@@ -3,7 +3,31 @@
 from __future__ import annotations
 
 import yaml
-from pyagent_patterns.registry import get_pattern_class, list_patterns
+
+
+def _resolve_pattern_vocabulary(adapter_name: str | None) -> tuple[set[str], object | None]:
+    """Return (known pattern names, adapter instance or None).
+
+    If `adapter_name` is given, resolve that specific adapter via the
+    registry (raises if not installed). If not given, try any installed
+    adapter; if none is installed, fall back to an empty vocabulary
+    (scaffolding still works — the generated YAML just isn't validated
+    against a known pattern list).
+    """
+    from pyagent_blueprint.adapter import AdapterRegistry
+
+    if adapter_name is not None:
+        adapter_cls = AdapterRegistry.get(adapter_name)
+        adapter = adapter_cls()
+        return set(adapter.supported_patterns()), adapter
+
+    adapters = AdapterRegistry.discover()
+    for adapter_cls in adapters.values():
+        adapter = adapter_cls()
+        patterns = set(adapter.supported_patterns())
+        if patterns:
+            return patterns, adapter
+    return set(), None
 
 
 class BlueprintGenerator:
@@ -24,6 +48,7 @@ class BlueprintGenerator:
         name: str = "my-blueprint",
         version: str = "0.1.0",
         description: str = "",
+        adapter: str | None = None,
     ) -> str:
         """Generate a blueprint YAML string.
 
@@ -33,16 +58,23 @@ class BlueprintGenerator:
             name: Blueprint name.
             version: Blueprint version.
             description: Blueprint description.
+            adapter: Optional adapter entry-point name to validate `pattern`
+                against. If omitted, any installed adapter's vocabulary is
+                used; if none is installed, the pattern name isn't checked
+                at all — scaffolding still works with zero runtime packages
+                installed.
 
         Returns:
             YAML string.
 
         Raises:
-            ValueError: If the pattern is not registered.
+            ValueError: If a pattern vocabulary is available (from the
+                resolved adapter, or any installed adapter) and `pattern`
+                isn't in it.
         """
-        if get_pattern_class(pattern) is None:
-            available = list_patterns()
-            raise ValueError(f"Unknown pattern '{pattern}'. Available: {available}")
+        known, _resolved_adapter = _resolve_pattern_vocabulary(adapter)
+        if known and pattern not in known:
+            raise ValueError(f"Unknown pattern '{pattern}'. Available: {sorted(known)}")
 
         spec: dict = {
             "api_version": "pyagent/v1",

@@ -5,8 +5,8 @@ description: "Featured PyAgent multi-agent examples — a few complete, runnable
 # Featured Examples
 
 A few complete, runnable multi-agent recipes to start from. Each shows the exact `pip install`, full
-code, and expected output. Browse the [full Cookbook](../cookbook/index.md) — 28 runnable recipes
-across all 20 domains — and filter by domain, design pattern, or package.
+code, and expected output. Browse the [full Cookbook](../cookbook/index.md) — 37 runnable recipes
+across 21 domains — and filter by domain, design pattern, or package.
 
 ## Start here
 
@@ -19,5 +19,6 @@ across all 20 domains — and filter by domain, design pattern, or package.
 
 ## Browse by domain
 
-See the [Cookbook overview](../cookbook/index.md) for all 28 recipes across 20 domains — Finance,
-Healthcare, Legal, Marketing, DevOps, Security, and more — with live domain/pattern/package filters.
+See the [Cookbook overview](../cookbook/index.md) for all 37 recipes across 21 domains — Finance,
+Healthcare, Legal, Marketing, DevOps, Security, Blueprint Ops, and more — with live domain/pattern/
+package filters.

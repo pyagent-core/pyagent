@@ -11,18 +11,15 @@ agents:
   sql_analyst:
     provider: smart
     prompt: "Reason step by step. Use tools to explore schema and run SQL. Answer in plain English + show SQL."
-
-tools:
-  list_tables:    { description: "Return available tables." }
-  describe_table: { description: "Return columns for a table." }
-  run_sql:        { description: "Execute SQL and return result rows." }
+    tools: [list_tables, describe_table, run_sql]
 
 workflows:
   query:
     pattern: react
-    agent: sql_analyst
-    tools: [list_tables, describe_table, run_sql]
-    max_steps: 5
+    agents:
+      agent: sql_analyst
+    config:
+      max_steps: 5
 
 observability:
   tracing: { enabled: true }

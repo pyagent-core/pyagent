@@ -17,16 +17,27 @@ agents:
   reviewer: { provider: smart, prompt: "Score memo 1-10 against criteria. Demand fixes if below bar." }
 
 workflows:
-  review:
-    pattern: supervisor_plus_evaluator_optimizer
-    classifier: router
-    routes: { equity: equities, fixed_income: rates, risk: risk }
-    default_route: risk
-    generator: writer
-    evaluator: reviewer
-    criteria: ["clear recommendation", "evidence-backed rationale", "explicit downside", "position sizing"]
-    quality_threshold: 8
-    max_rounds: 3
+  # "supervisor_plus_evaluator_optimizer" isn't a registered pattern —
+  # PyAgent composes patterns as separate named workflows in one
+  # blueprint rather than nesting them inside a single pattern instance.
+  # `route` classifies the holding to a specialist; `tighten` then runs
+  # evaluator-optimizer over that specialist's memo.
+  route:
+    pattern: supervisor
+    agents:
+      classifier: router
+      routes: { equity: equities, fixed_income: rates, risk: risk }
+    config:
+      default_route: risk
+  tighten:
+    pattern: evaluator_optimizer
+    agents:
+      generator: writer
+      evaluator: reviewer
+    config:
+      criteria: ["clear recommendation", "evidence-backed rationale", "explicit downside", "position sizing"]
+      pass_threshold: 8
+      max_rounds: 3
 
 observability:
   tracing: { enabled: true }

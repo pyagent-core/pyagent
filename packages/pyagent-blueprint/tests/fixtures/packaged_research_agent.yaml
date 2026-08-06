@@ -1,0 +1,30 @@
+api_version: pyagent/v1
+metadata:
+  name: research-agent
+  version: 0.1.0
+  description: Research pipeline with review, packaged as an Agent Unit
+package:
+  name: research-agent-unit
+  version: 1.0.0
+  author: pyagent-blueprint tests
+  runtime: single_agent
+  dependencies: []
+providers:
+  primary:
+    model: gpt-4o
+agents:
+  researcher:
+    prompt: "Research the given topic thoroughly"
+    provider: primary
+    description: Research agent
+  reviewer:
+    prompt: "Review and improve research output"
+    provider: primary
+    description: Review agent
+workflows:
+  research:
+    pattern: pipeline
+    agents:
+      stages:
+        researcher: researcher
+        reviewer: reviewer

@@ -1988,10 +1988,10 @@ PYTHONPATH=packages/pyagent-patterns/src:packages/pyagent-router/src:packages/py
 
 ## Cookbook
 
-Complete, runnable multi-agent orchestration examples across 20 domains (Customer Support, Finance,
-Healthcare, Legal, DevOps, Security, and more) — each a copy-paste-ready recipe with full code and
-expected output: **[pyagent.org/cookbook](https://pyagent.org/cookbook/)**. Filter by pattern,
-provider, or package on the [Tags page](https://pyagent.org/cookbook/tags/).
+Complete, runnable multi-agent orchestration examples across 21 domains (Customer Support, Finance,
+Healthcare, Legal, DevOps, Security, Blueprint Ops, and more) — each a copy-paste-ready recipe with
+full code and expected output: **[pyagent.org/cookbook](https://pyagent.org/cookbook/)**. Filter by
+pattern, provider, or package on the [Tags page](https://pyagent.org/cookbook/tags/).
 
 ## Documentation
 

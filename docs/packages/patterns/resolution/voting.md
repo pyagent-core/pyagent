@@ -38,48 +38,82 @@ sequenceDiagram
 
 Three independent providers reduce the chance of systematic errors from any single model.
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.resolution import Voting
-from pyagent_providers import OpenAILLM, AnthropicLLM, GeminiLLM
+=== "Python"
 
-pattern = Voting(
-    voters=[
-        Agent(
-            "openai_voter",
-            OpenAILLM("gpt-4o"),
-            system_prompt="Evaluate the content moderation request. "
-                          "Respond with exactly YES (safe to publish) or NO (violates policy). "
-                          "On the second line, give a one-sentence reason.",
-        ),
-        Agent(
-            "anthropic_voter",
-            AnthropicLLM("claude-sonnet-4-20250514"),
-            system_prompt="Evaluate the content moderation request. "
-                          "Respond with exactly YES (safe to publish) or NO (violates policy). "
-                          "On the second line, give a one-sentence reason.",
-        ),
-        Agent(
-            "gemini_voter",
-            GeminiLLM("gemini-2.5-pro"),
-            system_prompt="Evaluate the content moderation request. "
-                          "Respond with exactly YES (safe to publish) or NO (violates policy). "
-                          "On the second line, give a one-sentence reason.",
-        ),
-    ],
-    strategy="majority",
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.resolution import Voting
+    from pyagent_providers import OpenAILLM, AnthropicLLM, GeminiLLM
 
-result = asyncio.run(pattern.run(
-    "User-submitted product review: "
-    "'This product is absolute garbage. The CEO should be fired. "
-    "Returning it immediately and never buying from this brand again.'"
-))
-print(f"Decision: {result.metadata['winner']} (Tally: {result.metadata['tally']})")
-print(result.output)
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    pattern = Voting(
+        voters=[
+            Agent(
+                "openai_voter",
+                OpenAILLM("gpt-4o"),
+                system_prompt="Evaluate the content moderation request. "
+                              "Respond with exactly YES (safe to publish) or NO (violates policy). "
+                              "On the second line, give a one-sentence reason.",
+            ),
+            Agent(
+                "anthropic_voter",
+                AnthropicLLM("claude-sonnet-4-20250514"),
+                system_prompt="Evaluate the content moderation request. "
+                              "Respond with exactly YES (safe to publish) or NO (violates policy). "
+                              "On the second line, give a one-sentence reason.",
+            ),
+            Agent(
+                "gemini_voter",
+                GeminiLLM("gemini-2.5-pro"),
+                system_prompt="Evaluate the content moderation request. "
+                              "Respond with exactly YES (safe to publish) or NO (violates policy). "
+                              "On the second line, give a one-sentence reason.",
+            ),
+        ],
+        strategy="majority",
+    )
+
+    result = asyncio.run(pattern.run(
+        "User-submitted product review: "
+        "'This product is absolute garbage. The CEO should be fired. "
+        "Returning it immediately and never buying from this brand again.'"
+    ))
+    print(f"Decision: {result.metadata['winner']} (Tally: {result.metadata['tally']})")
+    print(result.output)
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same voter ensemble as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: moderation-ensemble
+      version: 1.0.0
+      description: Three independent voters decide safe-to-publish by majority vote
+    providers:
+      openai: { model: gpt-4o }
+      anthropic: { model: claude-sonnet-4-20250514 }
+      gemini: { model: gemini-2.5-pro }
+    agents:
+      openai_voter: { provider: openai, prompt: "Respond YES (safe) or NO (violates policy)." }
+      anthropic_voter: { provider: anthropic, prompt: "Respond YES (safe) or NO (violates policy)." }
+      gemini_voter: { provider: gemini, prompt: "Respond YES (safe) or NO (violates policy)." }
+    workflows:
+      grade:
+        pattern: voting
+        agents:
+          voters: [openai_voter, anthropic_voter, gemini_voter]
+        config:
+          strategy: majority
+    ```
+
+    ```bash
+    pyagent-blueprint validate moderation-ensemble.yaml
+    pyagent-blueprint test moderation-ensemble.yaml
+    ```
 
 ---
 

@@ -14,9 +14,12 @@ agents:
 workflows:
   review:
     pattern: cross_reflection
-    agents: [counsel, partner]
-    max_rounds: 3
-    stop_phrase: APPROVED
+    agents:
+      generator: counsel
+      reviewer: partner
+    config:
+      max_rounds: 3
+      stop_phrase: APPROVED
 
 observability:
   tracing: { enabled: true }

@@ -12,16 +12,17 @@ agents:
   enricher:    { provider: fast,  prompt: "Enrich alert: asset, owner, severity 1-5." }
   correlator:  { provider: smart, prompt: "Match against MITRE ATT&CK. Confidence 0-100." }
   classifier:  { provider: smart, prompt: "Decide FALSE_POSITIVE or ESCALATE with 3-line case." }
-  case_writer: { provider: fast,  prompt: "Format triage result as SOC case note." }
+  case_writer: { provider: fast,  prompt: "Format triage result as SOC case note. Mark HIGH_RISK if it involves ransomware, exfiltration, domain admin, or lateral movement." }
 
 workflows:
   triage:
     pattern: pipeline
-    stages: [enricher, correlator, classifier]
+    agents:
+      stages: [enricher, correlator, classifier]
   escalate:
     pattern: human_in_the_loop
-    agent: case_writer
-    high_risk_keywords: ["ransomware", "exfiltration", "domain admin", "lateral movement"]
+    agents:
+      agent: case_writer
 
 observability:
   tracing: { enabled: true }

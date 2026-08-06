@@ -20,10 +20,11 @@ agents:
 workflows:
   check:
     pattern: hierarchical
-    manager: compliance_director
-    teams:
-      - { name: Obligations, lead: obligations_lead, workers: [requirement_extractor, scope_analyst] }
-      - { name: Controls,    lead: controls_lead,    workers: [policy_mapper, evidence_checker] }
+    agents:
+      manager: compliance_director
+      teams:
+        - { name: Obligations, lead: obligations_lead, workers: [requirement_extractor, scope_analyst] }
+        - { name: Controls,    lead: controls_lead,    workers: [policy_mapper, evidence_checker] }
 
 observability:
   tracing: { enabled: true }

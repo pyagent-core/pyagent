@@ -79,3 +79,42 @@ def test_generate_unknown_pattern() -> None:
         ],
     )
     assert result.exit_code != 0
+
+
+def test_package_cmd(tmp_path: Path) -> None:
+    runner = CliRunner()
+    output_dir = tmp_path / "dist"
+    result = runner.invoke(
+        cli,
+        ["package", str(FIXTURES / "packaged_research_agent.yaml"), "-o", str(output_dir)],
+    )
+    assert result.exit_code == 0, result.output
+    assert "Packaged Agent Unit" in result.output
+    archives = list(output_dir.glob("*.agentunit.zip"))
+    assert len(archives) == 1
+
+
+def test_package_cmd_missing_package_block() -> None:
+    runner = CliRunner()
+    result = runner.invoke(cli, ["package", str(FIXTURES / "research_agent.yaml")])
+    assert result.exit_code != 0
+    assert "Packaging error" in result.output
+
+
+def test_adapters_cmd() -> None:
+    runner = CliRunner()
+    result = runner.invoke(cli, ["adapters"])
+    assert result.exit_code == 0
+    assert "single_agent" in result.output
+
+
+def test_adapter_template_cmd(tmp_path: Path) -> None:
+    runner = CliRunner()
+    output_dir = tmp_path / "scaffold"
+    result = runner.invoke(
+        cli,
+        ["adapter-template", "--framework", "CrewAI", "-o", str(output_dir)],
+    )
+    assert result.exit_code == 0, result.output
+    assert (output_dir / "pyproject.toml").exists()
+    assert (output_dir / "src" / "pyagent_blueprint_adapter_crewai" / "adapter.py").exists()

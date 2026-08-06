@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyagent-blueprint-adapter-langgraph"
+version = "0.1.0"
+description = "A pyagent-blueprint RuntimeAdapter targeting LangGraph"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = [
+    "pyagent-blueprint>=0.2.4",
+    "langgraph>=0.2",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+
+[project.entry-points."pyagent_blueprint.adapters"]
+langgraph = "pyagent_blueprint_adapter_langgraph.adapter:LangGraphAdapter"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pyagent_blueprint_adapter_langgraph"]

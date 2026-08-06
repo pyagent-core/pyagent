@@ -10,16 +10,18 @@ providers:
 
 agents:
   showrunner:  { provider: smart, prompt: "Hold arc and tone. Set emotional throughline. Make final call." }
-  staff_writer:{ provider: smart, prompt: "Break premise into act beats. Propose story turns." }
-  script_editor:{ provider: fast, prompt: "Tighten pacing, flag slow scenes. Keep to 42 min." }
+  staff_writer: { provider: smart, prompt: "Break premise into act beats. Propose story turns." }
+  script_editor: { provider: fast, prompt: "Tighten pacing, flag slow scenes. Keep to 42 min." }
   continuity:  { provider: fast,  prompt: "Guard canon: character knowledge, timeline, facts. Flag contradictions." }
-  network_exec:{ provider: fast,  prompt: "Network notes: broad appeal, ad breaks, S&P flags." }
+  network_exec: { provider: fast,  prompt: "Network notes: broad appeal, ad breaks, S&P flags." }
 
 workflows:
   write:
     pattern: role_based
-    agents: [showrunner, staff_writer, script_editor, continuity, network_exec]
-    rounds: 2
+    agents:
+      agents: [showrunner, staff_writer, script_editor, continuity, network_exec]
+    config:
+      rounds: 2
 
 observability:
   tracing: { enabled: true }

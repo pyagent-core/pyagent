@@ -19,8 +19,10 @@ agents:
 workflows:
   grade:
     pattern: voting
-    voters: [grader_openai, grader_anthropic, grader_gemini]
-    strategy: majority
+    agents:
+      voters: [grader_openai, grader_anthropic, grader_gemini]
+    config:
+      strategy: majority
 
 observability:
   tracing: { enabled: true }

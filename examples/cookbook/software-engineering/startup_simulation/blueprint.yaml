@@ -18,8 +18,10 @@ agents:
 workflows:
   simulate:
     pattern: role_based
-    agents: [product_manager, architect, engineer, qa]
-    rounds: 2
+    agents:
+      agents: [product_manager, architect, engineer, qa]
+    config:
+      rounds: 2
 
 observability:
   tracing: { enabled: true }

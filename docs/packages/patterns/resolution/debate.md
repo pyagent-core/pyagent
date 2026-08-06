@@ -42,53 +42,96 @@ sequenceDiagram
 
 ## Use Case 1 — Investment Decision (Gemini)
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.resolution import Debate
-from pyagent_providers import GeminiLLM, AnthropicLLM
+=== "Python"
 
-debate = Debate(
-    debaters=[
-        Agent(
-            "bull",
-            GeminiLLM("gemini-2.5-pro"),
-            system_prompt="You are a bullish investment analyst. Argue that this investment "
-                          "should be made. Use specific financial metrics, growth rates, and "
-                          "comparable valuations. Anticipate and pre-emptively rebut bear arguments. "
-                          "Support every claim with data.",
-        ),
-        Agent(
-            "bear",
-            GeminiLLM("gemini-2.5-pro"),
-            system_prompt="You are a bearish investment analyst. Argue that this investment "
-                          "should NOT be made. Focus on: overvaluation, execution risk, "
-                          "competitive threats, and downside scenarios. "
-                          "Rebut the bull case with specific counter-evidence.",
-        ),
-    ],
-    judge=Agent(
-        "judge",
-        AnthropicLLM("claude-sonnet-4-20250514"),
-        system_prompt="You are a senior portfolio manager reviewing this debate. "
-                      "Evaluate argument quality, use of evidence, and logical consistency. "
-                      "Identify which side had the stronger case for each key point. "
-                      "Render a final verdict: BUY / HOLD / SELL with conviction level. "
-                      "Explain which arguments were decisive.",
-    ),
-    rounds=2,
-    positions=["BUY", "SELL"],
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.resolution import Debate
+    from pyagent_providers import GeminiLLM, AnthropicLLM
 
-result = asyncio.run(debate.run(
-    "Should we invest in Nvidia at $3.2T market cap, 45x forward P/E, "
-    "with data center revenue growing 150% YoY but competition from AMD and custom silicon?"
-))
-print(result.output)
-print(f"Rounds: {result.metadata['rounds']}")
-print(f"Arguments logged: {len(result.metadata['debate_log'])}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    debate = Debate(
+        debaters=[
+            Agent(
+                "bull",
+                GeminiLLM("gemini-2.5-pro"),
+                system_prompt="You are a bullish investment analyst. Argue that this investment "
+                              "should be made. Use specific financial metrics, growth rates, and "
+                              "comparable valuations. Anticipate and pre-emptively rebut bear arguments. "
+                              "Support every claim with data.",
+            ),
+            Agent(
+                "bear",
+                GeminiLLM("gemini-2.5-pro"),
+                system_prompt="You are a bearish investment analyst. Argue that this investment "
+                              "should NOT be made. Focus on: overvaluation, execution risk, "
+                              "competitive threats, and downside scenarios. "
+                              "Rebut the bull case with specific counter-evidence.",
+            ),
+        ],
+        judge=Agent(
+            "judge",
+            AnthropicLLM("claude-sonnet-4-20250514"),
+            system_prompt="You are a senior portfolio manager reviewing this debate. "
+                          "Evaluate argument quality, use of evidence, and logical consistency. "
+                          "Identify which side had the stronger case for each key point. "
+                          "Render a final verdict: BUY / HOLD / SELL with conviction level. "
+                          "Explain which arguments were decisive.",
+        ),
+        rounds=2,
+        positions=["BUY", "SELL"],
+    )
+
+    result = asyncio.run(debate.run(
+        "Should we invest in Nvidia at $3.2T market cap, 45x forward P/E, "
+        "with data center revenue growing 150% YoY but competition from AMD and custom silicon?"
+    ))
+    print(result.output)
+    print(f"Rounds: {result.metadata['rounds']}")
+    print(f"Arguments logged: {len(result.metadata['debate_log'])}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same debaters + judge as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: investment-debate
+      version: 1.0.0
+      description: Bull and bear analysts debate a position; a judge renders the final verdict
+    providers:
+      debater_model:
+        model: gemini-2.5-pro
+      judge_model:
+        model: claude-sonnet-4-20250514
+    agents:
+      bull:
+        prompt: "Argue this investment should be made. Use specific financial metrics."
+        provider: debater_model
+      bear:
+        prompt: "Argue this investment should NOT be made. Focus on downside risk."
+        provider: debater_model
+      judge:
+        prompt: "Evaluate both arguments and render a final verdict: BUY / HOLD / SELL."
+        provider: judge_model
+    workflows:
+      debate:
+        pattern: debate
+        agents:
+          debaters: [bull, bear]
+          judge: judge
+        config:
+          rounds: 2
+          positions: ["BUY", "SELL"]
+    ```
+
+    ```bash
+    pyagent-blueprint validate investment-debate.yaml
+    pyagent-blueprint test investment-debate.yaml
+    ```
 
 ---
 

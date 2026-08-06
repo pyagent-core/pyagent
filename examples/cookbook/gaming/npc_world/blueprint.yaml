@@ -17,11 +17,13 @@ workflows:
   simulate:
     pattern: blackboard
     agents:
-      - { agent: explorer,   reads: [world_map],                        writes: [world_map, resources] }
-      - { agent: builder,    reads: [world_map, resources],             writes: [world_map, resources] }
-      - { agent: trader,     reads: [resources, world_map],             writes: [economy] }
-      - { agent: chronicler, reads: [world_map, resources, economy],    writes: [chronicle] }
-    rounds: 3
+      agents:
+        - { agent: explorer,   reads: [world_map],                        writes: [world_map, resources] }
+        - { agent: builder,    reads: [world_map, resources],             writes: [world_map, resources] }
+        - { agent: trader,     reads: [resources, world_map],             writes: [economy] }
+        - { agent: chronicler, reads: [world_map, resources, economy],    writes: [chronicle] }
+    config:
+      rounds: 3
 
 observability:
   tracing: { enabled: true }

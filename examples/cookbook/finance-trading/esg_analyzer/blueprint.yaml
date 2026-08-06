@@ -30,8 +30,9 @@ agents:
 workflows:
   analyze:
     pattern: orchestrator_workers
-    orchestrator: esg_lead
-    workers: [ratings, disclosure_extractor, sfdr_scorer, controversy]
+    agents:
+      orchestrator: esg_lead
+      workers: [ratings, disclosure_extractor, sfdr_scorer, controversy]
 
 observability:
   tracing: { enabled: true }

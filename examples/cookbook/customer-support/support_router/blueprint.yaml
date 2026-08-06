@@ -19,14 +19,21 @@ agents:
   escalation_writer: { provider: fast, prompt: "Summarize for human handoff." }
 
 workflows:
+  # Supervisor routes to one specialist Agent per category. Nesting a
+  # second pattern (talker_reasoner's fast/slow tiering) inside a route
+  # isn't supported — Supervisor.routes expects Agent objects, not
+  # Pattern objects — so each route goes straight to the senior
+  # specialist; the "_fast" agents remain defined for direct use outside
+  # this workflow (e.g. a cost-optimized fallback chain).
   route:
     pattern: supervisor
-    classifier: supervisor
-    routes:
-      billing:   { pattern: talker_reasoner, talker: billing_fast, reasoner: billing_deep, threshold: 5 }
-      technical: { pattern: talker_reasoner, talker: tech_fast,    reasoner: tech_deep,    threshold: 4 }
-      account:   { pattern: talker_reasoner, talker: account_fast, reasoner: account_deep, threshold: 5 }
-      escalate:  { pattern: human_in_the_loop, agent: escalation_writer }
+    agents:
+      classifier: supervisor
+      routes:
+        billing: billing_deep
+        technical: tech_deep
+        account: account_deep
+        escalate: escalation_writer
 
 observability:
   tracing: { enabled: true }

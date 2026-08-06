@@ -124,16 +124,21 @@ plugins:
       full_output: llms-full.txt
       markdown_description: >-
         PyAgent is a production stack for multi-agent LLM systems — 18 named design patterns, a
-        four-pillar framework (Blueprint, Execution & Routing, Context & Memory, Observability), and a
-        Cookbook of 28 complete, runnable multi-agent orchestration examples across all 20 domains.
+        four-pillar Blueprint (Manifest, Execution & Routing, Context & Memory, Observability), and a
+        Cookbook of 37 complete, runnable multi-agent orchestration examples across all 21 domains.
       sections:
         Getting Started:
           - getting-started.md
           - getting-started/*.md
+        Why PyAgent:
+          - why-blueprint.md
+          - compare/*.md
+          - concepts/*.md
+          - essays/*.md
         Design Patterns:
           - packages/patterns/index.md
           - packages/patterns/*/*.md
-        Framework:
+        Reference:
           - guides/*.md
           - packages/*.md
         Cookbook:
@@ -149,6 +154,16 @@ nav:
     - Quickstart: getting-started.md
     - Core Concepts: getting-started/core-concepts.md
     - Featured Examples: getting-started/featured-examples.md
+
+  # ── Why PyAgent / Comparisons / Concepts ────────────────────────────────────
+  - Why PyAgent:
+    - Overview: why-blueprint.md
+    - vs. LangGraph: compare/vs-langgraph.md
+    - vs. CrewAI: compare/vs-crewai.md
+    - vs. AutoGen: compare/vs-autogen.md
+    - What is multi-agent orchestration?: concepts/multi-agent-orchestration.md
+    - What is an agent blueprint?: concepts/agent-blueprint.md
+    - "Essay: Kubernetes for agent orchestration": essays/kubernetes-for-agent-orchestration.md
 
   # ── Design Patterns (flagship: full pattern library) ─────────────────────────
   - Design Patterns:
@@ -180,10 +195,11 @@ nav:
       - Guardrails: guides/guardrails.md
       - Recovery: guides/recovery.md
 
-  # ── Framework (the 4 pillars) ────────────────────────────────────────────────
-  - Framework:
-    - Blueprint:
+  # ── Reference (the 4 pillars: Manifest, Execution & Routing, Context & Memory, Observability) ──
+  - Reference:
+    - Manifest:
       - Guide: guides/blueprint.md
+      - Package: packages/blueprint/index.md
       - Spec Format: packages/blueprint/spec-format.md
       - Agents: packages/blueprint/agents.md
       - Workflows: packages/blueprint/workflows.md
@@ -255,6 +271,9 @@ nav:
     - Code Review: cookbook/software-engineering/code-review.md
     - Software Startup Simulation: cookbook/software-engineering/startup-simulation.md
     - Trip-Planning Swarm: cookbook/travel-hospitality/trip-planner.md
+    - CI/CD Validation & Diff: cookbook/blueprint-ops/ci-cd-validation.md
+    - Contract Testing with MockLLM: cookbook/blueprint-ops/contract-testing.md
+    - Declaring Governance in YAML: cookbook/blueprint-ops/governance-in-yaml.md
 
   # ── API Reference ────────────────────────────────────────────────────────────
   - API Reference:

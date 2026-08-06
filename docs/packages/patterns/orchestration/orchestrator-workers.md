@@ -38,59 +38,110 @@ sequenceDiagram
 
 ## Use Case 1 — Software Feature Build
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.orchestration import OrchestratorWorkers
-from pyagent_providers import OpenAILLM
+=== "Python"
 
-orchestrator_workers = OrchestratorWorkers(
-    orchestrator=Agent(
-        "planner",
-        OpenAILLM("gpt-4o"),
-        system_prompt="You have a pool of specialist workers. Plan the work by deciding which workers "
-                      "are needed and what to assign each. Only use workers that are genuinely needed. "
-                      'Respond as JSON: {"assignments": [{"worker": "name", "subtask": "description"}]}. '
-                      "After all workers complete, synthesize their output into a final deliverable.",
-    ),
-    workers=[
-        Agent(
-            "researcher", OpenAILLM("gpt-4o-mini"),
-            system_prompt="Research topics thoroughly. Find recent, credible information "
-                          "and summarize key findings with citations.",
-        ),
-        Agent(
-            "coder", OpenAILLM("gpt-4o-mini"),
-            system_prompt="Write clean, idiomatic Python with type hints, docstrings, "
-                          "and comprehensive error handling.",
-        ),
-        Agent(
-            "tester", OpenAILLM("gpt-4o-mini"),
-            system_prompt="Write comprehensive pytest test suites. Cover: happy path, "
-                          "edge cases, error conditions, and boundary values.",
-        ),
-        Agent(
-            "doc_writer", OpenAILLM("gpt-4o-mini"),
-            system_prompt="Write clear technical documentation with usage examples, "
-                          "parameter descriptions, and common gotchas.",
-        ),
-        Agent(
-            "reviewer", OpenAILLM("gpt-4o"),
-            system_prompt="Review code and documentation for correctness, completeness, "
-                          "security issues, and adherence to best practices.",
-        ),
-    ],
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.orchestration import OrchestratorWorkers
+    from pyagent_providers import OpenAILLM
 
-result = asyncio.run(orchestrator_workers.run(
-    "Build a production-ready async HTTP client with retry logic, circuit breaking, "
-    "rate limiting, and full test coverage"
-))
-print(result.output)
-print(f"Workers used: {result.metadata['workers_used']}")
-print(f"Assignments: {result.metadata['assignments']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    orchestrator_workers = OrchestratorWorkers(
+        orchestrator=Agent(
+            "planner",
+            OpenAILLM("gpt-4o"),
+            system_prompt="You have a pool of specialist workers. Plan the work by deciding which workers "
+                          "are needed and what to assign each. Only use workers that are genuinely needed. "
+                          'Respond as JSON: {"assignments": [{"worker": "name", "subtask": "description"}]}. '
+                          "After all workers complete, synthesize their output into a final deliverable.",
+        ),
+        workers=[
+            Agent(
+                "researcher", OpenAILLM("gpt-4o-mini"),
+                system_prompt="Research topics thoroughly. Find recent, credible information "
+                              "and summarize key findings with citations.",
+            ),
+            Agent(
+                "coder", OpenAILLM("gpt-4o-mini"),
+                system_prompt="Write clean, idiomatic Python with type hints, docstrings, "
+                              "and comprehensive error handling.",
+            ),
+            Agent(
+                "tester", OpenAILLM("gpt-4o-mini"),
+                system_prompt="Write comprehensive pytest test suites. Cover: happy path, "
+                              "edge cases, error conditions, and boundary values.",
+            ),
+            Agent(
+                "doc_writer", OpenAILLM("gpt-4o-mini"),
+                system_prompt="Write clear technical documentation with usage examples, "
+                              "parameter descriptions, and common gotchas.",
+            ),
+            Agent(
+                "reviewer", OpenAILLM("gpt-4o"),
+                system_prompt="Review code and documentation for correctness, completeness, "
+                              "security issues, and adherence to best practices.",
+            ),
+        ],
+    )
+
+    result = asyncio.run(orchestrator_workers.run(
+        "Build a production-ready async HTTP client with retry logic, circuit breaking, "
+        "rate limiting, and full test coverage"
+    ))
+    print(result.output)
+    print(f"Workers used: {result.metadata['workers_used']}")
+    print(f"Assignments: {result.metadata['assignments']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same orchestrator/worker topology as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: feature-build
+      version: 1.0.0
+      description: Orchestrator plans dynamically and dispatches subtasks to specialist workers
+      owner: platform-team
+    providers:
+      fast:
+        model: gpt-4o-mini
+      smart:
+        model: gpt-4o
+    agents:
+      planner:
+        provider: smart
+        prompt: >
+          You have a pool of specialist workers. Plan the work by deciding which workers
+          are needed and what to assign each. Synthesize their output into a final deliverable.
+      researcher:
+        provider: fast
+        prompt: "Research topics thoroughly and summarize key findings with citations."
+      coder:
+        provider: fast
+        prompt: "Write clean, idiomatic Python with type hints, docstrings, and error handling."
+      tester:
+        provider: fast
+        prompt: "Write comprehensive pytest test suites covering happy path and edge cases."
+      doc_writer:
+        provider: fast
+        prompt: "Write clear technical documentation with usage examples."
+      reviewer:
+        provider: smart
+        prompt: "Review code and docs for correctness, security, and best practices."
+    workflows:
+      build:
+        pattern: orchestrator_workers
+        orchestrator: planner
+        workers: [researcher, coder, tester, doc_writer, reviewer]
+    ```
+
+    ```bash
+    pyagent-blueprint validate feature-build.yaml
+    pyagent-blueprint test feature-build.yaml
+    ```
 
 ---
 

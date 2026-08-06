@@ -38,59 +38,102 @@ sequenceDiagram
 
 ## Use Case 1 — Investment Analysis (Bull / Bear / Neutral)
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.orchestration import FanOutFanIn
-from pyagent_providers import GeminiLLM
+=== "Python"
 
-analysis = FanOutFanIn(
-    agents=[
-        Agent(
-            "bull",
-            GeminiLLM("gemini-2.5-flash"),
-            system_prompt="Argue the strongest possible bullish investment case. "
-                          "Focus on: revenue growth trajectory, market share expansion, "
-                          "competitive moats, and catalysts for multiple expansion. "
-                          "Use specific data points and comparable valuations.",
-        ),
-        Agent(
-            "bear",
-            GeminiLLM("gemini-2.5-flash"),
-            system_prompt="Argue the strongest possible bearish case. "
-                          "Focus on: valuation vs peers, competitive threats, macro risks, "
-                          "execution risks, and downside scenarios. "
-                          "Use specific data and counter the bull case directly.",
-        ),
-        Agent(
-            "neutral",
-            GeminiLLM("gemini-2.5-flash"),
-            system_prompt="Give a balanced, probability-weighted assessment. "
-                          "Acknowledge both bull and bear cases explicitly. "
-                          "Identify the 2-3 key swing factors. "
-                          "End with a base case, bull case, and bear case price target.",
-        ),
-    ],
-    aggregator=Agent(
-        "analyst",
-        GeminiLLM("gemini-2.5-pro"),
-        system_prompt="Synthesize all three perspectives into a structured investment memo: "
-                      "1) Executive Summary (2 sentences), "
-                      "2) Bull Case (key points), "
-                      "3) Bear Case (key points), "
-                      "4) Key Risks & Swing Factors, "
-                      "5) Verdict with conviction level (High/Medium/Low).",
-    ),
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.orchestration import FanOutFanIn
+    from pyagent_providers import GeminiLLM
 
-result = asyncio.run(analysis.run(
-    "Investment thesis for Nvidia at current valuation — $3.2T market cap, "
-    "P/E 45x forward, data center revenue growing 150% YoY"
-))
-print(result.output)
-print(f"Parallel agents: {result.metadata['parallel_agents']}")
-print(f"Duration: {result.duration_seconds:.1f}s, Cost: ${result.cost_estimate:.4f}")
-```
+    analysis = FanOutFanIn(
+        agents=[
+            Agent(
+                "bull",
+                GeminiLLM("gemini-2.5-flash"),
+                system_prompt="Argue the strongest possible bullish investment case. "
+                              "Focus on: revenue growth trajectory, market share expansion, "
+                              "competitive moats, and catalysts for multiple expansion. "
+                              "Use specific data points and comparable valuations.",
+            ),
+            Agent(
+                "bear",
+                GeminiLLM("gemini-2.5-flash"),
+                system_prompt="Argue the strongest possible bearish case. "
+                              "Focus on: valuation vs peers, competitive threats, macro risks, "
+                              "execution risks, and downside scenarios. "
+                              "Use specific data and counter the bull case directly.",
+            ),
+            Agent(
+                "neutral",
+                GeminiLLM("gemini-2.5-flash"),
+                system_prompt="Give a balanced, probability-weighted assessment. "
+                              "Acknowledge both bull and bear cases explicitly. "
+                              "Identify the 2-3 key swing factors. "
+                              "End with a base case, bull case, and bear case price target.",
+            ),
+        ],
+        aggregator=Agent(
+            "analyst",
+            GeminiLLM("gemini-2.5-pro"),
+            system_prompt="Synthesize all three perspectives into a structured investment memo: "
+                          "1) Executive Summary (2 sentences), "
+                          "2) Bull Case (key points), "
+                          "3) Bear Case (key points), "
+                          "4) Key Risks & Swing Factors, "
+                          "5) Verdict with conviction level (High/Medium/Low).",
+        ),
+    )
+
+    result = asyncio.run(analysis.run(
+        "Investment thesis for Nvidia at current valuation — $3.2T market cap, "
+        "P/E 45x forward, data center revenue growing 150% YoY"
+    ))
+    print(result.output)
+    print(f"Parallel agents: {result.metadata['parallel_agents']}")
+    print(f"Duration: {result.duration_seconds:.1f}s, Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same fan-out/fan-in topology as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: investment-analysis
+      version: 1.0.0
+      description: Bull/bear/neutral perspectives fan out in parallel, then synthesize into a memo
+      owner: research-team
+    providers:
+      fast:
+        model: gemini-2.5-flash
+      smart:
+        model: gemini-2.5-pro
+    agents:
+      bull:
+        provider: fast
+        prompt: "Argue the strongest possible bullish investment case, with specific data points."
+      bear:
+        provider: fast
+        prompt: "Argue the strongest possible bearish case, countering the bull case directly."
+      neutral:
+        provider: fast
+        prompt: "Give a balanced, probability-weighted assessment with base/bull/bear price targets."
+      analyst:
+        provider: smart
+        prompt: "Synthesize all three perspectives into a structured investment memo with a verdict."
+    workflows:
+      analyze:
+        pattern: fan_out_fan_in
+        workers: [bull, bear, neutral]
+        aggregator: analyst
+    ```
+
+    ```bash
+    pyagent-blueprint validate investment-analysis.yaml
+    pyagent-blueprint test investment-analysis.yaml
+    ```
 
 ### Stream individual agent results as they complete
 

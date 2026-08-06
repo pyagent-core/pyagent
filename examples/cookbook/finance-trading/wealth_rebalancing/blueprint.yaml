@@ -33,7 +33,8 @@ agents:
 workflows:
   rebalance:
     pattern: pipeline
-    stages: [risk_profiler, market_scanner, allocation_strategist, compliance_checker]
+    agents:
+      stages: [risk_profiler, market_scanner, allocation_strategist, compliance_checker]
 
 observability:
   tracing: { enabled: true }

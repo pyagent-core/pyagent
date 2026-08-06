@@ -10,16 +10,18 @@ providers:
 
 agents:
   scorer:      { provider: fast,  prompt: "Score as hot/warm/cold. Reply with only the label." }
-  account_exec:{ provider: smart, prompt: "Draft 4-sentence personalized outreach. End with CTA." }
+  account_exec: { provider: smart, prompt: "Draft 4-sentence personalized outreach. End with CTA." }
   nurture:     { provider: fast,  prompt: "Add to 3-touch nurture sequence. Draft touch 1." }
   cold_hold:   { provider: fast,  prompt: "Brief polite holding reply. Tag for 90-day re-check." }
 
 workflows:
   qualify:
     pattern: supervisor
-    classifier: scorer
-    routes: { hot: account_exec, warm: nurture, cold: cold_hold }
-    default_route: warm
+    agents:
+      classifier: scorer
+      routes: { hot: account_exec, warm: nurture, cold: cold_hold }
+    config:
+      default_route: warm
 
 observability:
   tracing: { enabled: true }

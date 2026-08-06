@@ -43,88 +43,143 @@ sequenceDiagram
 
 ## Use Case 1 — Software System Design (Mixed Providers)
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.orchestration import Hierarchical
-from pyagent_patterns.orchestration.hierarchical import Team
-from langchain_openai import ChatOpenAI
-from langchain_anthropic import ChatAnthropic
-from pyagent_providers import LangChainLLM, AnthropicLLM, OpenAILLM
+=== "Python"
 
-hierarchical = Hierarchical(
-    manager=Agent(
-        "engineering_director",
-        OpenAILLM("gpt-4o"),
-        system_prompt="Decompose the initiative into team subtasks. "
-                      "Assign clear ownership and success criteria to each team. "
-                      "After receiving all team outputs, synthesize into a cohesive technical spec. "
-                      "Call out integration points, shared contracts, and sequencing dependencies.",
-    ),
-    teams=[
-        Team(
-            name="Backend",
-            lead=Agent(
-                "backend_lead",
-                OpenAILLM("gpt-4o-mini"),
-                system_prompt="Lead the backend design. Coordinate worker outputs into a cohesive "
-                              "backend architecture doc. Resolve conflicts between API and DB designs.",
-            ),
-            workers=[
-                Agent(
-                    "api_engineer",
-                    AnthropicLLM("claude-haiku-3-5-20241022"),
-                    system_prompt="Design REST API endpoints, request/response schemas, "
-                                  "authentication strategy, and versioning approach.",
-                ),
-                Agent(
-                    "db_engineer",
-                    AnthropicLLM("claude-haiku-3-5-20241022"),
-                    system_prompt="Design database schema, indexes, migration strategy, "
-                                  "and query patterns for the most common access paths.",
-                ),
-                Agent(
-                    "infra_engineer",
-                    AnthropicLLM("claude-haiku-3-5-20241022"),
-                    system_prompt="Design deployment architecture, auto-scaling strategy, "
-                                  "observability stack, and disaster recovery approach.",
-                ),
-            ],
-        ),
-        Team(
-            name="Frontend",
-            lead=Agent(
-                "frontend_lead",
-                OpenAILLM("gpt-4o-mini"),
-                system_prompt="Lead the frontend design. Coordinate worker outputs into a "
-                              "cohesive frontend spec with clear component boundaries.",
-            ),
-            workers=[
-                Agent(
-                    "ui_engineer",
-                    AnthropicLLM("claude-haiku-3-5-20241022"),
-                    system_prompt="Design component architecture, state management approach, "
-                                  "routing structure, and design system integration.",
-                ),
-                Agent(
-                    "ux_researcher",
-                    AnthropicLLM("claude-haiku-3-5-20241022"),
-                    system_prompt="Define user flows, accessibility requirements (WCAG 2.1 AA), "
-                                  "and success metrics for the key user journeys.",
-                ),
-            ],
-        ),
-    ],
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.orchestration import Hierarchical
+    from pyagent_patterns.orchestration.hierarchical import Team
+    from langchain_openai import ChatOpenAI
+    from langchain_anthropic import ChatAnthropic
+    from pyagent_providers import LangChainLLM, AnthropicLLM, OpenAILLM
 
-result = asyncio.run(hierarchical.run(
-    "Design a real-time collaborative document editor — "
-    "targeting 100k concurrent users, sub-100ms sync latency"
-))
-print(result.output)
-print(f"Teams: {result.metadata['teams']}, Workers: {result.metadata['total_workers']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    hierarchical = Hierarchical(
+        manager=Agent(
+            "engineering_director",
+            OpenAILLM("gpt-4o"),
+            system_prompt="Decompose the initiative into team subtasks. "
+                          "Assign clear ownership and success criteria to each team. "
+                          "After receiving all team outputs, synthesize into a cohesive technical spec. "
+                          "Call out integration points, shared contracts, and sequencing dependencies.",
+        ),
+        teams=[
+            Team(
+                name="Backend",
+                lead=Agent(
+                    "backend_lead",
+                    OpenAILLM("gpt-4o-mini"),
+                    system_prompt="Lead the backend design. Coordinate worker outputs into a cohesive "
+                                  "backend architecture doc. Resolve conflicts between API and DB designs.",
+                ),
+                workers=[
+                    Agent(
+                        "api_engineer",
+                        AnthropicLLM("claude-haiku-3-5-20241022"),
+                        system_prompt="Design REST API endpoints, request/response schemas, "
+                                      "authentication strategy, and versioning approach.",
+                    ),
+                    Agent(
+                        "db_engineer",
+                        AnthropicLLM("claude-haiku-3-5-20241022"),
+                        system_prompt="Design database schema, indexes, migration strategy, "
+                                      "and query patterns for the most common access paths.",
+                    ),
+                    Agent(
+                        "infra_engineer",
+                        AnthropicLLM("claude-haiku-3-5-20241022"),
+                        system_prompt="Design deployment architecture, auto-scaling strategy, "
+                                      "observability stack, and disaster recovery approach.",
+                    ),
+                ],
+            ),
+            Team(
+                name="Frontend",
+                lead=Agent(
+                    "frontend_lead",
+                    OpenAILLM("gpt-4o-mini"),
+                    system_prompt="Lead the frontend design. Coordinate worker outputs into a "
+                                  "cohesive frontend spec with clear component boundaries.",
+                ),
+                workers=[
+                    Agent(
+                        "ui_engineer",
+                        AnthropicLLM("claude-haiku-3-5-20241022"),
+                        system_prompt="Design component architecture, state management approach, "
+                                      "routing structure, and design system integration.",
+                    ),
+                    Agent(
+                        "ux_researcher",
+                        AnthropicLLM("claude-haiku-3-5-20241022"),
+                        system_prompt="Define user flows, accessibility requirements (WCAG 2.1 AA), "
+                                      "and success metrics for the key user journeys.",
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    result = asyncio.run(hierarchical.run(
+        "Design a real-time collaborative document editor — "
+        "targeting 100k concurrent users, sub-100ms sync latency"
+    ))
+    print(result.output)
+    print(f"Teams: {result.metadata['teams']}, Workers: {result.metadata['total_workers']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same manager → teams → workers topology as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: system-design
+      version: 1.0.0
+      description: Director delegates backend and frontend teams; synthesizes a technical spec
+      owner: engineering
+    providers:
+      fast:
+        model: gpt-4o-mini
+      smart:
+        model: gpt-4o
+    agents:
+      engineering_director:
+        provider: smart
+        prompt: "Decompose the initiative into team subtasks and synthesize a cohesive technical spec."
+      backend_lead:
+        provider: fast
+        prompt: "Coordinate API and DB worker outputs into a cohesive backend architecture doc."
+      api_engineer:
+        provider: fast
+        prompt: "Design REST API endpoints, request/response schemas, and auth strategy."
+      db_engineer:
+        provider: fast
+        prompt: "Design database schema, indexes, and migration strategy."
+      frontend_lead:
+        provider: fast
+        prompt: "Coordinate UI worker output into a cohesive frontend architecture doc."
+      ui_engineer:
+        provider: fast
+        prompt: "Design UI components, state management approach, and API integration points."
+    workflows:
+      design:
+        pattern: hierarchical
+        manager: engineering_director
+        teams:
+          - name: Backend
+            lead: backend_lead
+            workers: [api_engineer, db_engineer]
+          - name: Frontend
+            lead: frontend_lead
+            workers: [ui_engineer]
+    ```
+
+    ```bash
+    pyagent-blueprint validate system-design.yaml
+    pyagent-blueprint test system-design.yaml
+    ```
 
 ---
 

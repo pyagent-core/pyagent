@@ -38,44 +38,77 @@ graph LR
 
 Chain topology where each reviewer builds on the previous one's notes.
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.structural import Topology, TopologyType
-from pyagent_providers import OpenAILLM, AnthropicLLM
+=== "Python"
 
-chain = Topology(
-    agents=[
-        Agent(
-            "security_pass",
-            OpenAILLM("gpt-4o"),
-            system_prompt="Review this code for security vulnerabilities. "
-                          "List any issues found, or confirm SECURITY PASS if none. "
-                          "Pass your findings + the original code to the next reviewer.",
-        ),
-        Agent(
-            "performance_pass",
-            AnthropicLLM("claude-sonnet-4-20250514"),
-            system_prompt="Review the code and security notes from the previous reviewer. "
-                          "Add performance findings. List any N+1 queries, memory leaks, "
-                          "or blocking operations. Pass all findings forward.",
-        ),
-        Agent(
-            "style_pass",
-            OpenAILLM("gpt-4o-mini"),
-            system_prompt="Given the code and all previous review notes, "
-                          "add style and convention findings. "
-                          "Write a final consolidated PR review comment.",
-        ),
-    ],
-    topology=TopologyType.CHAIN,
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.structural import Topology, TopologyType
+    from pyagent_providers import OpenAILLM, AnthropicLLM
 
-result = asyncio.run(chain.run(open("pull_request.py").read()))
-print(result.output)
-print(f"Topology: {result.metadata['topology']}, Nodes: {result.metadata['nodes']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    chain = Topology(
+        agents=[
+            Agent(
+                "security_pass",
+                OpenAILLM("gpt-4o"),
+                system_prompt="Review this code for security vulnerabilities. "
+                              "List any issues found, or confirm SECURITY PASS if none. "
+                              "Pass your findings + the original code to the next reviewer.",
+            ),
+            Agent(
+                "performance_pass",
+                AnthropicLLM("claude-sonnet-4-20250514"),
+                system_prompt="Review the code and security notes from the previous reviewer. "
+                              "Add performance findings. List any N+1 queries, memory leaks, "
+                              "or blocking operations. Pass all findings forward.",
+            ),
+            Agent(
+                "style_pass",
+                OpenAILLM("gpt-4o-mini"),
+                system_prompt="Given the code and all previous review notes, "
+                              "add style and convention findings. "
+                              "Write a final consolidated PR review comment.",
+            ),
+        ],
+        topology=TopologyType.CHAIN,
+    )
+
+    result = asyncio.run(chain.run(open("pull_request.py").read()))
+    print(result.output)
+    print(f"Topology: {result.metadata['topology']}, Nodes: {result.metadata['nodes']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same reviewer chain as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: code-review-chain
+      version: 1.0.0
+      description: Chain topology — each reviewer builds on the previous one's notes
+    providers:
+      primary: { model: gpt-4o }
+      secondary: { model: claude-sonnet-4-20250514 }
+    agents:
+      security_pass: { provider: primary, prompt: "Review for security vulnerabilities. Pass findings forward." }
+      performance_pass: { provider: secondary, prompt: "Review for performance issues. Pass all findings forward." }
+      style_pass: { provider: primary, prompt: "Add style findings. Write a final consolidated review." }
+    workflows:
+      review:
+        pattern: topology
+        agents:
+          agents: [security_pass, performance_pass, style_pass]
+        config:
+          topology: chain
+    ```
+
+    ```bash
+    pyagent-blueprint validate code-review-chain.yaml
+    pyagent-blueprint test code-review-chain.yaml
+    ```
 
 ---
 

@@ -32,64 +32,140 @@ sequenceDiagram
 
 ## Use Case 1 — Customer Support Routing
 
-Cheap Haiku classifies; stronger Sonnet/GPT-4o handles the specialist reply.
+Cheap Haiku classifies; stronger Sonnet/GPT-4o handles the specialist reply. The same system can be
+expressed directly in code with `pyagent-patterns`, or declared as a `pyagent-blueprint` YAML manifest
+and compiled to any registered runtime adapter — pick whichever fits your workflow.
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.orchestration import Supervisor
-from pyagent_providers import AnthropicLLM, OpenAILLM
+=== "Python"
 
-supervisor = Supervisor(
-    classifier=Agent(
-        "router",
-        AnthropicLLM("claude-haiku-3-5-20241022"),
-        system_prompt="Classify into exactly one of: billing, technical, returns, general. "
-                      "Respond with ONLY the category name, nothing else.",
-    ),
-    routes={
-        "billing": Agent(
-            "billing_agent",
-            AnthropicLLM("claude-sonnet-4-20250514"),
-            system_prompt="Handle billing disputes, refunds, and subscription questions. "
-                          "Always acknowledge frustration, confirm the charge details, "
-                          "and offer concrete next steps with a timeline.",
-        ),
-        "technical": Agent(
-            "technical_agent",
-            OpenAILLM("gpt-4o"),
-            system_prompt="Handle technical troubleshooting and API issues. "
-                          "Provide numbered step-by-step debugging instructions. "
-                          "Include relevant error codes and documentation links.",
-        ),
-        "returns": Agent(
-            "returns_agent",
-            AnthropicLLM("claude-sonnet-4-20250514"),
-            system_prompt="Handle return requests. Explain the return policy clearly, "
-                          "verify eligibility, and initiate the process where applicable.",
-        ),
-        "general": Agent(
-            "general_agent",
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.orchestration import Supervisor
+    from pyagent_providers import AnthropicLLM, OpenAILLM
+
+    supervisor = Supervisor(
+        classifier=Agent(
+            "router",
             AnthropicLLM("claude-haiku-3-5-20241022"),
-            system_prompt="Handle general inquiries warmly and helpfully. "
-                          "If out of scope, offer to escalate to a human agent.",
+            system_prompt="Classify into exactly one of: billing, technical, returns, general. "
+                          "Respond with ONLY the category name, nothing else.",
         ),
-    },
-    formatter=Agent(
-        "formatter",
-        AnthropicLLM("claude-haiku-3-5-20241022"),
-        system_prompt="Format the response professionally. Remove internal notes. "
-                      "Keep under 200 words. Add a friendly closing line.",
-    ),
-    default_route="general",
-)
+        routes={
+            "billing": Agent(
+                "billing_agent",
+                AnthropicLLM("claude-sonnet-4-20250514"),
+                system_prompt="Handle billing disputes, refunds, and subscription questions. "
+                              "Always acknowledge frustration, confirm the charge details, "
+                              "and offer concrete next steps with a timeline.",
+            ),
+            "technical": Agent(
+                "technical_agent",
+                OpenAILLM("gpt-4o"),
+                system_prompt="Handle technical troubleshooting and API issues. "
+                              "Provide numbered step-by-step debugging instructions. "
+                              "Include relevant error codes and documentation links.",
+            ),
+            "returns": Agent(
+                "returns_agent",
+                AnthropicLLM("claude-sonnet-4-20250514"),
+                system_prompt="Handle return requests. Explain the return policy clearly, "
+                              "verify eligibility, and initiate the process where applicable.",
+            ),
+            "general": Agent(
+                "general_agent",
+                AnthropicLLM("claude-haiku-3-5-20241022"),
+                system_prompt="Handle general inquiries warmly and helpfully. "
+                              "If out of scope, offer to escalate to a human agent.",
+            ),
+        },
+        formatter=Agent(
+            "formatter",
+            AnthropicLLM("claude-haiku-3-5-20241022"),
+            system_prompt="Format the response professionally. Remove internal notes. "
+                          "Keep under 200 words. Add a friendly closing line.",
+        ),
+        default_route="general",
+    )
 
-result = asyncio.run(supervisor.run("I was charged twice for my Pro subscription this month"))
-print(result.output)
-print(f"Route: {result.metadata['route_key']}")
-print(f"Classifier output: {result.metadata['classifier_output']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    result = asyncio.run(supervisor.run("I was charged twice for my Pro subscription this month"))
+    print(result.output)
+    print(f"Route: {result.metadata['route_key']}")
+    print(f"Classifier output: {result.metadata['classifier_output']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same Supervisor topology as a `pyagent-blueprint` manifest — validate, diff, simulate,
+    and compile it against any registered runtime adapter with the `pyagent-blueprint` CLI:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: customer-support
+      version: 1.0.0
+      description: Support routing system
+      owner: platform-team
+    providers:
+      primary:
+        model: gpt-4.1-mini
+      fallback:
+        model: gpt-4.1-nano
+    context:
+      memory:
+        working_max_tokens: 128000
+      compression:
+        policy: semantic_lossless
+        target_ratio: 0.6
+    agents:
+      classifier:
+        prompt: "Classify into: billing, tech, general"
+        provider: primary
+        description: Routes customer requests
+      billing:
+        prompt: "Handle billing inquiries"
+        provider: primary
+        guardrails: [pii_redact]
+        description: Billing specialist
+      tech:
+        prompt: "Handle technical support"
+        provider: primary
+        description: Technical support agent
+    workflows:
+      support:
+        pattern: supervisor
+        agents:
+          classifier: classifier
+          routes:
+            billing: billing
+            tech: tech
+        recovery:
+          max_retries: 2
+          timeout_seconds: 30
+          fallback_provider: fallback
+    contracts:
+      support:
+        input:
+          type: string
+          max_tokens: 2000
+        output:
+          type: string
+        sla:
+          latency_p95_ms: 5000
+          cost_max_usd: 0.05
+    observability:
+      tracing:
+        enabled: true
+      cost_budget:
+        daily_usd: 100.0
+        alert_threshold: 0.8
+    ```
+
+    ```bash
+    pyagent-blueprint validate customer-support.yaml
+    pyagent-blueprint test customer-support.yaml
+    ```
 
 ---
 
@@ -221,6 +297,8 @@ Complete, runnable examples that use the **Supervisor** pattern:
 
 | Recipe | Domain | What it does | Complexity |
 |--------|--------|--------------|------------|
+| [Ci Cd Validation](../../../cookbook/blueprint-ops/ci-cd-validation.md) | Blueprint Ops | Validate a blueprint and semantically diff it against main in a GitHub Actions PR check | Beginner |
+| [Governance In Yaml](../../../cookbook/blueprint-ops/governance-in-yaml.md) | Blueprint Ops | Declare SLA/budget and recovery policy in YAML; see the stable diagnostic a non-supporting adapter reports | Intermediate |
 | [Lead Qualifier](../../../cookbook/sales-crm/lead-qualifier.md) | Sales & CRM | Score and route inbound leads to the right play | Intermediate |
 | [Portfolio Review](../../../cookbook/finance-trading/portfolio-review.md) | Finance & Trading | Analyst panel with an evaluator-optimizer quality gate | Intermediate |
 | [Support Router](../../../cookbook/customer-support/support-router.md) | Customer Support | Classify tickets → route to specialists → escalate to a human | Advanced |

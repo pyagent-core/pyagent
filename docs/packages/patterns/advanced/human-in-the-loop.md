@@ -32,50 +32,84 @@ sequenceDiagram
 
 ## Use Case 1 — Executive Email Drafting (Anthropic)
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.advanced import HumanInTheLoop
-from pyagent_patterns.advanced.human_in_the_loop import HumanDecision
-from pyagent_providers import AnthropicLLM
+=== "Python"
 
-def executive_review(output: str, metadata: dict) -> HumanDecision:
-    print("\n" + "="*60)
-    print("DRAFT EMAIL FOR REVIEW:")
-    print("="*60)
-    print(output)
-    print("="*60)
-    print(f"Generation attempt: {metadata.get('revision', 0) + 1}")
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.advanced import HumanInTheLoop
+    from pyagent_patterns.advanced.human_in_the_loop import HumanDecision
+    from pyagent_providers import AnthropicLLM
 
-    decision = input("Approve? (y/n): ").strip().lower()
-    if decision == "y":
-        return HumanDecision(approved=True)
-    feedback = input("Feedback for revision: ").strip()
-    return HumanDecision(approved=False, feedback=feedback)
+    def executive_review(output: str, metadata: dict) -> HumanDecision:
+        print("\n" + "="*60)
+        print("DRAFT EMAIL FOR REVIEW:")
+        print("="*60)
+        print(output)
+        print("="*60)
+        print(f"Generation attempt: {metadata.get('revision', 0) + 1}")
 
-pattern = HumanInTheLoop(
-    agent=Agent(
-        "email_drafter",
-        AnthropicLLM("claude-sonnet-4-20250514"),
-        system_prompt="Draft professional executive emails. "
-                      "Match the tone to the context: formal for board communications, "
-                      "warmer for team-facing messages. "
-                      "Be direct, clear, and concise. Max 200 words. "
-                      "If given revision feedback, incorporate it precisely.",
-    ),
-    review_fn=executive_review,
-    max_revisions=3,
-)
+        decision = input("Approve? (y/n): ").strip().lower()
+        if decision == "y":
+            return HumanDecision(approved=True)
+        feedback = input("Feedback for revision: ").strip()
+        return HumanDecision(approved=False, feedback=feedback)
 
-result = asyncio.run(pattern.run(
-    "Draft an email to our enterprise customers announcing a 15% price increase "
-    "effective in 90 days. Frame it around the significant new features we're adding: "
-    "AI-powered analytics, 99.99% SLA, and 24/7 dedicated support."
-))
-print(f"\nApproved after {result.metadata['revisions']} revision(s)")
-print("Final email:")
-print(result.output)
-```
+    pattern = HumanInTheLoop(
+        agent=Agent(
+            "email_drafter",
+            AnthropicLLM("claude-sonnet-4-20250514"),
+            system_prompt="Draft professional executive emails. "
+                          "Match the tone to the context: formal for board communications, "
+                          "warmer for team-facing messages. "
+                          "Be direct, clear, and concise. Max 200 words. "
+                          "If given revision feedback, incorporate it precisely.",
+        ),
+        review_fn=executive_review,
+        max_revisions=3,
+    )
+
+    result = asyncio.run(pattern.run(
+        "Draft an email to our enterprise customers announcing a 15% price increase "
+        "effective in 90 days. Frame it around the significant new features we're adding: "
+        "AI-powered analytics, 99.99% SLA, and 24/7 dedicated support."
+    ))
+    print(f"\nApproved after {result.metadata['revisions']} revision(s)")
+    print("Final email:")
+    print(result.output)
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same drafting gate as a `pyagent-blueprint` manifest. The human `review_fn` callback
+    is a runtime-adapter concern (not blueprint-representable) — the compiled pattern defaults to
+    auto-approve; a caller wanting real human review wires `review_fn` via the Python API after compiling:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: executive-email-review
+      version: 1.0.0
+      description: Agent drafts an email; a human approval gate decides accept/reject/revise
+    providers:
+      primary: { model: claude-sonnet-4-20250514 }
+    agents:
+      email_drafter:
+        provider: primary
+        prompt: "Draft professional executive emails. Incorporate revision feedback precisely."
+    workflows:
+      draft:
+        pattern: human_in_the_loop
+        agents:
+          agent: email_drafter
+        config:
+          max_revisions: 3
+    ```
+
+    ```bash
+    pyagent-blueprint validate executive-email-review.yaml
+    pyagent-blueprint test executive-email-review.yaml
+    ```
 
 ---
 

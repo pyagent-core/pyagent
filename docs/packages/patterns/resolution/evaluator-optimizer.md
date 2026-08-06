@@ -31,42 +31,75 @@ sequenceDiagram
 
 ## Use Case 1 — Ad Copy Optimization (OpenAI)
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.resolution import EvaluatorOptimizer
-from pyagent_providers import OpenAILLM
+=== "Python"
 
-pattern = EvaluatorOptimizer(
-    generator=Agent(
-        "copywriter",
-        OpenAILLM("gpt-4o"),
-        system_prompt="Write conversion-focused ad copy. "
-                      "Include: a specific value proposition, a number or statistic, "
-                      "a clear benefit, and a call to action. Keep under 30 words.",
-    ),
-    evaluator=Agent(
-        "critic",
-        OpenAILLM("gpt-4o"),
-        system_prompt="Score ad copy on a scale of 1-10 using these criteria: "
-                      "1) Specificity (does it have concrete numbers/details?) "
-                      "2) Value clarity (is the benefit immediately obvious?) "
-                      "3) Urgency (does it motivate action now?) "
-                      "4) Credibility (does it feel trustworthy, not salesy?) "
-                      "Respond exactly as: SCORE: X\nFEEDBACK: <specific improvements needed>",
-    ),
-    pass_threshold=8,
-    max_rounds=4,
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.resolution import EvaluatorOptimizer
+    from pyagent_providers import OpenAILLM
 
-result = asyncio.run(pattern.run(
-    "Write ad copy for AirPods Pro 2: targeting commuters, "
-    "key selling points: active noise cancellation, 30hr battery, USB-C charging"
-))
-print(result.output)
-print(f"Final score: {result.metadata['final_score']}, Rounds: {result.metadata['rounds']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    pattern = EvaluatorOptimizer(
+        generator=Agent(
+            "copywriter",
+            OpenAILLM("gpt-4o"),
+            system_prompt="Write conversion-focused ad copy. "
+                          "Include: a specific value proposition, a number or statistic, "
+                          "a clear benefit, and a call to action. Keep under 30 words.",
+        ),
+        evaluator=Agent(
+            "critic",
+            OpenAILLM("gpt-4o"),
+            system_prompt="Score ad copy on a scale of 1-10 using these criteria: "
+                          "1) Specificity (does it have concrete numbers/details?) "
+                          "2) Value clarity (is the benefit immediately obvious?) "
+                          "3) Urgency (does it motivate action now?) "
+                          "4) Credibility (does it feel trustworthy, not salesy?) "
+                          "Respond exactly as: SCORE: X\nFEEDBACK: <specific improvements needed>",
+        ),
+        pass_threshold=8,
+        max_rounds=4,
+    )
+
+    result = asyncio.run(pattern.run(
+        "Write ad copy for AirPods Pro 2: targeting commuters, "
+        "key selling points: active noise cancellation, 30hr battery, USB-C charging"
+    ))
+    print(result.output)
+    print(f"Final score: {result.metadata['final_score']}, Rounds: {result.metadata['rounds']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same generate/evaluate loop as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: ad-copy-optimizer
+      version: 1.0.0
+      description: Generate ad copy, score it against criteria, and iterate until it clears the bar
+    providers:
+      primary: { model: gpt-4o }
+    agents:
+      copywriter: { provider: primary, prompt: "Write conversion-focused ad copy under 30 words." }
+      critic: { provider: primary, prompt: "Score ad copy 1-10 on specificity, value clarity, urgency, credibility." }
+    workflows:
+      optimize:
+        pattern: evaluator_optimizer
+        agents:
+          generator: copywriter
+          evaluator: critic
+        config:
+          pass_threshold: 8
+          max_rounds: 4
+    ```
+
+    ```bash
+    pyagent-blueprint validate ad-copy-optimizer.yaml
+    pyagent-blueprint test ad-copy-optimizer.yaml
+    ```
 
 ---
 

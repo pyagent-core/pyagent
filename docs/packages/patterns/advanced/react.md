@@ -35,69 +35,104 @@ sequenceDiagram
 
 ## Use Case 1 — Financial Research Agent (OpenAI)
 
-```python
-import asyncio
-import httpx
-from pyagent_patterns.base import Agent
-from pyagent_patterns.advanced import ReAct
-from pyagent_providers import OpenAILLM
+=== "Python"
 
-def search(query: str) -> str:
-    """Simulates web search — replace with Tavily, SerpAPI, or Exa in production."""
-    results = {
-        "nvidia revenue 2025": "Nvidia Q3 FY2025: Revenue $35.1B (+94% YoY), data center $30.8B",
-        "nvidia p/e ratio": "Nvidia forward P/E: 45x (as of Dec 2024), vs AMD 28x, Intel 18x",
-        "nvidia competition": "AMD MI300X closing gap in AI training; custom silicon from Google (TPU), Amazon (Trainium)",
-    }
-    for key, val in results.items():
-        if key in query.lower():
-            return val
-    return f"Search results for '{query}': No specific data found, check financial data providers."
+    ```python
+    import asyncio
+    import httpx
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.advanced import ReAct
+    from pyagent_providers import OpenAILLM
 
-def calculator(expression: str) -> str:
-    """Safe arithmetic evaluator."""
-    try:
-        allowed = set("0123456789+-*/(). ")
-        if not all(c in allowed for c in expression):
-            return "Error: only arithmetic expressions allowed"
-        return str(round(eval(expression), 4))
-    except Exception as e:
-        return f"Error: {e}"
+    def search(query: str) -> str:
+        """Simulates web search — replace with Tavily, SerpAPI, or Exa in production."""
+        results = {
+            "nvidia revenue 2025": "Nvidia Q3 FY2025: Revenue $35.1B (+94% YoY), data center $30.8B",
+            "nvidia p/e ratio": "Nvidia forward P/E: 45x (as of Dec 2024), vs AMD 28x, Intel 18x",
+            "nvidia competition": "AMD MI300X closing gap in AI training; custom silicon from Google (TPU), Amazon (Trainium)",
+        }
+        for key, val in results.items():
+            if key in query.lower():
+                return val
+        return f"Search results for '{query}': No specific data found, check financial data providers."
 
-def get_price(ticker: str) -> str:
-    return {"NVDA": "$875.40", "AMD": "$142.20", "INTC": "$42.10"}.get(
-        ticker.upper(), f"Ticker {ticker} not found"
+    def calculator(expression: str) -> str:
+        """Safe arithmetic evaluator."""
+        try:
+            allowed = set("0123456789+-*/(). ")
+            if not all(c in allowed for c in expression):
+                return "Error: only arithmetic expressions allowed"
+            return str(round(eval(expression), 4))
+        except Exception as e:
+            return f"Error: {e}"
+
+    def get_price(ticker: str) -> str:
+        return {"NVDA": "$875.40", "AMD": "$142.20", "INTC": "$42.10"}.get(
+            ticker.upper(), f"Ticker {ticker} not found"
+        )
+
+    pattern = ReAct(
+        agent=Agent(
+            "financial_analyst",
+            OpenAILLM("gpt-4o"),
+            system_prompt="You are a financial research analyst. "
+                          "Use tools to gather data before drawing conclusions. "
+                          "Think step by step. Show your reasoning. "
+                          "Format:\n"
+                          "Thought: <your reasoning>\n"
+                          "Action: tool_name(argument)\n"
+                          "...repeat as needed...\n"
+                          "FINISH: <final answer>",
+        ),
+        tools={
+            "search": search,
+            "calculator": calculator,
+            "get_price": get_price,
+        },
+        max_steps=8,
     )
 
-pattern = ReAct(
-    agent=Agent(
-        "financial_analyst",
-        OpenAILLM("gpt-4o"),
-        system_prompt="You are a financial research analyst. "
-                      "Use tools to gather data before drawing conclusions. "
-                      "Think step by step. Show your reasoning. "
-                      "Format:\n"
-                      "Thought: <your reasoning>\n"
-                      "Action: tool_name(argument)\n"
-                      "...repeat as needed...\n"
-                      "FINISH: <final answer>",
-    ),
-    tools={
-        "search": search,
-        "calculator": calculator,
-        "get_price": get_price,
-    },
-    max_steps=8,
-)
+    result = asyncio.run(pattern.run(
+        "Research Nvidia's current financial position: revenue growth, competitive threats, "
+        "and whether the current P/E ratio is justified. Give a buy/hold/sell recommendation."
+    ))
+    print(result.output)
+    print(f"Steps: {result.metadata['steps']}, Tools used: {result.metadata['tools_used']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
 
-result = asyncio.run(pattern.run(
-    "Research Nvidia's current financial position: revenue growth, competitive threats, "
-    "and whether the current P/E ratio is justified. Give a buy/hold/sell recommendation."
-))
-print(result.output)
-print(f"Steps: {result.metadata['steps']}, Tools used: {result.metadata['tools_used']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+=== "Blueprint YAML"
+
+    Declare the same reasoning agent as a `pyagent-blueprint` manifest. Tool *names* are declarative
+    (`agents.<name>.tools`); wiring the actual Python callables (`search`, `calculator`, `get_price`)
+    is a runtime-adapter concern, done in the Python API after compiling:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: financial-research-agent
+      version: 1.0.0
+      description: ReAct agent reasons step by step and calls tools to research a question
+    providers:
+      primary: { model: gpt-4o }
+    agents:
+      financial_analyst:
+        provider: primary
+        prompt: "Reason step by step. Use tools to gather data. Respond FINISH: <answer> when done."
+        tools: [search, calculator, get_price]
+    workflows:
+      research:
+        pattern: react
+        agents:
+          agent: financial_analyst
+        config:
+          max_steps: 8
+    ```
+
+    ```bash
+    pyagent-blueprint validate financial-research-agent.yaml
+    pyagent-blueprint test financial-research-agent.yaml
+    ```
 
 ---
 

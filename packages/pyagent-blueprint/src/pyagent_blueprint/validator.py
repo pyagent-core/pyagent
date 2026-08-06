@@ -6,10 +6,39 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from pyagent_patterns.registry import list_patterns
-
 if TYPE_CHECKING:
     from pyagent_blueprint.schema.spec import BlueprintSpec
+
+
+def _known_pattern_names() -> set[str] | None:
+    """Best-effort pattern vocabulary lookup, decoupled from any specific
+    runtime. Tries every installed `RuntimeAdapter` and unions whatever
+    `supported_patterns()` each declares. Returns ``None`` (meaning "no
+    constraint, don't check") if no adapter is installed, or if every
+    installed adapter declares an empty vocabulary (e.g. a loop-based
+    adapter with no fixed pattern concept) — see adapter.py's
+    `supported_patterns()` docstring."""
+    try:
+        from pyagent_blueprint.adapter import AdapterRegistry
+    except ImportError:  # pragma: no cover - adapter module always ships with core
+        return None
+
+    known: set[str] = set()
+    try:
+        adapters = AdapterRegistry.discover()
+    except Exception:  # pragma: no cover - defensive: never fail validation on discovery issues
+        return None
+
+    if not adapters:
+        return None
+
+    for adapter_cls in adapters.values():
+        try:
+            known.update(adapter_cls().supported_patterns())
+        except Exception:  # pragma: no cover - a broken adapter shouldn't break validation
+            continue
+
+    return known or None
 
 
 class IssueSeverity(StrEnum):
@@ -107,9 +136,16 @@ class BlueprintValidator:
         return issues
 
     def _check_pattern_names(self, spec: BlueprintSpec) -> list[ValidationIssue]:
-        """Ensure all pattern names are registered."""
+        """Ensure all pattern names are registered, IF at least one
+        installed adapter declares a pattern vocabulary. Degrades
+        gracefully (no error) when no adapter is installed, or when the
+        installed adapter(s) don't have a fixed pattern vocabulary at
+        all (e.g. a loop-based adapter) — this is what lets `validate`
+        keep working even with zero runtime packages installed."""
         issues: list[ValidationIssue] = []
-        known = set(list_patterns())
+        known = _known_pattern_names()
+        if known is None:
+            return issues
 
         for wf_name, wf_spec in spec.workflows.items():
             if wf_spec.pattern not in known:

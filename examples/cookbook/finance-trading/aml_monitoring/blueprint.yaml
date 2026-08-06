@@ -35,7 +35,8 @@ agents:
 workflows:
   triage:
     pattern: pipeline
-    stages: [rule_screener, risk_scorer, enrichment]
+    agents:
+      stages: [rule_screener, risk_scorer, enrichment]
 
 observability:
   tracing:

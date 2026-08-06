@@ -22,9 +22,11 @@ agents:
 workflows:
   underwrite:
     pattern: debate
-    debaters: [approve_advocate, decline_advocate]
-    judge: senior_underwriter
-    rounds: 2
+    agents:
+      debaters: [approve_advocate, decline_advocate]
+      judge: senior_underwriter
+    config:
+      rounds: 2
 
 observability:
   tracing: { enabled: true }

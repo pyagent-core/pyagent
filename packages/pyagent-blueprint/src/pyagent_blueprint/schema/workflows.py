@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class RecoverySpec(BaseModel):
@@ -17,6 +17,15 @@ class RecoverySpec(BaseModel):
 
 class WorkflowSpec(BaseModel):
     """Specification of a workflow: pattern + agent wiring."""
+
+    # Agent/pattern wiring (routes, stages, teams, ...) must be nested under
+    # `agents:`/`config:` — a misplaced sibling key (e.g. `classifier:` next
+    # to `pattern:` instead of inside `agents:`) is silently dropped under
+    # the default "ignore extra" behavior, producing an empty `agents={}`
+    # that only fails at run time with a confusing AttributeError deep in
+    # the pattern's `_execute`. Forbidding extras turns that into a clear,
+    # immediate ValidationError at load time.
+    model_config = ConfigDict(extra="forbid")
 
     pattern: str = Field(..., description="Pattern registry name (e.g., 'supervisor', 'pipeline')")
     agents: dict[str, Any] = Field(default_factory=dict, description="Role → agent ref mapping")

@@ -38,8 +38,9 @@ agents:
 workflows:
   generate:
     pattern: fan_out_fan_in
-    workers: [momentum, mean_reversion, sentiment]
-    aggregator: signal_aggregator
+    agents:
+      agents: [momentum, mean_reversion, sentiment]
+      aggregator: signal_aggregator
 
 observability:
   tracing: { enabled: true }

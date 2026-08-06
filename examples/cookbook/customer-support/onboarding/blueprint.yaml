@@ -16,8 +16,10 @@ agents:
 workflows:
   onboard:
     pattern: role_based
-    agents: [verification, account_setup, faq, success]
-    rounds: 1
+    agents:
+      agents: [verification, account_setup, faq, success]
+    config:
+      rounds: 1
 
 observability:
   tracing: { enabled: true }

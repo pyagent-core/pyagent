@@ -11,14 +11,15 @@ providers:
 agents:
   skills:       { provider: smart, prompt: "Score 0-10 on technical skills. Quote evidence." }
   experience:   { provider: smart, prompt: "Score 0-10 on experience and impact. Quote evidence." }
-  collaboration:{ provider: fast,  prompt: "Score 0-10 on collaboration and ownership signals." }
+  collaboration: { provider: fast,  prompt: "Score 0-10 on collaboration and ownership signals." }
   panel:        { provider: smart, prompt: "Combine scores into STRONG HIRE / HIRE / NO HIRE." }
 
 workflows:
   screen:
     pattern: fan_out_fan_in
-    agents: [skills, experience, collaboration]
-    aggregator: panel
+    agents:
+      agents: [skills, experience, collaboration]
+      aggregator: panel
 
 observability:
   tracing: { enabled: true }

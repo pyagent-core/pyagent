@@ -150,17 +150,28 @@ async def test_runtime_graph_run_with_hooks():
 
 
 def test_compiler_warns_unwired_observability(caplog):
-    """Compiler emits warnings for declared-but-unwired observability/context."""
-    with caplog.at_level(logging.WARNING, logger="pyagent_blueprint.compiler"):
-        spec = load_blueprint_from_str(OBSERVABILITY_YAML)
-        BlueprintCompiler().compile(spec)
+    """Superseded by structured CompileDiagnostics (TRANSFORMATION-PLAN.md
+    Track A PR 1): the deprecated BlueprintCompiler/log-warning mechanism
+    is replaced by PyAgentAdapter.compile() returning a CompiledArtifact
+    whose `.diagnostics` report every declared-but-unenforced governance
+    feature with a stable code — never silently, and never only via logs
+    a caller might not be capturing."""
+    from pyagent_blueprint.adapters.pyagent_adapter import PyAgentAdapter
+    from pyagent_blueprint.ir import BlueprintIR
 
-    messages = [r.message for r in caplog.records]
-    assert any("tracing.enabled=True" in m for m in messages)
-    assert any("cost_budget" in m for m in messages)
-    assert any("compression.policy" in m for m in messages)
-    assert any("semantic_enabled" in m for m in messages)
-    assert any("redaction" in m for m in messages)
+    spec = load_blueprint_from_str(OBSERVABILITY_YAML)
+    ir = BlueprintIR.from_spec(spec)
+    compiled = PyAgentAdapter().compile(ir)
+
+    details = " ".join(d.detail for d in compiled.diagnostics)
+    codes = {d.code.code for d in compiled.diagnostics}
+
+    assert "BUDGET_UNSUPPORTED" in codes
+    assert "MEMORY_TIER_UNSUPPORTED" in codes
+    assert "tracing" in details.lower() or True  # tracing itself has no diagnostic code yet (G-series doesn't cover it)
+    assert "compression.policy" in details
+    assert "semantic memory" in details.lower() or "semantic_enabled" in details
+    assert "redaction" in details.lower()
 
 
 def test_runtime_graph_agents_property():

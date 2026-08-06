@@ -428,7 +428,7 @@ Trace: investment-analysis / debate (9.8s total, $0.01032)
 
 ## See Also
 
-- [Studio Package](studio.md) — visual trace explorer, cost dashboards
+- [Studio Package](studio/index.md) — visual trace explorer, cost dashboards
 - [Tracing Guide](../guides/tracing.md) — production setup for Langfuse, Datadog, Grafana
 - [Compress Package](compress.md) — `pyagent.compress.savings_pct` OTel attribute
 - [API Reference](../api/trace.md)

@@ -18,8 +18,9 @@ agents:
 workflows:
   launch:
     pattern: orchestrator_workers
-    orchestrator: launch_lead
-    workers: [pricing, copywriter, seo, inventory]
+    agents:
+      orchestrator: launch_lead
+      workers: [pricing, copywriter, seo, inventory]
 
 observability:
   tracing: { enabled: true }

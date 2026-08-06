@@ -9,6 +9,7 @@ from pyagent_blueprint.schema.context import ContextConfigSpec  # noqa: TC001
 from pyagent_blueprint.schema.contracts import ContractSpec  # noqa: TC001
 from pyagent_blueprint.schema.metadata import MetadataSpec  # noqa: TC001
 from pyagent_blueprint.schema.observability import ObservabilitySpec  # noqa: TC001
+from pyagent_blueprint.schema.package import PackageSpec  # noqa: TC001
 from pyagent_blueprint.schema.providers import ProviderBindingSpec  # noqa: TC001
 from pyagent_blueprint.schema.workflows import WorkflowSpec  # noqa: TC001
 
@@ -22,6 +23,9 @@ class BlueprintSpec(BaseModel):
 
     api_version: str = Field(default="pyagent/v1", description="Schema version")
     metadata: MetadataSpec
+    package: PackageSpec | None = Field(
+        default=None, description="Optional 'Agent Unit' packaging metadata"
+    )
     providers: dict[str, ProviderBindingSpec] = Field(default_factory=dict)
     context: ContextConfigSpec | None = Field(default=None)
     agents: dict[str, AgentSpec]

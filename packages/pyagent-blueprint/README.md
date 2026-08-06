@@ -12,10 +12,26 @@
 ## Install
 
 ```bash
+# Core: schema, validation, rendering, diffing — zero runtime dependency
 pip install pyagent-blueprint
+
+# + the bundled PyAgent reference runtime (pyagent-patterns/router/providers/context)
+pip install "pyagent-blueprint[pyagent]"
 ```
 
-Depends on: `pyagent-patterns`, `pyagent-router`, `pyagent-providers`, `pyagent-context`, `pydantic`, `pyyaml`, `click`.
+Core depends only on `pydantic`, `pyyaml`, `click`. Executing a compiled
+blueprint requires a `RuntimeAdapter` — either the bundled `[pyagent]`
+extra, one of four zero-dependency reference adapters shipped in-repo
+(`single_agent`, `sequential_chain`, `state_machine`, `simple_loop`), or a
+third-party adapter for LangGraph / CrewAI / AutoGen / Semantic Kernel /
+OpenAI Agents SDK / your own runtime. See
+[Adapters & Framework-Agnostic Runtimes](#adapters--framework-agnostic-runtimes) below.
+
+| Install | Adapters available |
+|---|---|
+| `pip install pyagent-blueprint` | `single_agent`, `sequential_chain`, `state_machine`, `simple_loop` (zero extra deps) |
+| `pip install "pyagent-blueprint[pyagent]"` | + `pyagent` (full PyAgent pattern registry: pipeline, supervisor, debate, voting, fan-out/fan-in, etc.) |
+| + third-party adapter package | + whatever that package registers (e.g. `langgraph`, `crewai`) |
 
 ## Why Blueprints?
 
@@ -244,7 +260,85 @@ pyagent-blueprint diff v1.yaml v2.yaml
 
 # Generate scaffold
 pyagent-blueprint generate --pattern supervisor --agents "classifier,billing,tech" --name my-system
+
+# List discoverable RuntimeAdapters and their capabilities
+pyagent-blueprint adapters
+
+# Package a blueprint into a distributable "Agent Unit" archive
+# (requires a top-level `package:` block — see below)
+pyagent-blueprint package blueprint.yaml -o dist/
+
+# Scaffold a starter RuntimeAdapter package for a third-party SDK
+pyagent-blueprint adapter-template --framework LangGraph -o ./my-langgraph-adapter
 ```
+
+## Adapters & Framework-Agnostic Runtimes
+
+A blueprint compiles to a framework-agnostic `BlueprintIR`, then a
+`RuntimeAdapter` translates that IR into something a specific agent SDK
+can execute. Core never imports any agent-execution framework — adapters
+are the only place `pyagent_patterns`, `langgraph`, `crewai`, etc. may be
+imported, and they're discovered via Python entry points
+(`pyagent_blueprint.adapters`).
+
+```python
+from pyagent_blueprint.adapter import AdapterRegistry
+
+adapters = AdapterRegistry.discover()   # {"single_agent": ..., "pyagent": ..., ...}
+adapter = AdapterRegistry.get("single_agent")()
+artifact = adapter.compile(ir)          # CompiledArtifact(handle, diagnostics, intent)
+result = await adapter.run(artifact, "support", "my question")
+```
+
+Four zero-dependency reference adapters ship in-repo and pass a shared
+`AdapterConformanceSuite` — the proof that the `RuntimeAdapter` contract
+isn't shaped around any one framework:
+
+| Adapter | Model | Capability exercised |
+|---|---|---|
+| `single_agent` | Degenerate no-orchestration case | `SYNC_EXECUTION` |
+| `sequential_chain` | Strict linear pipeline | (none — baseline) |
+| `state_machine` | Explicit FSM | `PARTIAL_WORKFLOW_RUN` |
+| `simple_loop` | Bare while-loop | `STREAMING` |
+| `pyagent` | Full pattern registry (pipeline, supervisor, debate, voting, ...) | `PARTIAL_WORKFLOW_RUN` |
+
+### Writing your own adapter
+
+Run the scaffold command to generate a starter package with the entry
+point pre-wired and the conformance suite already imported:
+
+```bash
+pyagent-blueprint adapter-template --framework CrewAI -o ./my-crewai-adapter
+cd my-crewai-adapter
+pip install -e .[test]
+# fill in src/pyagent_blueprint_adapter_crewai/adapter.py
+pytest tests/
+```
+
+Passing `AdapterConformanceSuite` (from `pyagent_blueprint.conformance`)
+is the acceptance bar for any adapter — in-repo or third-party.
+
+## Packaging — "Agent Unit" Artifacts
+
+Add an optional top-level `package:` block to declare distribution metadata:
+
+```yaml
+package:
+  name: research-agent-unit
+  version: 1.0.0
+  author: platform-team
+  runtime: single_agent   # must match a discoverable RuntimeAdapter
+  dependencies: []
+```
+
+Then build a distributable archive:
+
+```bash
+pyagent-blueprint package blueprint.yaml -o dist/
+# → dist/research-agent-unit-1.0.0.agentunit.zip
+#   containing unit.json (manifest + content hash) + the original spec
+```
+
 
 ## Observability Configuration — Tracing & Cost Budgets
 

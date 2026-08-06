@@ -157,3 +157,83 @@ def generate(pattern: str, agents: str, name: str, output: str | None) -> None:
         click.echo(f"Written to {output}")
     else:
         click.echo(yaml_str)
+
+
+@cli.command("package")
+@click.argument("path", type=click.Path(exists=True))
+@click.option(
+    "-o",
+    "--output",
+    "output_dir",
+    type=click.Path(),
+    default="dist",
+    help="Output directory for the packaged Agent Unit (default: dist)",
+)
+def package_cmd(path: str, output_dir: str) -> None:
+    """Package a blueprint into a distributable 'Agent Unit' archive.
+
+    Requires the blueprint to declare a top-level 'package:' block with at
+    least 'name' and 'runtime'.
+    """
+    from pyagent_blueprint.packaging import PackagingError, package_blueprint
+
+    try:
+        spec = load_blueprint(path)
+    except BlueprintLoadError as exc:
+        click.echo(f"Load error: {exc}", err=True)
+        sys.exit(1)
+
+    raw_source = Path(path).read_text(encoding="utf-8")
+
+    try:
+        archive_path = package_blueprint(spec, raw_source, path, output_dir)
+    except PackagingError as exc:
+        click.echo(f"Packaging error: {exc}", err=True)
+        sys.exit(1)
+
+    click.echo(f"✓ Packaged Agent Unit written to {archive_path}")
+
+
+@cli.command("adapters")
+def adapters_cmd() -> None:
+    """List discoverable RuntimeAdapters and their capabilities."""
+    from pyagent_blueprint.adapter import AdapterRegistry
+
+    discovered = AdapterRegistry.discover()
+    if not discovered:
+        click.echo(
+            "No adapters discovered. Install an adapter package "
+            "(e.g. 'pip install pyagent-blueprint[pyagent]') to enable one."
+        )
+        return
+
+    for adapter_name, adapter_cls in sorted(discovered.items()):
+        caps = getattr(adapter_cls, "capabilities", None)
+        click.echo(f"{adapter_name}: {caps}")
+
+
+@cli.command("adapter-template")
+@click.option("--framework", required=True, help="Human-readable SDK name, e.g. 'LangGraph'")
+@click.option("--adapter-name", default=None, help="entry-point/RuntimeAdapter.name (default: derived)")
+@click.option("--dist-name", default=None, help="PyPI distribution name (default: derived)")
+@click.option(
+    "-o", "--output", "output_dir", type=click.Path(), required=True, help="Output directory"
+)
+def adapter_template_cmd(
+    framework: str, adapter_name: str | None, dist_name: str | None, output_dir: str
+) -> None:
+    """Scaffold a starter RuntimeAdapter package for a third-party SDK.
+
+    Generates a pyproject.toml with the entry point pre-wired, a stub
+    adapter module, a conformance test file, and a README.
+    """
+    from pyagent_blueprint.adapter_template import write_adapter_template
+
+    out_dir = write_adapter_template(
+        framework_name=framework,
+        output_dir=output_dir,
+        adapter_name=adapter_name,
+        dist_name=dist_name,
+    )
+    click.echo(f"✓ Adapter template for '{framework}' scaffolded at {out_dir}")
+

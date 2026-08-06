@@ -43,62 +43,94 @@ sequenceDiagram
 
 Five independent analysts form views, share with 2 neighbors each round, and refine through interaction.
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.advanced import Swarm
-from pyagent_providers import GeminiLLM
+=== "Python"
 
-pattern = Swarm(
-    agents=[
-        Agent(
-            "ml_researcher",
-            GeminiLLM("gemini-2.5-flash"),
-            system_prompt="You are an ML researcher. Form views based on ML/AI research trends: "
-                          "what models, architectures, and capabilities will dominate in 2 years. "
-                          "When you see a neighbor's view, update yours if their evidence is compelling.",
-        ),
-        Agent(
-            "infra_engineer",
-            GeminiLLM("gemini-2.5-flash"),
-            system_prompt="You are a cloud infrastructure engineer. Form views based on platform "
-                          "and infrastructure trends. Update your view when presented with "
-                          "compelling evidence from colleagues.",
-        ),
-        Agent(
-            "product_manager",
-            GeminiLLM("gemini-2.5-flash"),
-            system_prompt="You are a product manager tracking user adoption trends. "
-                          "Focus on what users actually want vs what researchers build. "
-                          "Update your view based on compelling market evidence.",
-        ),
-        Agent(
-            "vc_analyst",
-            GeminiLLM("gemini-2.5-flash"),
-            system_prompt="You are a VC analyst tracking investment flows and startup activity. "
-                          "Form views on where capital is flowing and why. "
-                          "Update based on compelling evidence from colleagues.",
-        ),
-        Agent(
-            "enterprise_architect",
-            GeminiLLM("gemini-2.5-flash"),
-            system_prompt="You are an enterprise architect tracking corporate adoption. "
-                          "Focus on what enterprises are actually deploying vs piloting. "
-                          "Update based on compelling evidence.",
-        ),
-    ],
-    rounds=3,
-    neighbor_count=2,
-    aggregation="last",
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.advanced import Swarm
+    from pyagent_providers import GeminiLLM
 
-result = asyncio.run(pattern.run(
-    "What are the top 3 most important AI/ML technology trends for enterprise software in 2026?"
-))
-print(result.output)
-print(f"Agents: {result.metadata['agents']}, Rounds: {result.metadata['rounds']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    pattern = Swarm(
+        agents=[
+            Agent(
+                "ml_researcher",
+                GeminiLLM("gemini-2.5-flash"),
+                system_prompt="You are an ML researcher. Form views based on ML/AI research trends: "
+                              "what models, architectures, and capabilities will dominate in 2 years. "
+                              "When you see a neighbor's view, update yours if their evidence is compelling.",
+            ),
+            Agent(
+                "infra_engineer",
+                GeminiLLM("gemini-2.5-flash"),
+                system_prompt="You are a cloud infrastructure engineer. Form views based on platform "
+                              "and infrastructure trends. Update your view when presented with "
+                              "compelling evidence from colleagues.",
+            ),
+            Agent(
+                "product_manager",
+                GeminiLLM("gemini-2.5-flash"),
+                system_prompt="You are a product manager tracking user adoption trends. "
+                              "Focus on what users actually want vs what researchers build. "
+                              "Update your view based on compelling market evidence.",
+            ),
+            Agent(
+                "vc_analyst",
+                GeminiLLM("gemini-2.5-flash"),
+                system_prompt="You are a VC analyst tracking investment flows and startup activity. "
+                              "Form views on where capital is flowing and why. "
+                              "Update based on compelling evidence from colleagues.",
+            ),
+            Agent(
+                "enterprise_architect",
+                GeminiLLM("gemini-2.5-flash"),
+                system_prompt="You are an enterprise architect tracking corporate adoption. "
+                              "Focus on what enterprises are actually deploying vs piloting. "
+                              "Update based on compelling evidence.",
+            ),
+        ],
+        rounds=3,
+        neighbor_count=2,
+        aggregation="last",
+    )
+
+    result = asyncio.run(pattern.run(
+        "What are the top 3 most important AI/ML technology trends for enterprise software in 2026?"
+    ))
+    print(result.output)
+    print(f"Agents: {result.metadata['agents']}, Rounds: {result.metadata['rounds']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same swarm as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: trend-forecast-swarm
+      version: 1.0.0
+      description: Independent analysts form views and refine them through neighbor interaction
+    providers:
+      primary: { model: gemini-2.5-flash }
+    agents:
+      ml_researcher: { provider: primary, prompt: "Form views on ML/AI research trends. Update when neighbors are compelling." }
+      infra_engineer: { provider: primary, prompt: "Form views on infrastructure trends. Update when neighbors are compelling." }
+      product_manager: { provider: primary, prompt: "Form views on product trends. Update when neighbors are compelling." }
+    workflows:
+      forecast:
+        pattern: swarm
+        agents:
+          agents: [ml_researcher, infra_engineer, product_manager]
+        config:
+          rounds: 3
+    ```
+
+    ```bash
+    pyagent-blueprint validate trend-forecast-swarm.yaml
+    pyagent-blueprint test trend-forecast-swarm.yaml
+    ```
 
 ---
 

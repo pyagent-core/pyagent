@@ -20,10 +20,11 @@ agents:
 workflows:
   brief:
     pattern: hierarchical
-    manager: policy_director
-    teams:
-      - { name: Economics, lead: economics_lead, workers: [fiscal_analyst, labour_analyst] }
-      - { name: Legal,     lead: legal_lead,     workers: [statute_analyst, rights_analyst] }
+    agents:
+      manager: policy_director
+      teams:
+        - { name: Economics, lead: economics_lead, workers: [fiscal_analyst, labour_analyst] }
+        - { name: Legal,     lead: legal_lead,     workers: [statute_analyst, rights_analyst] }
 
 observability:
   tracing: { enabled: true }

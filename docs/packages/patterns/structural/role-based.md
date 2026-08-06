@@ -38,58 +38,90 @@ sequenceDiagram
 
 ## Use Case 1 — Product Strategy Council (Anthropic)
 
-```python
-import asyncio
-from pyagent_patterns.base import Agent
-from pyagent_patterns.structural import RoleBased
-from pyagent_providers import AnthropicLLM
+=== "Python"
 
-pattern = RoleBased(
-    agents=[
-        Agent(
-            "CEO",
-            AnthropicLLM("claude-sonnet-4-20250514"),
-            system_prompt="You are the CEO. Think about: market positioning, competitive advantage, "
-                          "customer value, and long-term strategic direction. "
-                          "Be decisive. After reviewing other executives' input, "
-                          "update your position if the evidence warrants it.",
-        ),
-        Agent(
-            "CTO",
-            AnthropicLLM("claude-sonnet-4-20250514"),
-            system_prompt="You are the CTO. Think about: technical feasibility, build vs buy, "
-                          "architecture trade-offs, engineering capacity, and technical debt. "
-                          "Be honest about what is and isn't possible in the proposed timeline.",
-        ),
-        Agent(
-            "CPO",
-            AnthropicLLM("claude-sonnet-4-20250514"),
-            system_prompt="You are the CPO. Think about: user needs, product-market fit, "
-                          "feature prioritization, and the roadmap impact of each strategic choice. "
-                          "Represent the voice of the customer.",
-        ),
-        Agent(
-            "CFO",
-            AnthropicLLM("claude-haiku-3-5-20241022"),
-            system_prompt="You are the CFO. Think about: budget constraints, ROI, payback period, "
-                          "financial risk, and capital allocation trade-offs. "
-                          "Challenge assumptions about projected returns.",
-        ),
-    ],
-    rounds=2,
-    shared_context=True,
-)
+    ```python
+    import asyncio
+    from pyagent_patterns.base import Agent
+    from pyagent_patterns.structural import RoleBased
+    from pyagent_providers import AnthropicLLM
 
-result = asyncio.run(pattern.run(
-    "Should we pivot our B2B SaaS product to add an AI-native layer? "
-    "Investment required: ~$3M over 12 months. "
-    "Competitor just launched a similar feature. "
-    "Current ARR: $8M, growth rate: 35% YoY."
-))
-print(result.output)
-print(f"Roles: {result.metadata['roles']}, Rounds: {result.metadata['rounds']}")
-print(f"Cost: ${result.cost_estimate:.4f}")
-```
+    pattern = RoleBased(
+        agents=[
+            Agent(
+                "CEO",
+                AnthropicLLM("claude-sonnet-4-20250514"),
+                system_prompt="You are the CEO. Think about: market positioning, competitive advantage, "
+                              "customer value, and long-term strategic direction. "
+                              "Be decisive. After reviewing other executives' input, "
+                              "update your position if the evidence warrants it.",
+            ),
+            Agent(
+                "CTO",
+                AnthropicLLM("claude-sonnet-4-20250514"),
+                system_prompt="You are the CTO. Think about: technical feasibility, build vs buy, "
+                              "architecture trade-offs, engineering capacity, and technical debt. "
+                              "Be honest about what is and isn't possible in the proposed timeline.",
+            ),
+            Agent(
+                "CPO",
+                AnthropicLLM("claude-sonnet-4-20250514"),
+                system_prompt="You are the CPO. Think about: user needs, product-market fit, "
+                              "feature prioritization, and the roadmap impact of each strategic choice. "
+                              "Represent the voice of the customer.",
+            ),
+            Agent(
+                "CFO",
+                AnthropicLLM("claude-haiku-3-5-20241022"),
+                system_prompt="You are the CFO. Think about: budget constraints, ROI, payback period, "
+                              "financial risk, and capital allocation trade-offs. "
+                              "Challenge assumptions about projected returns.",
+            ),
+        ],
+        rounds=2,
+        shared_context=True,
+    )
+
+    result = asyncio.run(pattern.run(
+        "Should we pivot our B2B SaaS product to add an AI-native layer? "
+        "Investment required: ~$3M over 12 months. "
+        "Competitor just launched a similar feature. "
+        "Current ARR: $8M, growth rate: 35% YoY."
+    ))
+    print(result.output)
+    print(f"Roles: {result.metadata['roles']}, Rounds: {result.metadata['rounds']}")
+    print(f"Cost: ${result.cost_estimate:.4f}")
+    ```
+
+=== "Blueprint YAML"
+
+    Declare the same council as a `pyagent-blueprint` manifest:
+
+    ```yaml
+    api_version: pyagent/v1
+    metadata:
+      name: strategy-council
+      version: 1.0.0
+      description: CEO, CTO, and CPO collaborate in structured rounds on a strategic decision
+    providers:
+      primary: { model: claude-sonnet-4-20250514 }
+    agents:
+      ceo: { provider: primary, prompt: "You are the CEO. Think about market positioning and strategic direction." }
+      cto: { provider: primary, prompt: "You are the CTO. Think about technical feasibility and architecture trade-offs." }
+      cpo: { provider: primary, prompt: "You are the CPO. Think about product-market fit and roadmap impact." }
+    workflows:
+      align:
+        pattern: role_based
+        agents:
+          agents: [ceo, cto, cpo]
+        config:
+          rounds: 2
+    ```
+
+    ```bash
+    pyagent-blueprint validate strategy-council.yaml
+    pyagent-blueprint test strategy-council.yaml
+    ```
 
 ---
 

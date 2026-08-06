@@ -12,13 +12,15 @@ agents:
   lodging:    { provider: gemini, prompt: "Plan lodging near activities and airport. Update when flights change." }
   activities: { provider: gemini, prompt: "Plan daily activities. Keep within remaining budget." }
   budget:     { provider: gemini, prompt: "Track total budget. Flag overruns. Push neighbors to trade off." }
-  local_guide:{ provider: gemini, prompt: "Add authentic local food and neighbourhood picks; avoid tourist traps." }
+  local_guide: { provider: gemini, prompt: "Add authentic local food and neighbourhood picks; avoid tourist traps." }
 
 workflows:
   plan:
     pattern: swarm
-    agents: [flights, lodging, activities, budget, local_guide]
-    rounds: 3
+    agents:
+      agents: [flights, lodging, activities, budget, local_guide]
+    config:
+      rounds: 3
 
 observability:
   tracing: { enabled: true }

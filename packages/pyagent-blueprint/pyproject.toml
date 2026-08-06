@@ -22,10 +22,6 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "pyagent-patterns>=0.1.0",
-    "pyagent-router>=0.1.0",
-    "pyagent-providers>=0.1.0",
-    "pyagent-context>=0.1.0",
     "pydantic>=2.7",
     "pyyaml>=6.0",
     "click>=8.1",
@@ -41,6 +37,19 @@ Documentation = "https://pyagent.org"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.5", "mypy>=1.10"]
+pyagent = [
+    "pyagent-patterns>=0.1.0",
+    "pyagent-router>=0.1.0",
+    "pyagent-providers>=0.1.0",
+    "pyagent-context>=0.1.0",
+]
+
+[project.entry-points."pyagent_blueprint.adapters"]
+pyagent = "pyagent_blueprint.adapters.pyagent_adapter:PyAgentAdapter"
+simple_loop = "pyagent_blueprint.adapters.reference.simple_loop:SimpleLoopAdapter"
+state_machine = "pyagent_blueprint.adapters.reference.state_machine:StateMachineAdapter"
+sequential_chain = "pyagent_blueprint.adapters.reference.sequential_chain:SequentialChainAdapter"
+single_agent = "pyagent_blueprint.adapters.reference.single_agent:SingleAgentAdapter"
 
 [project.scripts]
 pyagent-blueprint = "pyagent_blueprint.cli:cli"

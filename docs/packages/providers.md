@@ -378,8 +378,8 @@ export GOOGLE_API_KEY="..."
 
 ## See Also
 
-- [Blueprint Package](blueprint.md) — declare providers in YAML `providers:` block
-- [Studio Package](studio.md) — `/providers` health dashboard in web UI
+- [Blueprint Package](blueprint/index.md) — declare providers in YAML `providers:` block
+- [Studio Package](studio/index.md) — `/providers` health dashboard in web UI
 - [Routing Guide](../guides/router.md) — difficulty-based model routing with pyagent-router
 - [API Reference](../api/providers.md)
 

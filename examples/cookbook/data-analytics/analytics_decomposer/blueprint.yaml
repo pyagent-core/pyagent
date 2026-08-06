@@ -17,8 +17,9 @@ agents:
 workflows:
   analyze:
     pattern: orchestrator_workers
-    orchestrator: analytics_lead
-    workers: [query, transform, chart]
+    agents:
+      orchestrator: analytics_lead
+      workers: [query, transform, chart]
 
 observability:
   tracing: { enabled: true }

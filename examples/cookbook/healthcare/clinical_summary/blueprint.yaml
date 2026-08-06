@@ -11,17 +11,20 @@ providers:
 agents:
   extractor:       { provider: fast,  prompt: "Extract diagnoses, meds, allergies, vitals verbatim." }
   drafter:         { provider: smart, prompt: "Write clinician-ready summary under 150 words." }
-  summary_reviewer:{ provider: smart, prompt: "Correct errors vs source. Reply ACCURATE when done." }
+  summary_reviewer: { provider: smart, prompt: "Correct errors vs source. Reply ACCURATE when done." }
 
 workflows:
   summarize:
     pattern: pipeline
-    stages: [extractor, drafter]
+    agents:
+      stages: [extractor, drafter]
   reflect:
     pattern: self_reflection
-    agent: summary_reviewer
-    stop_phrase: ACCURATE
-    max_rounds: 2
+    agents:
+      agent: summary_reviewer
+    config:
+      stop_phrase: ACCURATE
+      max_rounds: 2
 
 observability:
   tracing: { enabled: true }
