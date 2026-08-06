@@ -48,6 +48,10 @@ jobs:
           pip install -e packages/pyagent-providers
           pip install -e "packages/pyagent-blueprint[dev]"
           pip install -e "packages/pyagent-studio[dev]"
+          pip install -e packages/pyagent-blueprint-adapter-langgraph
+          pip install -e packages/pyagent-blueprint-adapter-crewai
+          pip install -e packages/pyagent-blueprint-adapter-openai-agents
+          pip install -e packages/pyagent-blueprint-adapter-semantic-kernel
       - run: python -m pytest packages/ -v --tb=short
 
   # ── Stage 3a: Benchmark ──────────────────────────────────────────────────────
