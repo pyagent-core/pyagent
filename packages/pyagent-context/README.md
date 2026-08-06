@@ -32,16 +32,16 @@ from pyagent_context import ContextItem, TrustLevel, Sensitivity
 item = ContextItem(
     content="Revenue grew 15% YoY to $25.2B",
     source="analyst",
-    trust_level=TrustLevel.VERIFIED,       # verified | inferred | user | external
-    sensitivity=Sensitivity.INTERNAL,       # public | internal | confidential | restricted
-    expires_at=time.time() + 3600,         # auto-expire in 1 hour
-    derived_from="abc123",                  # parent item ID
+    trust_level=TrustLevel.VERIFIED,  # verified | inferred | user | external
+    sensitivity=Sensitivity.INTERNAL,  # public | internal | confidential | restricted
+    expires_at=time.time() + 3600,  # auto-expire in 1 hour
+    derived_from="abc123",  # parent item ID
 )
 
-print(item.id)               # unique 12-char hex
-print(item.token_estimate)   # auto-calculated: len(content) // 4
-print(item.is_expired)       # False (still within TTL)
-print(item.age_seconds)      # seconds since creation
+print(item.id)  # unique 12-char hex
+print(item.token_estimate)  # auto-calculated: len(content) // 4
+print(item.is_expired)  # False (still within TTL)
+print(item.age_seconds)  # seconds since creation
 
 # Serialize / deserialize
 data = item.to_dict()
@@ -71,11 +71,11 @@ recent = ledger.query(max_age_seconds=300)
 from_analyst = ledger.query(source="analyst")
 
 # Convert to Messages for pattern consumption
-messages = ledger.to_messages()              # all items
+messages = ledger.to_messages()  # all items
 messages = ledger.to_messages(max_tokens=500)  # budget-constrained (most recent first)
 
 # Snapshot for persistence
-snap = ledger.snapshot()                     # JSON-serializable dict
+snap = ledger.snapshot()  # JSON-serializable dict
 restored = ContextLedger.from_snapshot(snap)
 ```
 
@@ -91,8 +91,8 @@ wm = WorkingMemory(max_items=50, max_tokens=10_000)
 item = ContextItem(content="New observation", source="agent_1")
 evicted = wm.add(item)  # returns list of evicted items if capacity exceeded
 
-print(len(wm))            # current item count
-print(wm.total_tokens)    # current token usage
+print(len(wm))  # current item count
+print(wm.total_tokens)  # current token usage
 print(f"{wm.utilization:.0%}")  # e.g. "42%"
 ```
 
@@ -149,8 +149,8 @@ from pyagent_context import ContextCompressor, CompressionPolicy, ContextLedger
 # FIFO: drop oldest items until under floor
 compressor = ContextCompressor(
     policy=CompressionPolicy.FIFO,
-    threshold_tokens=10_000,   # trigger compression at 10k tokens
-    floor_tokens=5_000,        # compress down to 5k
+    threshold_tokens=10_000,  # trigger compression at 10k tokens
+    floor_tokens=5_000,  # compress down to 5k
 )
 
 if compressor.should_compress(ledger):
@@ -183,13 +183,15 @@ retriever = TrustAwareRetriever(
     weight_trust=0.3,
     weight_recency=0.3,
     weight_relevance=0.4,
-    recency_half_life=3600.0,   # 1 hour half-life
+    recency_half_life=3600.0,  # 1 hour half-life
 )
 
 results = retriever.retrieve(ledger, "Q3 earnings revenue growth", top_k=5)
 for r in results:
-    print(f"  [{r.score:.2f}] trust={r.trust_score:.2f} "
-          f"recency={r.recency_score:.2f} relevance={r.relevance_score:.2f}")
+    print(
+        f"  [{r.score:.2f}] trust={r.trust_score:.2f} "
+        f"recency={r.recency_score:.2f} relevance={r.relevance_score:.2f}"
+    )
     print(f"    {r.item.content[:80]}...")
 ```
 
@@ -295,10 +297,10 @@ from pyagent_context import WorkingMemory
 wm = WorkingMemory(max_items=20, max_tokens=8000)
 wm.add(item)
 
-print(wm.utilization)     # 0.05 → 5% of max_items used
-print(wm.token_usage)     # current token estimate total
-print(len(wm))            # number of items in memory
-wm.clear()                # flush all items
+print(wm.utilization)  # 0.05 → 5% of max_items used
+print(wm.token_usage)  # current token estimate total
+print(len(wm))  # number of items in memory
+wm.clear()  # flush all items
 ```
 
 ### SessionMemory Backends
@@ -313,8 +315,8 @@ sm_json = SessionMemory(backend="json", path="session.json")
 sm_sqlite = SessionMemory(backend="sqlite", path="session.db")
 
 sm_json.add(item)
-sm_json.save()            # persist to disk
-sm_json.load()            # reload from disk
+sm_json.save()  # persist to disk
+sm_json.load()  # reload from disk
 items = sm_json.retrieve(query="billing", top_k=5)
 ```
 
@@ -344,8 +346,12 @@ The `ContextLedger` is an append-only log that converts stored `ContextItem` obj
 from pyagent_context import ContextLedger, ContextItem, TrustLevel
 
 ledger = ContextLedger()
-ledger.append(ContextItem(content="Revenue was $25.2B", source="database", trust=TrustLevel.VERIFIED))
-ledger.append(ContextItem(content="Margin expanded to 17%", source="agent_1", trust=TrustLevel.INFERRED))
+ledger.append(
+    ContextItem(content="Revenue was $25.2B", source="database", trust=TrustLevel.VERIFIED)
+)
+ledger.append(
+    ContextItem(content="Margin expanded to 17%", source="agent_1", trust=TrustLevel.INFERRED)
+)
 
 # Convert to messages with a token budget
 # Higher-trust items are prioritized when budget is tight
@@ -390,11 +396,13 @@ ledger = ContextLedger()
 context_messages = ledger.to_messages(budget=4000)
 
 # After agent execution: write output as a new context item
-ledger.append(ContextItem(
-    content=result.output,
-    source="analyst",
-    trust=TrustLevel.INFERRED,
-))
+ledger.append(
+    ContextItem(
+        content=result.output,
+        source="analyst",
+        trust=TrustLevel.INFERRED,
+    )
+)
 ```
 
 In the hook-based integration model, agents automatically read from and write to the ledger when one is attached via `set_context()`.

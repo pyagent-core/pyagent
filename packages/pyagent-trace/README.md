@@ -34,12 +34,12 @@ tracker.record("supervisor", "classifier", "claude-haiku-3.5", 200, 50, 0.00018)
 tracker.record("supervisor", "specialist", "claude-sonnet-4", 1200, 600, 0.01260)
 
 print(f"Total: ${tracker.total_cost:.5f}")  # $0.01897
-print(f"Tokens: {tracker.total_tokens}")    # 3950
+print(f"Tokens: {tracker.total_tokens}")  # 3950
 
 # Breakdowns
 print(tracker.by_pattern())  # {"pipeline": 0.00619, "supervisor": 0.01278}
-print(tracker.by_agent())    # {"extractor": 0.00019, "analyst": 0.00600, ...}
-print(tracker.by_model())    # {"gpt-4o-mini": 0.00019, "gpt-4o": 0.00600, ...}
+print(tracker.by_agent())  # {"extractor": 0.00019, "analyst": 0.00600, ...}
+print(tracker.by_model())  # {"gpt-4o-mini": 0.00019, "gpt-4o": 0.00600, ...}
 
 print(tracker.summary())
 # {
@@ -99,10 +99,12 @@ from pyagent_trace import traced_pattern
 from pyagent_patterns.orchestration import Pipeline
 from pyagent_patterns.resolution import Debate
 
+
 # Decorate the class
 @traced_pattern
 class TracedPipeline(Pipeline):
     pass
+
 
 # Or apply to an existing class
 TracedDebate = traced_pattern(Debate)
@@ -207,6 +209,7 @@ All custom attributes are namespaced under `pyagent.*`:
 
 ```python
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
 exporter = OTLPSpanExporter(endpoint="http://localhost:4317")
 ```
 
@@ -214,6 +217,7 @@ exporter = OTLPSpanExporter(endpoint="http://localhost:4317")
 
 ```python
 from opentelemetry.sdk.trace.export import ConsoleSpanExporter
+
 exporter = ConsoleSpanExporter()
 ```
 
@@ -221,6 +225,7 @@ exporter = ConsoleSpanExporter()
 
 ```python
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+
 exporter = OTLPSpanExporter(
     endpoint="https://api.honeycomb.io/v1/traces",
     headers={"x-honeycomb-team": "YOUR_API_KEY"},
@@ -246,16 +251,20 @@ bus.subscribe_filter(
 )
 
 # Emit events (typically done by agents, patterns, or providers)
-bus.emit(TraceEvent(
-    event_type="agent_start",
-    data={"agent": "analyst", "input_tokens": 500},
-))
+bus.emit(
+    TraceEvent(
+        event_type="agent_start",
+        data={"agent": "analyst", "input_tokens": 500},
+    )
+)
 
 # Async emit for non-blocking producers
-await bus.emit_async(TraceEvent(
-    event_type="llm_call",
-    data={"model": "gpt-4o", "tokens": 1200, "cost_usd": 0.006},
-))
+await bus.emit_async(
+    TraceEvent(
+        event_type="llm_call",
+        data={"model": "gpt-4o", "tokens": 1200, "cost_usd": 0.006},
+    )
+)
 ```
 
 ### TraceEvent Structure
@@ -361,9 +370,9 @@ from pyagent_trace.exporters.langfuse import LangfuseExporter
 bus = TraceEventBus()
 
 # All three receive every event
-bus.subscribe(ConsoleExporter().export_event)         # dev debugging
+bus.subscribe(ConsoleExporter().export_event)  # dev debugging
 bus.subscribe(JsonlExporter("traces/run.jsonl").export_event)  # persistent log
-bus.subscribe(LangfuseExporter().export_event)        # production dashboard
+bus.subscribe(LangfuseExporter().export_event)  # production dashboard
 ```
 
 ## Custom Exporters
@@ -374,6 +383,7 @@ Implement the `TraceExporter` protocol to send events to any backend:
 from pyagent_trace.exporters.base import TraceExporter
 from pyagent_trace.events import TraceEvent
 
+
 class SlackAlertExporter(TraceExporter):
     """Send error events to a Slack channel."""
 
@@ -383,15 +393,19 @@ class SlackAlertExporter(TraceExporter):
     def export_event(self, event: TraceEvent) -> None:
         if event.event_type == "error":
             # POST to Slack webhook
-            requests.post(self.webhook_url, json={
-                "text": f":warning: Agent error: {event.data.get('message')}",
-            })
+            requests.post(
+                self.webhook_url,
+                json={
+                    "text": f":warning: Agent error: {event.data.get('message')}",
+                },
+            )
 
     def flush(self) -> None:
         pass  # No buffering
 
     def shutdown(self) -> None:
         pass  # No cleanup needed
+
 
 # Wire it up
 bus.subscribe(SlackAlertExporter("https://hooks.slack.com/...").export_event)

@@ -41,6 +41,7 @@ Every provider implements this:
 ```python
 from pyagent_providers import ProviderProtocol, HealthStatus, ProviderCapabilities
 
+
 class MyCustomProvider:
     @property
     def name(self) -> str:
@@ -77,17 +78,22 @@ from pyagent_router.selector import Capability
 
 registry = ProviderRegistry()
 
+
 async def setup():
-    await registry.register(MockProvider(
-        name="openai",
-        models=["gpt-4o-mini", "gpt-4o"],
-        capabilities={Capability.GENERAL, Capability.CODE, Capability.VISION},
-    ))
-    await registry.register(MockProvider(
-        name="anthropic",
-        models=["claude-haiku-3.5", "claude-sonnet-4"],
-        capabilities={Capability.GENERAL, Capability.CODE, Capability.CREATIVE},
-    ))
+    await registry.register(
+        MockProvider(
+            name="openai",
+            models=["gpt-4o-mini", "gpt-4o"],
+            capabilities={Capability.GENERAL, Capability.CODE, Capability.VISION},
+        )
+    )
+    await registry.register(
+        MockProvider(
+            name="anthropic",
+            models=["claude-haiku-3.5", "claude-sonnet-4"],
+            capabilities={Capability.GENERAL, Capability.CODE, Capability.CREATIVE},
+        )
+    )
 
     # Discover by capability
     coders = registry.discover({Capability.CODE})
@@ -104,6 +110,7 @@ async def setup():
     removed = await registry.remove_unhealthy()
     print(f"Removed: {removed}")  # []
 
+
 asyncio.run(setup())
 ```
 
@@ -117,10 +124,12 @@ from pyagent_patterns.base import Message
 
 # Capability-first (default): pick the provider with broadest capabilities
 router = ProviderRouter(registry, strategy=RoutingStrategy.CAPABILITY_FIRST)
-provider, model = asyncio.run(router.route(
-    [Message.user("Write a Python REST API with FastAPI")],
-    required={Capability.CODE},
-))
+provider, model = asyncio.run(
+    router.route(
+        [Message.user("Write a Python REST API with FastAPI")],
+        required={Capability.CODE},
+    )
+)
 print(f"{provider.name}/{model}")
 
 # Cost-first: cheapest provider + model for the task
@@ -143,16 +152,18 @@ Try providers in order. If one fails, fall through to the next. Optionally integ
 ```python
 from pyagent_providers import FallbackChain
 
-chain = FallbackChain(providers=[
-    primary_openai,      # try first
-    fallback_anthropic,  # if OpenAI fails
-    emergency_litellm,   # last resort
-])
+chain = FallbackChain(
+    providers=[
+        primary_openai,  # try first
+        fallback_anthropic,  # if OpenAI fails
+        emergency_litellm,  # last resort
+    ]
+)
 
 result = asyncio.run(chain.complete([Message.user("Important task")]))
-print(result.output)           # response from first successful provider
-print(result.provider_name)    # which provider answered
-print(result.attempts)         # full attempt log with errors
+print(result.output)  # response from first successful provider
+print(result.provider_name)  # which provider answered
+print(result.attempts)  # full attempt log with errors
 
 # With circuit breaker integration
 from pyagent_patterns.recovery import CircuitBreaker
@@ -180,8 +191,8 @@ result = negotiator.negotiate(
     min_context=100_000,
 )
 if result:
-    print(result.provider.name)         # "openai" or "anthropic"
-    print(result.model)                 # best model from that provider
+    print(result.provider.name)  # "openai" or "anthropic"
+    print(result.model)  # best model from that provider
     print(f"Match: {result.match_score:.0%}")
     print(result.matched_capabilities)  # {CODE, REASONING}
     print(result.missing_capabilities)  # set()
@@ -227,7 +238,7 @@ if pair:
 from pyagent_providers.adapters.openai import OpenAIProvider
 
 openai = OpenAIProvider(
-    api_key="sk-...",            # or set OPENAI_API_KEY env var
+    api_key="sk-...",  # or set OPENAI_API_KEY env var
     default_model="gpt-4o-mini",
     models=["gpt-4o-mini", "gpt-4o", "o3-mini"],
 )
@@ -299,10 +310,12 @@ registry.register_sync(MockProvider(name="smart", responses=["Detailed analysis"
 fast = registry.get("fast")
 smart = registry.get("smart")
 
-pipeline = Pipeline(stages=[
-    Agent("extractor", fast, system_prompt="Extract key facts."),
-    Agent("analyst", smart, system_prompt="Analyse in depth."),
-])
+pipeline = Pipeline(
+    stages=[
+        Agent("extractor", fast, system_prompt="Extract key facts."),
+        Agent("analyst", smart, system_prompt="Analyse in depth."),
+    ]
+)
 
 result = asyncio.run(pipeline.run("Process this document"))
 print(result.output)
@@ -346,7 +359,13 @@ flowchart TD
 The `ProviderProtocol` is the core abstraction that all providers must implement. It is designed for dual compatibility: usable as both a structured provider and as an `LLMCallable` (the `Agent` constructor's expected callable type).
 
 ```python
-from pyagent_providers.base import ProviderProtocol, ProviderCapabilities, HealthStatus, ProviderInfo
+from pyagent_providers.base import (
+    ProviderProtocol,
+    ProviderCapabilities,
+    HealthStatus,
+    ProviderInfo,
+)
+
 
 class ProviderProtocol:
     async def complete(self, messages: list[Message], **kwargs) -> CompletionResult:
@@ -405,8 +424,14 @@ result = await agent.run("What are the key trends?")
 Implement `ProviderProtocol` to integrate any LLM backend:
 
 ```python
-from pyagent_providers.base import ProviderProtocol, ProviderCapabilities, HealthStatus, ProviderInfo
+from pyagent_providers.base import (
+    ProviderProtocol,
+    ProviderCapabilities,
+    HealthStatus,
+    ProviderInfo,
+)
 from pyagent_patterns.base import Message
+
 
 class MyOpenAIProvider(ProviderProtocol):
     def __init__(self, model: str = "gpt-4o", api_key: str | None = None):
@@ -484,18 +509,28 @@ class TracedProvider:
         self.bus = event_bus
 
     async def complete(self, messages, **kwargs):
-        self.bus.emit(TraceEvent(event_type="llm_call_start", data={
-            "model": self.provider.info().model,
-            "input_tokens": sum(len(m.content.split()) for m in messages),
-        }))
+        self.bus.emit(
+            TraceEvent(
+                event_type="llm_call_start",
+                data={
+                    "model": self.provider.info().model,
+                    "input_tokens": sum(len(m.content.split()) for m in messages),
+                },
+            )
+        )
         result = await self.provider.complete(messages, **kwargs)
-        self.bus.emit(TraceEvent(event_type="llm_call", data={
-            "model": result.model,
-            "input_tokens": result.input_tokens,
-            "output_tokens": result.output_tokens,
-            "cost_usd": result.cost_usd,
-            "latency_ms": result.latency_ms,
-        }))
+        self.bus.emit(
+            TraceEvent(
+                event_type="llm_call",
+                data={
+                    "model": result.model,
+                    "input_tokens": result.input_tokens,
+                    "output_tokens": result.output_tokens,
+                    "cost_usd": result.cost_usd,
+                    "latency_ms": result.latency_ms,
+                },
+            )
+        )
         return result
 ```
 

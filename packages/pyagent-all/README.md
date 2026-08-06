@@ -71,14 +71,16 @@ registry = ProviderRegistry()
 registry.register("anthropic", AnthropicLLM)
 
 model_registry = {
-    "claude-haiku":  AnthropicLLM("claude-haiku-3-5-20241022"),
+    "claude-haiku": AnthropicLLM("claude-haiku-3-5-20241022"),
     "claude-sonnet": AnthropicLLM("claude-sonnet-4-20250514"),
 }
-router   = RouterMiddleware(model_registry=model_registry)
-pipeline = Pipeline(stages=[
-    router.wrap(Agent("extractor",  AnthropicLLM("claude-sonnet-4-20250514"))),
-    router.wrap(Agent("summarizer", AnthropicLLM("claude-sonnet-4-20250514"))),
-])
+router = RouterMiddleware(model_registry=model_registry)
+pipeline = Pipeline(
+    stages=[
+        router.wrap(Agent("extractor", AnthropicLLM("claude-sonnet-4-20250514"))),
+        router.wrap(Agent("summarizer", AnthropicLLM("claude-sonnet-4-20250514"))),
+    ]
+)
 result = asyncio.run(pipeline.run("Summarise this quarterly report..."))
 ```
 
@@ -96,12 +98,14 @@ result = asyncio.run(pipeline.run("Summarise this quarterly report..."))
 from pyagent_context import ContextLedger, ContextItem, TrustLevel, Sensitivity
 
 ledger = ContextLedger()
-ledger.append(ContextItem(
-    content="Customer ID: C-10482, account since 2022",
-    source="database",
-    trust=TrustLevel.VERIFIED,
-    sensitivity=Sensitivity.INTERNAL,
-))
+ledger.append(
+    ContextItem(
+        content="Customer ID: C-10482, account since 2022",
+        source="database",
+        trust=TrustLevel.VERIFIED,
+        sensitivity=Sensitivity.INTERNAL,
+    )
+)
 
 # Wire to all agents in a compiled graph
 graph.wire_context(ledger)
@@ -122,7 +126,7 @@ graph.wire_context(ledger)
 from pyagent_trace.events import TraceEventBus
 
 bus = TraceEventBus()
-graph.wire_trace(bus)   # attach to all agents in the compiled graph
+graph.wire_trace(bus)  # attach to all agents in the compiled graph
 ```
 
 ```bash
@@ -143,7 +147,7 @@ from pyagent_trace.events import TraceEventBus
 from pyagent_context import ContextLedger, ContextItem, TrustLevel
 
 # Pillar 1 — Blueprint
-spec  = load_blueprint("customer-support.yaml")
+spec = load_blueprint("customer-support.yaml")
 
 # Pillar 2 — Execution
 registry = ProviderRegistry()

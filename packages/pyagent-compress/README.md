@@ -34,8 +34,8 @@ compressor = MessageCompressor(target_ratio=0.5)
 # Aggressive: 30% target with filler removal
 compressor = MessageCompressor(
     target_ratio=0.3,
-    min_sentence_length=20,   # drop very short sentences
-    remove_filler=True,       # strip "let me think", "basically", "in other words", etc.
+    min_sentence_length=20,  # drop very short sentences
+    remove_filler=True,  # strip "let me think", "basically", "in other words", etc.
 )
 
 verbose_output = """
@@ -54,10 +54,10 @@ maximum of 20 connections.
 """
 
 result = compressor.compress(verbose_output)
-print(result.compressed)           # key sentences only, filler removed
+print(result.compressed)  # key sentences only, filler removed
 print(f"Saved: {result.savings_pct:.0%}")  # e.g. "Saved: 47%"
-print(result.original_tokens)      # 120
-print(result.compressed_tokens)    # 64
+print(result.original_tokens)  # 120
+print(result.compressed_tokens)  # 64
 ```
 
 ## CompressMiddleware — Wrap Agents with Automatic Compression
@@ -70,14 +70,20 @@ from pyagent_patterns.orchestration import Pipeline
 compressor = MessageCompressor(target_ratio=0.4)
 middleware = CompressMiddleware(compressor=compressor)
 
-pipeline = Pipeline(stages=[
-    middleware.wrap(Agent("researcher", llm,
-                         system_prompt="Research thoroughly. Include all relevant details.")),
-    middleware.wrap(Agent("analyst", llm,
-                         system_prompt="Analyse the research findings.")),
-    # Final stage: no compression — we want the full output
-    Agent("writer", llm, system_prompt="Write the final report."),
-])
+pipeline = Pipeline(
+    stages=[
+        middleware.wrap(
+            Agent(
+                "researcher",
+                llm,
+                system_prompt="Research thoroughly. Include all relevant details.",
+            )
+        ),
+        middleware.wrap(Agent("analyst", llm, system_prompt="Analyse the research findings.")),
+        # Final stage: no compression — we want the full output
+        Agent("writer", llm, system_prompt="Write the final report."),
+    ]
+)
 
 result = asyncio.run(pipeline.run("Research quantum computing hardware trends"))
 
@@ -85,8 +91,10 @@ result = asyncio.run(pipeline.run("Research quantum computing hardware trends"))
 for stage in pipeline._stages[:2]:
     if hasattr(stage, "compression_log"):
         for entry in stage.compression_log:
-            print(f"{stage.name}: saved {entry['savings_pct']:.0%} "
-                  f"({entry['original_tokens']} → {entry['compressed_tokens']} tokens)")
+            print(
+                f"{stage.name}: saved {entry['savings_pct']:.0%} "
+                f"({entry['original_tokens']} → {entry['compressed_tokens']} tokens)"
+            )
 ```
 
 ## TokenBudget — Enforce Workflow-Wide Token Limits
@@ -103,13 +111,13 @@ budget = TokenBudget(
 
 # Custom per-agent limits
 budget.register_agent("researcher", limit=15_000)  # researcher gets more
-budget.register_agent("writer", limit=5_000)        # writer gets less
+budget.register_agent("writer", limit=5_000)  # writer gets less
 
 # Track consumption
 budget.consume("researcher", 3000)
-print(budget.remaining())              # 47000 (workflow remaining)
+print(budget.remaining())  # 47000 (workflow remaining)
 print(budget.remaining("researcher"))  # 12000 (researcher remaining)
-print(budget.workflow_utilization)     # 0.06 → 6% of budget used
+print(budget.workflow_utilization)  # 0.06 → 6% of budget used
 
 # Full summary
 print(budget.summary())
@@ -132,14 +140,16 @@ from pyagent_compress import AgentPruner
 
 pruner = AgentPruner(
     min_contribution=0.3,  # agents scoring below 0.3 should be pruned
-    window_size=5,         # look at last 5 messages per agent
+    window_size=5,  # look at last 5 messages per agent
 )
 
 # After running a multi-agent pattern:
 scores = pruner.score_agents(result.messages, task="Design a distributed cache")
 for score in scores:
-    print(f"{score.agent_name}: {score.score:.2f} "
-          f"(unique info: {score.unique_info:.2f}, messages: {score.message_count})")
+    print(
+        f"{score.agent_name}: {score.score:.2f} "
+        f"(unique info: {score.unique_info:.2f}, messages: {score.message_count})"
+    )
 # analyst_1: 0.72 (unique info: 0.65, messages: 3)
 # analyst_2: 0.18 (unique info: 0.08, messages: 3)  ← prune this one
 # analyst_3: 0.61 (unique info: 0.54, messages: 3)
@@ -157,7 +167,7 @@ from pyagent_compress import InteractionPruner
 
 interaction_pruner = InteractionPruner(
     consensus_threshold=0.7,  # 70% similarity = consensus reached
-    min_rounds=1,             # always run at least 1 round
+    min_rounds=1,  # always run at least 1 round
 )
 
 # Check after each round in a multi-round pattern
@@ -173,11 +183,13 @@ from pyagent_patterns.base import Agent, MockLLM
 from pyagent_patterns.orchestration import Pipeline
 from pyagent_compress import MessageCompressor, CompressMiddleware, TokenBudget
 
-llm = MockLLM(responses=[
-    "Very detailed research output with lots of filler and verbose explanations...",
-    "Thorough analysis building on the research findings...",
-    "Final concise report based on the compressed analysis.",
-])
+llm = MockLLM(
+    responses=[
+        "Very detailed research output with lots of filler and verbose explanations...",
+        "Thorough analysis building on the research findings...",
+        "Final concise report based on the compressed analysis.",
+    ]
+)
 
 budget = TokenBudget(workflow_limit=10_000, per_agent_limit=5_000, strict=True)
 middleware = CompressMiddleware(
@@ -185,11 +197,13 @@ middleware = CompressMiddleware(
     budget=budget,
 )
 
-pipeline = Pipeline(stages=[
-    middleware.wrap(Agent("researcher", llm, system_prompt="Research thoroughly.")),
-    middleware.wrap(Agent("analyst", llm, system_prompt="Analyse findings.")),
-    Agent("writer", llm, system_prompt="Write final report."),
-])
+pipeline = Pipeline(
+    stages=[
+        middleware.wrap(Agent("researcher", llm, system_prompt="Research thoroughly.")),
+        middleware.wrap(Agent("analyst", llm, system_prompt="Analyse findings.")),
+        Agent("writer", llm, system_prompt="Write final report."),
+    ]
+)
 
 result = asyncio.run(pipeline.run("Analyse quantum computing trends"))
 print(f"Budget used: {budget.total_used} / {budget.workflow_limit}")
@@ -306,11 +320,13 @@ from pyagent_compress import CompressMiddleware, MessageCompressor
 middleware = CompressMiddleware(compressor=MessageCompressor(target_ratio=0.4))
 
 # Works with any pattern — Pipeline, Supervisor, Debate, etc.
-pipeline = Pipeline(stages=[
-    middleware.wrap(agent1),  # output compressed before reaching agent2
-    middleware.wrap(agent2),  # output compressed before reaching agent3
-    agent3,                   # final stage: no compression (full output)
-])
+pipeline = Pipeline(
+    stages=[
+        middleware.wrap(agent1),  # output compressed before reaching agent2
+        middleware.wrap(agent2),  # output compressed before reaching agent3
+        agent3,  # final stage: no compression (full output)
+    ]
+)
 
 # For multi-round patterns, compression reduces token accumulation
 debate = Debate(

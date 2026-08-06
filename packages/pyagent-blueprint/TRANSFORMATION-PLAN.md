@@ -147,10 +147,11 @@ class Capability(Flag):
     Core only ever requires COMPILE + RUN. Everything else is
     negotiated at runtime so the contract never assumes a graph,
     async streaming, or native tool-calling exists."""
+
     NONE = 0
     STREAMING = auto()
     NATIVE_TOOL_CALLING = auto()
-    SYNC_EXECUTION = auto()     # some SDKs are sync-only
+    SYNC_EXECUTION = auto()  # some SDKs are sync-only
     PARTIAL_WORKFLOW_RUN = auto()  # can run a subset of a workflow (for debugging)
 
 
@@ -199,15 +200,17 @@ class RuntimeAdapter(ABC):
 class AdapterResult:
     """Normalized result envelope — every adapter must map its native
     return shape into this, so callers never branch on adapter identity."""
+
     def __init__(self, output: Any, raw: Any = None, usage: dict | None = None):
-        self.output = output    # the primary answer, always present
-        self.raw = raw          # adapter-native object, for advanced users
+        self.output = output  # the primary answer, always present
+        self.raw = raw  # adapter-native object, for advanced users
         self.usage = usage or {}  # tokens/cost if the adapter can report it
 
 
 class AdapterRegistry:
     """Discovers adapters via Python entry-points — core never imports
     any adapter package directly."""
+
     GROUP = "pyagent_blueprint.adapters"
 
     @staticmethod
@@ -234,6 +237,7 @@ New file: `src/pyagent_blueprint/conformance.py` — a reusable, importable pyte
 ```python
 # Usage from a third-party adapter package's own test suite:
 from pyagent_blueprint.conformance import AdapterConformanceSuite
+
 
 class TestMyAdapterConformance(AdapterConformanceSuite):
     @pytest.fixture

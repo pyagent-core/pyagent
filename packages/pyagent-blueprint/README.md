@@ -114,9 +114,9 @@ observability:
 from pyagent_blueprint import load_blueprint, load_blueprint_from_str
 
 # From file
-spec = load_blueprint("blueprint.yaml")       # YAML or JSON
-print(spec.metadata.name)                      # "customer-support"
-print(spec.agents.keys())                      # dict_keys(['classifier', 'billing', 'tech'])
+spec = load_blueprint("blueprint.yaml")  # YAML or JSON
+print(spec.metadata.name)  # "customer-support"
+print(spec.agents.keys())  # dict_keys(['classifier', 'billing', 'tech'])
 
 # From string
 spec = load_blueprint_from_str(yaml_text)
@@ -284,9 +284,9 @@ imported, and they're discovered via Python entry points
 ```python
 from pyagent_blueprint.adapter import AdapterRegistry
 
-adapters = AdapterRegistry.discover()   # {"single_agent": ..., "pyagent": ..., ...}
+adapters = AdapterRegistry.discover()  # {"single_agent": ..., "pyagent": ..., ...}
 adapter = AdapterRegistry.get("single_agent")()
-artifact = adapter.compile(ir)          # CompiledArtifact(handle, diagnostics, intent)
+artifact = adapter.compile(ir)  # CompiledArtifact(handle, diagnostics, intent)
 result = await adapter.run(artifact, "support", "my question")
 ```
 

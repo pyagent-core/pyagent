@@ -47,10 +47,10 @@ selector = ModelSelector()
 
 # Basic selection — cheapest model that covers the difficulty
 result = selector.select("What is the capital of France?")
-print(result.model)                    # "gpt-4.1-nano"
-print(result.reason)                   # "Difficulty 1/10 (easy) → gpt-4.1-nano (cheapest at $0.000001)"
-print(result.alternatives)             # ["gpt-4o-mini", "gpt-4.1-mini"]
-print(result.cost_estimate.total_cost) # 0.0000012
+print(result.model)  # "gpt-4.1-nano"
+print(result.reason)  # "Difficulty 1/10 (easy) → gpt-4.1-nano (cheapest at $0.000001)"
+print(result.alternatives)  # ["gpt-4o-mini", "gpt-4.1-mini"]
+print(result.cost_estimate.total_cost)  # 0.0000012
 
 # With capability filter — only consider models with REASONING capability
 result = selector.select(
@@ -59,15 +59,19 @@ result = selector.select(
 )
 print(result.model)  # "o3-mini"
 
+
 # Build an automatic LLM factory
 def make_llm_for_task(task: str):
     selection = selector.select(task)
-    print(f"→ {selection.model} (difficulty {selection.difficulty.score}/10, "
-          f"~${selection.cost_estimate.total_cost:.6f})")
+    print(
+        f"→ {selection.model} (difficulty {selection.difficulty.score}/10, "
+        f"~${selection.cost_estimate.total_cost:.6f})"
+    )
     return selection.model
 
-make_llm_for_task("What is 2+2?")                                   # → gpt-4.1-nano
-make_llm_for_task("Design a distributed rate limiter for 10M RPS")   # → o3-mini
+
+make_llm_for_task("What is 2+2?")  # → gpt-4.1-nano
+make_llm_for_task("Design a distributed rate limiter for 10M RPS")  # → o3-mini
 ```
 
 ## RouterMiddleware — Wrap Agents with Automatic Routing
@@ -87,21 +91,25 @@ middleware = RouterMiddleware(model_registry=model_registry)
 
 # Wrap individual agents — routing happens per-call
 from pyagent_patterns.base import Agent
+
 agent = Agent("coder", your_openai_llm("gpt-4o"), system_prompt="Write Python code.")
 routed_agent = middleware.wrap(agent)
 
 # Easy task → gpt-4.1-nano; hard task → o3-mini
 result = await routed_agent.run([Message.user("Write hello world")])
-print(result.metadata["routed_model"])   # "gpt-4.1-nano"
-print(result.metadata["difficulty"])     # 1
-print(result.metadata["estimated_cost"]) # 0.000001
+print(result.metadata["routed_model"])  # "gpt-4.1-nano"
+print(result.metadata["difficulty"])  # 1
+print(result.metadata["estimated_cost"])  # 0.000001
 
 # Wrap all agents in a pattern at once
 from pyagent_patterns.orchestration import Pipeline
-pipeline = Pipeline(stages=[
-    Agent("planner", llm, system_prompt="Plan."),
-    Agent("executor", llm, system_prompt="Execute."),
-])
+
+pipeline = Pipeline(
+    stages=[
+        Agent("planner", llm, system_prompt="Plan."),
+        Agent("executor", llm, system_prompt="Execute."),
+    ]
+)
 pipeline._stages = middleware.wrap_all(pipeline._stages)
 ```
 
@@ -122,10 +130,12 @@ hard = scorer.score(
 )
 print(hard.score, hard.category, hard.is_hard)  # 9, "hard", True
 
+
 # Add custom signals for domain-specific difficulty
 def has_regulatory_requirement(task: str) -> float:
     keywords = ["HIPAA", "GDPR", "SOC 2", "PCI DSS", "compliance", "audit"]
     return 1.0 if any(k.lower() in task.lower() for k in keywords) else 0.0
+
 
 custom_scorer = DifficultyScorer(custom_signals={"regulatory": has_regulatory_requirement})
 result = custom_scorer.score("Build a HIPAA-compliant patient data API")
@@ -154,6 +164,7 @@ print(f"gpt-4o: ${est.total_cost:.6f} ({est.input_tokens} tokens)")
 
 # Add custom model pricing
 from pyagent_router.estimator import ModelPricing
+
 custom_pricing = {**estimator._pricing, "my-model": ModelPricing(0.50, 2.00)}
 custom_estimator = CostEstimator(pricing=custom_pricing)
 ```

@@ -96,6 +96,7 @@ print(svc.summary())
 
 # Run simulation
 import asyncio
+
 sim = SimulationService()
 result = asyncio.run(sim.run(spec, "support", "I can't see my invoice"))
 print(result.output)
@@ -196,13 +197,13 @@ Central service for blueprint lifecycle management:
 from pyagent_studio import BlueprintService
 
 svc = BlueprintService()
-spec = svc.load("blueprint.yaml")       # Load and parse
-issues = svc.validate()                   # Static analysis
-graph = svc.compile()                     # Compile to RuntimeGraph
-summary = svc.summary()                   # Human-readable summary
-agents = svc.list_agents()                # Agent inventory
-workflows = svc.list_workflows()          # Workflow inventory
-mermaid = svc.render_mermaid()            # Mermaid diagram string
+spec = svc.load("blueprint.yaml")  # Load and parse
+issues = svc.validate()  # Static analysis
+graph = svc.compile()  # Compile to RuntimeGraph
+summary = svc.summary()  # Human-readable summary
+agents = svc.list_agents()  # Agent inventory
+workflows = svc.list_workflows()  # Workflow inventory
+mermaid = svc.render_mermaid()  # Mermaid diagram string
 ```
 
 ### SimulationService
@@ -218,7 +219,7 @@ sim = SimulationService()
 # MockLLM simulation (no API keys needed)
 result = asyncio.run(sim.run(spec, "support", "I can't see my invoice"))
 print(result.output)
-print(result.metadata)     # Pattern-specific metadata
+print(result.metadata)  # Pattern-specific metadata
 print(result.duration_seconds)
 
 # Live simulation with real providers
