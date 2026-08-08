@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyagent-studio"
-version = "0.2.4"
+version = "0.3.0"
 description = "Kubernetes Dashboard for Agent Systems — CLI + web control plane for multi-agent LLM blueprints"
 readme = "README.md"
 requires-python = ">=3.11"

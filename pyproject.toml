@@ -15,6 +15,10 @@ members = [
     "packages/pyagent-providers",
     "packages/pyagent-context",
     "packages/pyagent-blueprint",
+    "packages/pyagent-blueprint-adapter-langgraph",
+    "packages/pyagent-blueprint-adapter-crewai",
+    "packages/pyagent-blueprint-adapter-openai-agents",
+    "packages/pyagent-blueprint-adapter-semantic-kernel",
     "packages/pyagent-studio",
     "packages/pyagent-all",
 ]
