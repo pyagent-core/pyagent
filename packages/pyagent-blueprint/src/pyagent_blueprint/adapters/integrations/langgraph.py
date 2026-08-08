@@ -1,13 +1,12 @@
 """LangGraphAdapter: a real (not stubbed) pyagent-blueprint RuntimeAdapter
 targeting LangGraph's `StateGraph`.
 
-This is the first Step 4b "pyagent.org example adapter" — published as a
-separate, independently-versioned package (per TRANSFORMATION-PLAN.md
-Section 9's risk mitigation: external SDK breaking changes must never
-destabilize `pyagent-blueprint` core CI). It depends on the real
-`langgraph` package and self-certifies via the shared
-`AdapterConformanceSuite` in its own test suite/CI, exactly like a
-third-party author would.
+Ships inside `pyagent-blueprint` behind the optional `langgraph` extra
+(`pip install "pyagent-blueprint[langgraph]"`) rather than as a separate
+package — only importable when `langgraph` itself is installed, and
+`AdapterRegistry.discover()` skips it gracefully otherwise. Certified
+against the shared `AdapterConformanceSuite`, the same acceptance bar a
+third-party adapter author would have to pass.
 
 Node bodies use a deterministic mock LLM call (no API key required) so
 this adapter is fully testable without network access — the point is to
@@ -21,6 +20,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
+
 from pyagent_blueprint.adapter import (
     AdapterResult,
     Capability,

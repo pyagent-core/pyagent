@@ -1,10 +1,11 @@
 """OpenAIAgentsAdapter: a real (not stubbed) pyagent-blueprint RuntimeAdapter
 targeting the OpenAI Agents SDK (`agents` package).
 
-Second Step 4b "pyagent.org example adapter" (LangGraph shipped first per
-ecosystem-reach prioritization). Depends on the real `openai-agents`
-package and self-certifies via `AdapterConformanceSuite` in its own
-CI/test suite — never installed in `pyagent-blueprint` core.
+Ships inside `pyagent-blueprint` behind the optional `openai-agents`
+extra (`pip install "pyagent-blueprint[openai-agents]"`) — the `agents`
+package is never a core dependency, and `AdapterRegistry.discover()`
+skips this adapter gracefully when it isn't installed. Certified against
+the shared `AdapterConformanceSuite`.
 
 The OpenAI Agents SDK is handoff/turn-based (an `Agent` + a `Runner` that
 executes turns, not a declared graph) — structurally distinct from
@@ -24,6 +25,7 @@ from typing import TYPE_CHECKING, Any
 
 from agents import Agent, Model, ModelResponse, Runner, Usage
 from openai.types.responses import ResponseOutputMessage, ResponseOutputText
+
 from pyagent_blueprint.adapter import (
     AdapterResult,
     Capability,

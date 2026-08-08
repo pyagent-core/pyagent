@@ -1,10 +1,11 @@
 """CrewAIAdapter: a real (not stubbed) pyagent-blueprint RuntimeAdapter
 targeting CrewAI.
 
-Third Step 4b "pyagent.org example adapter" (after LangGraph and the
-OpenAI Agents SDK, per ecosystem-reach prioritization). Depends on the
-real `crewai` package and self-certifies via `AdapterConformanceSuite`
-in its own CI/test suite — never installed in `pyagent-blueprint` core.
+Ships inside `pyagent-blueprint` behind the optional `crewai` extra
+(`pip install "pyagent-blueprint[crewai]"`) — `crewai` itself is never a
+core dependency, and `AdapterRegistry.discover()` skips this adapter
+gracefully when it isn't installed. Certified against the shared
+`AdapterConformanceSuite`.
 
 CrewAI is role-based: agents are declared with a `role`/`goal`/`backstory`
 and paired with `Task`s, executed by a `Crew`. This is a third
@@ -26,6 +27,7 @@ from typing import TYPE_CHECKING, Any
 
 from crewai import Agent, Crew, Process, Task
 from crewai.llms.base_llm import BaseLLM
+
 from pyagent_blueprint.adapter import (
     AdapterResult,
     Capability,

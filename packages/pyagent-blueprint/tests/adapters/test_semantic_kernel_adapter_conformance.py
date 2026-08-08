@@ -7,8 +7,8 @@ the acceptance bar for this adapter.
 from __future__ import annotations
 
 import pytest
+from pyagent_blueprint.adapters.integrations.semantic_kernel import SemanticKernelAdapter
 from pyagent_blueprint.conformance import AdapterConformanceSuite
-from pyagent_blueprint_adapter_semantic_kernel.adapter import SemanticKernelAdapter
 
 
 class TestSemanticKernelAdapterConformance(AdapterConformanceSuite):

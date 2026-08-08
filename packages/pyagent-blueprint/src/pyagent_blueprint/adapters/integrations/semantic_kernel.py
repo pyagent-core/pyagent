@@ -1,11 +1,11 @@
 """SemanticKernelAdapter: a real (not stubbed) pyagent-blueprint
 RuntimeAdapter targeting Microsoft Semantic Kernel.
 
-Fourth and final Step 4b "pyagent.org example adapter" (after LangGraph,
-the OpenAI Agents SDK, and CrewAI, per ecosystem-reach prioritization —
-AutoGen deferred as lowest priority per the plan). Depends on the real
-`semantic-kernel` package and self-certifies via `AdapterConformanceSuite`
-in its own CI/test suite — never installed in `pyagent-blueprint` core.
+Ships inside `pyagent-blueprint` behind the optional `semantic-kernel`
+extra (`pip install "pyagent-blueprint[semantic-kernel]"`) — the
+`semantic-kernel` package is never a core dependency, and
+`AdapterRegistry.discover()` skips this adapter gracefully when it isn't
+installed. Certified against the shared `AdapterConformanceSuite`.
 
 Semantic Kernel is event/service-oriented: a `Kernel` hosts pluggable
 AI services, and `ChatCompletionAgent`s are bound to a
@@ -26,6 +26,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent
+
 from pyagent_blueprint.adapter import (
     AdapterResult,
     Capability,
@@ -38,10 +43,6 @@ from pyagent_blueprint.adapters.reference._common import (
     flatten_agent_refs,
     mock_call,
 )
-from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent
 
 if TYPE_CHECKING:
     from pyagent_blueprint.ir import BlueprintIR
