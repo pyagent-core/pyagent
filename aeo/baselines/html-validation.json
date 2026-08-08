@@ -1,0 +1,30 @@
+[
+  {
+    "check": "canonical_repo_identity_present",
+    "status": "PASS",
+    "detail": "looked for 'https://github.com/pyagent-core/pyagent' or 'pyagent-core/pyagent' in homepage HTML"
+  },
+  {
+    "check": "four_pillar_labels_present",
+    "status": "PASS",
+    "detail": {
+      "expected": [
+        "Manifest",
+        "Execution & Routing",
+        "Context & Memory",
+        "Observability"
+      ],
+      "missing": []
+    }
+  },
+  {
+    "check": "tagline_present",
+    "status": "PASS",
+    "detail": "A production stack"
+  },
+  {
+    "check": "no_fabricated_commands_reintroduced",
+    "status": "PASS",
+    "detail": []
+  }
+]

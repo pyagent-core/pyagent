@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import json
 import re
 import sys
 from decimal import ROUND_HALF_UP, Decimal
@@ -34,7 +35,9 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "benchmarks.yml"
+PATTERNS_DATA = ROOT / "data" / "patterns.yml"
 BENCHMARKS_MD = ROOT / "docs" / "benchmarks.md"
+PATTERNS_JSON = ROOT / "docs" / "patterns.json"
 COOKBOOK_INDEX = ROOT / "docs" / "cookbook" / "index.md"
 COOKBOOK_DIR = ROOT / "docs" / "cookbook"
 
@@ -374,11 +377,35 @@ def make_pattern_builder(pattern_name: str):
     return build
 
 
+# ── Machine-readable pattern catalog (docs/patterns.json) ───────────────────
+#
+# Sourced from data/patterns.yml, which was itself seeded by extracting the
+# real "When to Use" tables and "See Also" sections already on every pattern
+# page — this is a machine-readable export of existing content, not a new,
+# separately-maintained catalog that could drift from the prose.
+
+
+def render_patterns_json() -> str:
+    data = yaml.safe_load(PATTERNS_DATA.read_text(encoding="utf-8"))
+    catalog = {
+        "name": "PyAgent Design Pattern Catalog",
+        "source": "https://pyagent.org/packages/patterns/",
+        "patterns": data["patterns"],
+    }
+    return json.dumps(catalog, indent=2, ensure_ascii=False) + "\n"
+
+
+def build_patterns_json(_text: str) -> str:
+    # The whole file is generated — no region markers, unlike the .md targets.
+    return render_patterns_json()
+
+
 # ── Driver ───────────────────────────────────────────────────────────────────
 
 TARGETS = [
     (BENCHMARKS_MD, build_benchmarks),
     (COOKBOOK_INDEX, build_cookbook),
+    (PATTERNS_JSON, build_patterns_json),
 ]
 
 # One target per pattern page (path → its display name via the slug map).

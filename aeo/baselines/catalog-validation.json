@@ -1,0 +1,25 @@
+[
+  {
+    "check": "required_fields_present",
+    "status": "PASS",
+    "detail": "all patterns have all required fields"
+  },
+  {
+    "check": "pattern_count",
+    "status": "PASS",
+    "detail": "expected 18, found 18"
+  },
+  {
+    "check": "no_drift_from_source",
+    "status": "PASS",
+    "detail": {
+      "only_in_source": [],
+      "only_in_catalog": []
+    }
+  },
+  {
+    "check": "no_dangling_pairs_with_refs",
+    "status": "PASS",
+    "detail": []
+  }
+]

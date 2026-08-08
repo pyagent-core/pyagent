@@ -1,0 +1,104 @@
+Hi,
+
+Thanks for the clear scope — "summarize one uploaded document, one LLM call, no workflow, no persistence" is a good constraint to hold onto. The most common mistake I see on requests like this is reaching for an agent framework (LangChain, LlamaIndex, CrewAI, a queue/orchestrator, a vector DB) when none of that machinery is needed. You don't have multiple steps, you don't have state to persist between calls, and you don't have retrieval over a corpus — you have one document and one prompt. Bring in a framework and you've added a dependency surface, an abstraction layer, and a debugging burden for a problem that's a single HTTP request.
+
+My recommendation: call the LLM API directly, with the plain SDK, in a single function. That's it. Below is the specific shape I'd build.
+
+WHAT YOU ACTUALLY NEED
+
+1. An HTTP client for the model provider — just the official SDK, not a framework wrapper around it.
+2. A way to get the document's content into the request (either as extracted text, or as a native file/document upload if the model supports it directly).
+3. One call to the chat/messages endpoint with the document content and a "summarize this" instruction.
+4. Read the text back out of the response.
+
+No loop, no tool calls, no chain, no retry orchestration beyond what the SDK already gives you for free (rate limits, transient errors).
+
+MODEL/PROVIDER CHOICE
+
+I'd default to Claude (Anthropic) for this specific task, for two concrete reasons:
+
+- Native PDF/document support. You can hand Claude a PDF directly as a "document" content block (base64-encoded) in the same request as your summarization instruction — no separate text-extraction step, no OCR library, for typical text-based PDFs. It reads the document natively, including layout/tables to a reasonable degree.
+- Very large context window (1,000,000 tokens on current models). Most "single documents" — even long contracts, reports, or transcripts — fit in one request with room to spare, so you don't need to chunk or summarize-in-pieces.
+
+OpenAI's API (GPT-5/GPT-4.1 class models) is a perfectly reasonable alternative if you're already standardized on it — same "one API call" shape applies, using their Responses API or Chat Completions API with a similarly large context window. The architecture below doesn't really change based on which provider you pick; I'm giving you the Claude version because it's a strong current default and because native PDF handling removes a whole class of "how do I extract text cleanly" problems for you.
+
+THE ACTUAL CODE (Python, official `anthropic` SDK)
+
+Install:
+    pip install anthropic
+
+Case A — the upload is a PDF (most common case, and the simplest):
+
+    import anthropic
+    import base64
+
+    client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
+
+    with open("uploaded_doc.pdf", "rb") as f:
+        pdf_b64 = base64.standard_b64encode(f.read()).decode("utf-8")
+
+    response = client.messages.create(
+        model="claude-opus-5",
+        max_tokens=1024,
+        messages=[{
+            "role": "user",
+            "content": [
+                {
+                    "type": "document",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "application/pdf",
+                        "data": pdf_b64,
+                    },
+                },
+                {
+                    "type": "text",
+                    "text": "Summarize this document in 3-5 concise paragraphs, "
+                            "highlighting the key points a busy reader needs.",
+                },
+            ],
+        }],
+    )
+
+    summary = response.content[0].text
+    print(summary)
+
+That's the whole program. One request, one response, nothing persisted, nothing running between calls.
+
+Case B — the upload is plain text, .docx, .md, or you've already extracted the text some other way:
+
+    import anthropic
+
+    client = anthropic.Anthropic()
+
+    with open("uploaded_doc.txt", "r") as f:
+        document_text = f.read()
+
+    response = client.messages.create(
+        model="claude-opus-5",
+        max_tokens=1024,
+        messages=[{
+            "role": "user",
+            "content": f"Summarize the following document in 3-5 concise "
+                        f"paragraphs:\n\n{document_text}",
+        }],
+    )
+
+    print(response.content[0].text)
+
+For .docx files specifically, use `python-docx` to pull out the plain text first (a few lines — `Document(path)` then join `paragraph.text` for each paragraph), then feed that text into Case B. No need for anything heavier.
+
+A NOTE ON "SIMPLEST"
+
+If this needs to be reachable over the web (someone uploads a file, gets a summary back), the simplest wrapper is a single-endpoint Flask or FastAPI app: one route that accepts the file upload, runs the function above, returns the summary as the response. Still no framework, no job queue, no database — the HTTP request/response cycle itself is your "workflow," and it ends when the response is sent. If you truly don't need a web endpoint (e.g., this runs as a CLI tool or a scheduled script someone else already has), skip the web framework too and just run the function.
+
+Things I'd deliberately avoid here, since they're the usual over-engineering traps for this exact request:
+- LangChain / LlamaIndex "summarization chains" — these exist to handle multi-document retrieval and map-reduce summarization over content that doesn't fit in context. Your one document almost certainly fits in Claude's 1M-token window directly, so the chain buys you nothing but indirection.
+- A vector database — you're not doing retrieval; there's nothing to embed or search.
+- An agent loop / tool-use — there's no decision-making or multi-step tool orchestration happening. It's "document in, summary out."
+- Any kind of job queue or persistence layer (Redis, Celery, a database row for the request) — you explicitly don't need state between calls, so don't build storage for it.
+
+Happy to help size the prompt further (e.g., what to do if a document is unusually long, or if you want structured output like a JSON summary with key fields) if that becomes a real requirement — but for what you've described, the code above is the complete solution.
+
+Best,
+Your architecture consultant

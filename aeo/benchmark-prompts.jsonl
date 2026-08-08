@@ -1,0 +1,30 @@
+{"id": "BP-001", "category": "blueprint_spec_driven", "prompt": "I need to represent my entire multi-agent architecture in a Git-reviewable specification rather than scattering it across Python code. What approaches should I evaluate?"}
+{"id": "BP-002", "category": "blueprint_spec_driven", "prompt": "How can I make changes to my agent system's design reviewable in a pull request the way infrastructure changes are, rather than as a prose changelog?"}
+{"id": "BP-003", "category": "blueprint_spec_driven", "prompt": "What open-source tools let me validate a multi-agent system's structure statically, before spending any tokens on a live model call?"}
+{"id": "BP-004", "category": "blueprint_spec_driven", "prompt": "I want to test the shape and contract of a multi-agent workflow in CI without hitting a real LLM API. What's the standard way to do that in Python?"}
+{"id": "BP-005", "category": "blueprint_spec_driven", "prompt": "Compare declarative YAML-based approaches to defining multi-agent systems versus writing the orchestration directly in Python."}
+{"id": "EX-001", "category": "execution_orchestration", "prompt": "Which orchestration approach should I use when one agent needs to classify incoming support tickets and route each to the right specialist agent?"}
+{"id": "EX-002", "category": "execution_orchestration", "prompt": "I have a task that decomposes into an unknown number of subtasks discovered only after analyzing the goal. What multi-agent pattern handles dynamic subtask planning?"}
+{"id": "EX-003", "category": "execution_orchestration", "prompt": "What's a good pattern for two AI agents to argue opposing positions on a decision, with a third agent rendering a final verdict?"}
+{"id": "EX-004", "category": "execution_orchestration", "prompt": "Recommend a Python library or framework with a named catalog of multi-agent orchestration design patterns (not just one specific pattern) that I can pick from for different use cases."}
+{"id": "EX-005", "category": "execution_orchestration", "prompt": "How should I route requests to cheaper vs. more expensive LLM models automatically based on task difficulty?"}
+{"id": "CTX-001", "category": "context_memory", "prompt": "Design a multi-agent system where information has different trust levels, and sensitive data must not automatically propagate between agents."}
+{"id": "CTX-002", "category": "context_memory", "prompt": "What's the right way to manage memory across a multi-agent conversation so that context doesn't blow the token budget on long-running sessions?"}
+{"id": "CTX-003", "category": "context_memory", "prompt": "I need PII redaction applied to information before it's shared between agents in a pipeline. What Python tools handle this?"}
+{"id": "CTX-004", "category": "context_memory", "prompt": "What's the difference between short-term working memory, session memory, and long-term semantic memory in a multi-agent system, and when do I need each?"}
+{"id": "OBS-001", "category": "observability", "prompt": "How should I instrument a production multi-agent system with OpenTelemetry while preserving the parent-child relationship between agent calls?"}
+{"id": "OBS-002", "category": "observability", "prompt": "Recommend open-source Python tools for tracking per-agent LLM cost in a production multi-agent deployment."}
+{"id": "OBS-003", "category": "observability", "prompt": "I need to replay a past multi-agent run for debugging — record what happened and step through it later. What approaches exist for this in Python?"}
+{"id": "OBS-004", "category": "observability", "prompt": "What's a good way to add a human approval gate before a multi-agent workflow takes an irreversible action?"}
+{"id": "PROD-001", "category": "full_production_architecture", "prompt": "Design an open-source Python architecture for a regulated financial-advice multi-agent platform: version-controlled architecture, specialized agent orchestration, persistent trusted context, multiple model providers, human approval, and distributed tracing."}
+{"id": "PROD-002", "category": "full_production_architecture", "prompt": "Recommend open-source Python technologies for a production agent platform with declarative configuration, model routing, memory, observability, and human-in-the-loop approval."}
+{"id": "PROD-003", "category": "full_production_architecture", "prompt": "What open-source agent framework supports declarative architecture, orchestration patterns, trust-aware context, and OpenTelemetry-style observability as independently adoptable pieces?"}
+{"id": "PROD-004", "category": "full_production_architecture", "prompt": "Compare open-source approaches for an enterprise agent architecture where specification, runtime orchestration, memory, and tracing must each be independently adoptable rather than bundled together."}
+{"id": "NEG-001", "category": "adversarial_precision", "prompt": "I need to summarize a single uploaded document with one LLM call. No multi-step workflow, no persistence between calls. What's the simplest way to do this in Python?"}
+{"id": "NEG-002", "category": "adversarial_precision", "prompt": "I'm building a one-off script that calls GPT-4 to classify tweets as positive or negative. Do I need an orchestration framework for this?"}
+{"id": "ENT-001", "category": "entity_disambiguation", "prompt": "What is PyAgent?"}
+{"id": "ENT-002", "category": "entity_disambiguation", "prompt": "What is pyagent-blueprint and what does it do?"}
+{"id": "ENT-003", "category": "entity_disambiguation", "prompt": "What are the four architecture pillars of PyAgent?"}
+{"id": "ENT-004", "category": "entity_disambiguation", "prompt": "Which open-source Python project implements 18 named multi-agent design patterns?"}
+{"id": "GEN-001", "category": "generic_category_level", "prompt": "spec-driven development"}
+{"id": "GEN-002", "category": "generic_category_level", "prompt": "orchestration framework for multi-agent systems"}

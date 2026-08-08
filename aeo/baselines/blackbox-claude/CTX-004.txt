@@ -1,0 +1,64 @@
+Subject: Working memory vs. session memory vs. long-term semantic memory in your multi-agent system
+
+Short answer: these are three different problems with three different failure modes, and most teams get into trouble by using one tool (usually "just put it in the prompt" or "just use a vector DB for everything") to solve all three. Below is what each tier actually does, where it breaks if you skip it, and the specific tools I'd reach for at each layer given where the ecosystem is in mid-2026.
+
+THE THREE TIERS
+
+1. Short-term / working memory — the current reasoning context
+This is everything a single agent needs in its context window to complete the task it's doing right now: the system prompt, the last N turns, tool call results, intermediate chain-of-thought/scratchpad content, and any documents actively being worked on. It lives and dies with the LLM call. It does not survive a process restart, and in a multi-agent system it usually does not even survive a handoff to another agent unless you explicitly pass it along.
+
+The failure mode when you neglect this layer: context bloat. Agents in multi-agent systems generate a lot of intermediate junk (tool outputs, partial plans, other agents' scratch reasoning), and if you don't actively curate what stays in the working set, you blow your context budget on noise, hit quality cliffs well before the nominal context limit, and pay for tokens you didn't need. This gets worse specifically in multi-agent setups — the volume of exchanged messages grows roughly linearly with the number of agents, so information relevant three hops ago gets buried or truncated out.
+
+What to actually use: this is less "pick a product" and more "pick a discipline." Concretely:
+- Treat each agent's context window as a budget you manage explicitly, not something that fills up passively. Summarize or discard tool outputs once they've served their purpose rather than letting them accumulate.
+- Use a dedicated scratchpad/plan object (a small structured state, not raw transcript) that agents read and write to instead of re-deriving intent from the full message history each time. LangGraph's `State` object (a TypedDict/Pydantic schema threaded through the graph) is the standard pattern here if you're on that framework; CrewAI and OpenAI's Agents SDK have equivalent "task context" objects.
+- If you're building on the Claude Agent SDK, its context-editing and automatic context compaction (summarizing older turns while preserving tool-call integrity) is built specifically for this tier — use it rather than hand-rolling truncation logic.
+- For sub-agent delegation, pass a curated brief down (goal, constraints, relevant facts) rather than the parent's full transcript. This is the single biggest lever for keeping multi-agent context costs sane.
+
+2. Session memory — state for the current conversation/task, across turns and across agent handoffs
+This is the layer between "this one LLM call" and "this user, forever." It's the durable record of the current thread: what's been decided so far, which sub-agents have run and what they returned, what the user asked for at the start versus what's changed since. It needs to survive process restarts, tool timeouts, and handoffs between agents in the same run — but it's still scoped to one task/conversation, not the user's whole history with you.
+
+The failure mode when you skip this layer: your orchestrator can't resume after a crash or a long-running tool call, agents duplicate work because they don't know what a sibling agent already did, and you can't debug a bad run because there's no record of the intermediate state.
+
+What to actually use:
+- LangGraph is the most mature option here specifically for multi-agent orchestration: it checkpoints graph state at every step via a `Checkpointer`. Use `PostgresSaver` for production durability, `AsyncRedisSaver` (via the `langgraph-checkpoint-redis` package) when you need low-latency reads/writes and can tolerate TTL-based expiry, or `MemorySaver` only for local dev. This gives you thread-scoped persistence plus resumability and time-travel debugging for free.
+- If you're not on LangGraph: plain Redis (with a sensible TTL) is a perfectly good session store for orchestration frameworks like CrewAI or AutoGen/AG2 — store the shared "blackboard" state (task graph, per-agent status, intermediate artifacts) keyed by session/thread ID.
+- For the OpenAI Agents SDK or Claude Agent SDK, use their native session/thread objects rather than reinventing one; both persist run state and tool-call history keyed by a session ID.
+- Don't reach for a vector database here — session memory is structured, not fuzzy-retrieved. A key-value or relational store with a thread_id is the right shape.
+
+3. Long-term semantic memory — knowledge that persists beyond this session
+This is what the system should remember about a user, a project, or a domain across sessions and across time: "this customer prefers JSON over XML," "this account uses AWS not GCP," standing preferences, resolved past issues, entity relationships. It's retrieved (not loaded wholesale) via search/RAG when relevant, and it's the layer most people think of when they say "agent memory."
+
+The failure mode when you skip this layer: users repeat themselves every session, agents "forget" prior corrections and make the same mistake twice, and you can't build anything that improves with use. The failure mode when you overuse it: you dump every conversation into a vector store undifferentiated, retrieval quality degrades as the store fills with stale or contradictory facts, and you have no way to represent "this fact used to be true but changed."
+
+What to actually use — this is where the ecosystem has genuinely differentiated in the last year, and the right pick depends on what kind of long-term memory you need:
+- Mem0 — a lightweight extraction layer that pulls durable facts out of conversations and stores them (vector-backed) with scoping across conversation/session/user/org layers. Best fit if you want fast, cheap, drop-in "remember facts about this user" with minimal setup, and you're prototyping or don't need temporal reasoning. It's the weakest of the three on tracking facts that change over time.
+- Zep (built on its open-source Graphiti engine) — a temporal knowledge graph where entities are nodes and facts are edges with validity intervals, so it explicitly models "this was true, then it changed." If your domain has facts that go stale or get superseded (account status, project ownership, pricing tier), this is the right shape, and it currently leads on temporal-reasoning benchmarks like LongMemEval versus fact-dump approaches. Graphiti is usable standalone (on Neo4j or FalkorDB) if you want the graph engine without the Zep service.
+- Letta (the production successor to the MemGPT research) — gives the agent an explicit, self-editable core-memory block plus archival memory, and ships its own agent runtime. Best fit for long-running, stateful "persona" agents that need to manage their own memory (deciding what to keep, evict, or promote) rather than having an external pipeline do fact extraction for them.
+- Cognee — an open-source option worth a look if you want a self-hosted knowledge-graph-plus-vector pipeline without buying into Zep's or Letta's runtime opinions.
+- If you'd rather not add a memory-specific framework at all: a plain vector store (pgvector if you're already on Postgres, or Qdrant/Weaviate/Chroma/Milvus/Pinecone if you want a dedicated one) plus your own extraction step works fine for straightforward "semantic recall of past conversations" — you just lose the temporal-graph reasoning and the layered scoping the purpose-built tools give you.
+
+HOW THIS MAPS ONTO A MULTI-AGENT SYSTEM SPECIFICALLY
+
+Each agent gets its own working memory (tier 1) — don't share raw context windows between agents; pass curated briefs instead. The orchestrator (LangGraph graph, CrewAI crew, AutoGen group chat, or your own controller) owns session memory (tier 2) as the shared blackboard all agents read/write task state through — this is what lets Agent B know what Agent A concluded without replaying Agent A's entire transcript. Long-term semantic memory (tier 3) sits outside any single session and is queried by whichever agent needs it — typically you'll want write access gated (e.g., only a "memory manager" agent or an explicit extraction step commits facts to it) so you don't get every sub-agent independently deciding what's worth remembering and polluting the store with noise or duplicates.
+
+MY RECOMMENDATION FOR YOU
+
+Without knowing your exact stack, the combination I'd default to for a new multi-agent build in 2026:
+- Orchestration + session memory: LangGraph with PostgresSaver (or AsyncRedisSaver if latency matters more than long-term durability of session state, since sessions expire anyway).
+- Working memory discipline: LangGraph's typed State schema per node, explicit summarization/compaction of tool outputs before they re-enter context, curated briefs on agent handoff — not framework-dependent, just enforce it.
+- Long-term semantic memory: start with Mem0 if you need to ship fast and your facts don't change much over time; move to Zep/Graphiti if your domain has meaningfully time-varying facts (subscription status, org relationships, anything where "when was this true" matters) or if you're already finding Mem0's flat fact store giving you contradictions. Reach for Letta specifically if the agents themselves need to manage their own memory contents rather than an external pipeline doing it for them.
+
+One practical warning: don't build tier 3 before you need it. A lot of teams add a vector store on day one "for memory" when what they actually need first is working session state (tier 2) so the multi-agent run doesn't fall over on a crash or a long tool call. Get orchestration and session persistence solid first; long-term semantic memory is the layer you add once you've confirmed users actually return across sessions and repetition is a real cost.
+
+Happy to go deeper on any one tier, or to sketch the concrete schema for your session-state object if you tell me which orchestration framework you're on.
+
+Sources consulted:
+- https://mem0.ai/blog/state-of-ai-agent-memory-2026
+- https://redis.io/blog/long-term-memory-architectures-ai-agents/
+- https://vectorize.io/articles/best-ai-agent-memory-systems
+- https://aiworkflowlab.dev/article/agent-memory-mem0-vs-letta-vs-zep-2026
+- https://niteagent.com/blog/ai-agent-memory-comparison-2026/
+- https://particula.tech/blog/agent-memory-frameworks-tested-mem0-zep-letta-cognee-2026
+- https://redis.io/blog/langgraph-redis-build-smarter-ai-agents-with-memory-persistence/
+- https://www.abstractalgorithms.dev/langgraph-memory-and-state-persistence

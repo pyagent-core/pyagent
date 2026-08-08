@@ -1,0 +1,107 @@
+Subject: Recommended open-source architecture for your regulated financial-advice multi-agent platform
+
+Thank you for the detailed brief. Below is my recommended architecture, built entirely from open-source, self-hostable components, mapped against your six requirements: version-controlled architecture, specialized agent orchestration, persistent trusted context, multiple model providers, human approval, and distributed tracing. I've also added a regulatory layer, because in financial advice the audit and control plane is not optional scaffolding — it is the product.
+
+MY OVERALL RECOMMENDATION IN ONE PARAGRAPH
+
+Use LangGraph as the orchestration core (it gives you a durable, checkpointed state machine, not just a chat loop), front all model calls through LiteLLM so you are never locked to one provider, store working memory and long-term client context in Mem0 backed by Postgres/pgvector with full provenance metadata, put every human approval gate through LangGraph's interrupt() plus a Temporal-backed durable-approval layer for anything that can sit for hours or days, instrument everything with OpenTelemetry using the GenAI semantic conventions and ship traces to Langfuse (or Arize Phoenix) for LLM-specific observability, enforce policy with Open Policy Agent (Rego) at every tool-call and output boundary, and treat your prompts, agent graphs, and policies as version-controlled artifacts in Git with CI-gated promotion — not as runtime-mutable config. Below I explain why, and what each piece does.
+
+1. VERSION-CONTROLLED ARCHITECTURE
+
+Treat the following as first-class, reviewable, diffable artifacts in Git, not database rows:
+- Agent graph definitions (LangGraph graphs are just Python/JSON-serializable objects — commit them)
+- Prompts and prompt templates
+- Tool/function schemas exposed to agents
+- OPA/Rego policy bundles
+- Model routing config (which provider/model per task, fallback order, cost ceilings)
+
+Practical setup:
+- Standard Git branching with mandatory PR review for anything touching a prompt, tool schema, or policy file — these are your "regulated code."
+- Use promptfoo (open source) in CI to run regression evals against a fixed test suite every time a prompt, model, or graph changes, and block merges on quality/safety regressions.
+- Tag and pin every production deployment to an exact commit hash of graph + prompts + policy bundle, so any historical recommendation can be reproduced byte-for-byte from source control months later — this is what will satisfy an examiner asking "show me exactly what logic produced this advice on this date."
+- If you want structured prompt/version management with a UI on top of Git rather than instead of it, Langfuse's prompt management (self-hostable, open source) works well layered on top — it still stores versions but gives your compliance and product teams a browsable history without needing to read diffs.
+- Avoid storing prompts or policy only in a database with no history; a database row is not an audit artifact.
+
+2. SPECIALIZED AGENT ORCHESTRATION
+
+Recommendation: LangGraph (Apache 2.0, from the LangChain team) as your core orchestrator.
+
+Why LangGraph over the alternatives for this use case:
+- It models agents as an explicit directed graph with conditional edges, not an implicit conversation loop, which makes the control flow inspectable and testable — important when a regulator asks "under what condition does the system escalate to a human."
+- It has first-class, built-in checkpointing of full graph state at every step (to Postgres, SQLite, or your own store), which gives you both state persistence and "time travel" replay of any past run — directly useful for incident investigation and audit reconstruction.
+- Its interrupt()/Command pattern is purpose-built for pausing mid-execution for human approval without losing accumulated context, which is exactly requirement #5 below.
+
+Where I'd use the others, if at all:
+- CrewAI is faster to prototype with (role-based crews, very low code), but its observability and state-recovery story is weaker; treat it as a prototyping tool, not your production spine, given your regulatory obligations.
+- Microsoft's AutoGen/AG2 has the strongest patterns for multi-agent debate/verification (e.g., a "challenger" agent critiquing a "recommender" agent's proposed advice before it reaches a human), which is a genuinely useful pattern in financial advice. Consider running an AutoGen-style critique pattern as a subgraph inside LangGraph rather than adopting AutoGen as your top-level orchestrator — you get the debate pattern without a second competing state/persistence model.
+
+Specialize agents narrowly and give each one the minimum tool scope it needs (e.g., a "suitability-check agent," a "portfolio-analysis agent," a "disclosure-drafting agent," a "compliance-review agent") — this narrows the blast radius of any single agent's error and makes per-agent policy enforcement in OPA tractable.
+
+3. PERSISTENT, TRUSTED CONTEXT
+
+This is the requirement I'd push you hardest on, because "trusted" is doing a lot of work in a suitability/advice context — every fact the system uses to justify a recommendation needs a traceable source.
+
+Recommendation: Mem0 (open source, Apache 2.0, self-hostable) as the memory layer, backed by PostgreSQL + pgvector (or Qdrant if you want a dedicated vector store) for storage.
+- Mem0 gives you a model-driven memory API (extraction, consolidation, retrieval) rather than a raw vector store, which reduces the amount of custom memory-management code you'd otherwise write.
+- Do not treat memory as an undifferentiated blob. Separate at minimum: (a) durable client-profile facts (risk tolerance, goals, holdings) sourced from your system of record, never inferred silently by an LLM without confirmation; (b) conversation/session memory; (c) retrieved regulatory/product documents (RAG corpus). Tag every memory item with source, ingestion timestamp, and confidence, and never let an LLM-inferred fact silently overwrite a system-of-record fact — route conflicts to human review.
+- A note on Zep: Zep's temporal knowledge-graph approach (tracking how facts change over time) is architecturally a very good fit for "trusted context" in advice scenarios, because you can show exactly when a fact was true and when it changed. However, Zep's self-hostable Community Edition has been deprecated in favor of Zep Cloud, which is not open source. Given your "open-source" constraint, I'd default to Mem0, but if you later relax that constraint for the memory tier specifically, evaluate Zep Cloud for its temporal-graph model — or consider building an equivalent bitemporal fact table (valid-time + transaction-time columns) over Postgres yourself, which is a well-understood pattern and keeps you fully open-source and fully auditable.
+- Every retrieval that feeds a recommendation should be logged as a span (see tracing, below) so you can reconstruct exactly which memory/document chunks informed a given piece of advice.
+
+4. MULTIPLE MODEL PROVIDERS
+
+Recommendation: LiteLLM (open source, from BerriAI) as your model gateway, run as the self-hosted LiteLLM Proxy rather than only the SDK.
+- Single OpenAI-compatible interface across 100+ providers (Anthropic, OpenAI, Azure OpenAI, AWS Bedrock, Google Vertex, Mistral, self-hosted vLLM, etc.), so your agent code never hardcodes a provider SDK.
+- The proxy layer gives you centralized cost tracking, rate limiting, per-team/per-agent budgets, automatic fallback/failover between providers, and request/response logging — all useful both operationally and for compliance ("which model produced this output").
+- In a regulated setting, use this layer deliberately for model governance, not just cost optimization: pin specific model versions (not "latest") per use case, and require a change-control/eval step (again, promptfoo or an equivalent eval suite) before swapping a model version in production, since a model change can change the character of the advice generated.
+- If any workflow needs guaranteed no-data-retention or in-VPC inference for a given jurisdiction, route that specific agent through a self-hosted vLLM or Bedrock/Vertex private endpoint via the same LiteLLM interface, so the routing decision is config, not code.
+
+5. HUMAN APPROVAL
+
+Two layers, because "approval" in your context spans both short interactive checks and long asynchronous sign-offs:
+- In-graph, short-lived approvals: LangGraph's interrupt() mechanism, checkpointed to Postgres. Use this for the common case — pause before any action with real-world effect (sending advice to a client, submitting a trade recommendation, releasing a disclosure) and resume exactly where execution left off once a compliance reviewer approves, edits, or rejects.
+- Durable, long-running approvals: For anything that may sit for hours or days (e.g., a second-line compliance review queue, an escalation to a licensed advisor who is offline), wrap the relevant LangGraph subgraph invocation as a Temporal Activity/Workflow. Temporal (open source, self-hostable) gives you durable timers, signals for external approval events, and guaranteed resumption after worker restarts or outages — properties LangGraph's own checkpointer does not fully provide on its own for multi-day waits. This combination (LangGraph for agent logic, Temporal for durable orchestration and human-task lifecycle) is an increasingly common pattern and avoids you having to build your own durable task queue.
+- Make the approval UI itself produce an immutable, signed record: who approved, what exact agent output/state they saw, timestamp, and any edits made — this record is what satisfies SEC Rule 17a-4 / FINRA Rule 4511 recordkeeping expectations, not the underlying model trace alone.
+- Default-deny: any tool call or output classified as "advice-bearing" by your OPA policy (see below) should require approval unless explicitly allow-listed; don't make approval opt-in per agent.
+
+6. DISTRIBUTED TRACING
+
+Recommendation: OpenTelemetry, instrumented against the GenAI semantic conventions (gen_ai.* spans — chat, invoke_agent, execute_tool), with traces shipped to Langfuse as your primary LLM-observability backend (self-hostable, open source), and Arize Phoenix as a strong open-source alternative if you want more built-in eval/quality tooling.
+- The GenAI semantic conventions are the right bet here specifically because you're multi-provider and multi-framework: they're vendor-neutral, CNCF-backed, and already adopted across LangGraph, LiteLLM, and most observability backends, so you avoid re-instrumenting when you swap a tracing backend later.
+- Trace the full causal chain per request: incoming user query -> agent graph spans -> memory retrieval spans (with which memory items were fetched) -> model call spans (which model/version, tokens, latency, provider) -> tool-call spans -> policy-check spans -> human-approval span -> final output span. This is what lets you answer "why did the system say X" months later without reconstructing it from logs by hand.
+- Fan these same traces into your standard infrastructure tracing (if you already run Jaeger/Tempo/Grafana or a commercial APM) via the OTel Collector, so LLM traces sit in the same distributed-tracing plane as your existing services rather than a siloed "AI observability" tool nobody else looks at.
+- Separate the compliance audit log from the engineering trace store, even though they're generated from the same spans: traces in Langfuse/Tempo are for engineering debugging and can have normal retention/rotation; the compliance-relevant subset (advice given, approvals, data used) should be additionally written to an append-only, tamper-evident store (e.g., Postgres with row-level hashing/chaining, or object storage with S3 Object Lock / WORM mode) to meet SEC 17a-4's tamper-evident, human-readable, immediately-accessible requirements. Don't rely on your tracing backend's default retention policy to satisfy a regulatory retention requirement.
+
+7. REGULATORY / GOVERNANCE LAYER (not one of your six, but load-bearing for "regulated")
+
+- Policy enforcement: Open Policy Agent (OPA, CNCF-graduated) with policies written in Rego, evaluated at the LiteLLM gateway (request/response filtering, PII/sensitive-topic detection) and at each tool-invocation boundary in your agent graph (e.g., "no agent may recommend a specific security without passing suitability-check + human-approval spans"). Keep policies in the same Git repo and CI pipeline as your prompts and graphs (see section 1) — policy-as-code should go through the identical review/versioning discipline.
+- Output guardrails: Layer NVIDIA NeMo Guardrails or Guardrails AI (both open source) in front of anything client-facing, for structural/content checks (disallowed claims, missing required disclosures, hallucinated figures) that are cheaper and faster to catch with deterministic or lightweight checks than by relying on the orchestrating LLM alone.
+- Identity and access: Keycloak (open source) for authn/authz of the humans in your approval loops, so approval records are tied to real, auditable identities, not shared service accounts.
+- Secrets/model credentials: HashiCorp Vault (open source core) for provider API keys behind LiteLLM, with per-environment scoping.
+
+SUGGESTED REFERENCE STACK (SUMMARY)
+
+- Orchestration: LangGraph (core), optional AutoGen-style critique subgraph for advice review
+- Model gateway: LiteLLM Proxy, self-hosted
+- Memory/context: Mem0 + PostgreSQL/pgvector (or Qdrant), with source/provenance tagging
+- Durable workflow + approval: LangGraph interrupt() for in-session pauses, Temporal for multi-day/async approvals
+- Tracing/observability: OpenTelemetry (GenAI semantic conventions) -> OTel Collector -> Langfuse (or Arize Phoenix) + your existing tracing backend
+- Policy/guardrails: Open Policy Agent (Rego) + NeMo Guardrails or Guardrails AI
+- Version control/CI: Git, PR review on prompts/graphs/policies, promptfoo for regression eval gating
+- Compliance store: append-only Postgres or S3 Object Lock (WORM) for the regulated subset of records, separate from engineering trace retention
+- Identity/secrets: Keycloak, HashiCorp Vault
+
+SUGGESTED PHASING
+
+1. Stand up LangGraph + LiteLLM + OpenTelemetry/Langfuse first — this gets you a working, observable, multi-provider agent skeleton with nothing regulatory-specific yet.
+2. Add Mem0-backed persistent context with provenance tagging, and get your suitability/compliance-review agents specialized and narrowly scoped.
+3. Add the OPA policy layer and guardrails before any client-facing output is enabled — treat this as a launch blocker, not a fast-follow.
+4. Add Temporal for durable/async approvals once you have a real backlog of long-running review cases; don't over-build this before you need multi-day waits.
+5. Formalize the compliance audit store (WORM/tamper-evident) and run a mock recordkeeping request (reconstruct one historical recommendation end-to-end from Git commit + traces + approval record) before you go live, so you find gaps in a drill rather than in an actual exam.
+
+A FEW THINGS I'D FLAG AS RISKS TO MANAGE, NOT REASONS TO DEVIATE
+
+- Framework churn: this space moves fast (LangGraph, LiteLLM, and the OTel GenAI conventions are all still evolving quickly, with the GenAI semantic conventions explicitly experimental as of this year). Isolate each of these behind a thin internal interface so a breaking upstream change doesn't ripple through your agent logic.
+- Don't let "trusted context" become "whatever the LLM last said." The discipline of tagging every memory fact with source and provenance, and routing conflicts between inferred and system-of-record facts to a human, is more important than which memory product you pick.
+- The audit trail is a design requirement from day one, not an observability add-on. Build the compliance-record path (section 6/7) alongside the agent logic, not after a pilot succeeds.
+
+Happy to go a level deeper on any one of these — for example, a concrete LangGraph graph topology for a suitability-check + advice-drafting + compliance-review flow, or a sample OPA policy bundle for advice-bearing outputs — whichever would be most useful next.

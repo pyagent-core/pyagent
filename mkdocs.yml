@@ -123,9 +123,10 @@ plugins:
   - llmstxt:
       full_output: llms-full.txt
       markdown_description: >-
-        PyAgent is a production stack for multi-agent LLM systems — 18 named design patterns, a
-        four-pillar Blueprint (Manifest, Execution & Routing, Context & Memory, Observability), and a
-        Cookbook of 37 complete, runnable multi-agent orchestration examples across all 21 domains.
+        PyAgent is a production stack for multi-agent LLM systems — 18 named design patterns
+        (also published as structured JSON at /patterns.json), a four-pillar Blueprint (Manifest,
+        Execution & Routing, Context & Memory, Observability), and a Cookbook of 37 complete,
+        runnable multi-agent orchestration examples across all 21 domains.
       sections:
         Getting Started:
           - getting-started.md

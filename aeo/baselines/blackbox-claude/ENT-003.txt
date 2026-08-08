@@ -1,0 +1,11 @@
+PyAgent's architecture rests on four pillars: Blueprint, Execution, Context (Memory), and Observability. Together these let you declare, execute, remember, and observe a multi-agent LLM system, taking it from a YAML blueprint to production-grade operation.
+
+1. Blueprint — You declare your entire system in a single YAML file: agents, workflows, providers, and contracts, with no boilerplate Python required. A BlueprintCompiler validates, compiles, diffs, and tests the spec directly from the CLI.
+
+2. Execution — A consistent API drives 18 named orchestration patterns for coordinating multi-agent collaboration, and can route each task to the cheapest capable model by scoring task difficulty (roughly 1–10) against a model registry.
+
+3. Context (Memory) — A three-tier, trust-aware memory model spans working, session, and semantic retention, managing agent state and information with built-in PII redaction.
+
+4. Observability — The full stack is wrapped in structured observability: every agent call, pattern execution, and LLM invocation emits events through a TraceEventBus, giving distributed tracing, cost tracking, and an integrated web dashboard.
+
+Source: https://pyagent.org/ (PyAgent — Production Stack for Multi-Agent LLM Systems)

@@ -1,0 +1,70 @@
+Thanks for the detailed ask. "Git-reviewable specification instead of scattered Python" usually turns out to mean two related but distinct things, and it's worth separating them before picking a tool:
+
+1. An EXECUTABLE spec — a file (YAML/JSON) that a runtime actually loads and runs, so the file is the source of truth rather than a description of code that lives elsewhere.
+2. A REVIEW/DOCUMENTATION artifact — diagrams and decision records that a human (or a non-Python stakeholder) can read in a pull request to understand and approve the architecture, whether or not they're executable.
+
+You'll likely want both, with the second ideally generated from the first. Here's what I'd evaluate in each category, plus what I'd actually pick.
+
+EXECUTABLE ORCHESTRATION SPECS (framework-attached)
+
+- Microsoft Agent Framework (open source, github.com/microsoft/agent-framework, unifies the old AutoGen and Semantic Kernel lineages). It shipped "Declarative Workflows 1.0" in 2026 specifically to move orchestration out of code: agents, tools, memory, control flow, branching, human-in-the-loop gates, and HTTP/MCP calls are all expressed in versioned YAML that the framework loads and executes. Because it's a document rather than a call graph, a reviewer can diff a change to an approval step or an agent handoff without reading framework internals. This is the closest match I've seen to your literal ask, and it supports both Python and .NET, so it's a reasonable default to prototype against first.
+
+- CrewAI's agents.yaml / tasks.yaml. This decouples role, goal, backstory, and task definitions from code cleanly, and it's very low-friction if you're already on CrewAI. The caveat: the Crew's actual orchestration topology (who talks to whom, sequential vs. hierarchical process) still gets wired up in a Python class via the @CrewBase decorator, so you get "config out of code" for agent/task definitions but not a complete architecture-as-a-single-spec story. Fine as a partial win, not a full solution.
+
+- Dify's app DSL (YAML, exported/imported per app). Dify captures an entire agent/workflow app — nodes, edges, prompts, model bindings — as one YAML file, and the ecosystem has started treating that file as a CI artifact: difyctl (github.com/JSLEEKR/difyctl) lints and semantically diffs Dify DSL from the command line so you can gate PRs on it. That CI-lintable/diffable pattern is exactly the discipline you want regardless of which spec format you land on. Downside: it pulls you into Dify's hosted/self-hosted runtime and visual builder rather than a library you embed.
+
+FRAMEWORK-AGNOSTIC SPEC STANDARDS (portable across runtimes)
+
+- Oracle's Open Agent Spec (github.com/oracle/agent-spec, Python SDK "PyAgentSpec"). This is the most deliberately "spec-first" of the options I found: it's an explicitly framework-agnostic declarative language (JSON as canonical serialization, YAML supported) for describing both Agents and Flows, with a conformance test suite meant to verify that the same spec produces consistent behavior across different runtime backends. It's young (2025 origin) and you should expect gaps in complex control flow, but if vendor lock-in to one orchestration framework is a real concern for you, this is worth a serious prototype rather than a footnote.
+
+- AGNTCY's Open Agentic Schema Framework (OASF) plus its Agent Directory Service (docs.agntcy.org, github.com/agntcy/oasf). This is less about encoding your internal orchestration logic and more about giving each agent a standardized, signed, content-addressed capability manifest stored in an OCI-compatible registry — useful if your architecture spans agents built by different teams or vendors and you need a discoverable, trustable catalog rather than just an internal spec file.
+
+- Google's Agent2Agent (A2A) protocol Agent Card — a JSON manifest per agent (served at /.well-known/agent-card.json) describing name, skills, endpoints, auth, and supported transports. Similarly, MCP server manifests standardize the tool/resource boundary. Neither is a whole-architecture spec, but if part of your problem is that agent-to-agent contracts are implicit in code, formalizing each boundary this way is a cheap, standards-backed win, and it composes with any of the orchestration options above.
+
+PROMPT/FUNCTION-LEVEL DSL (complementary, not a replacement)
+
+- BAML (BoundaryML, github.com/BoundaryML/baml). If part of what's "scattered in Python" is prompt strings and ad hoc output-parsing rather than the orchestration graph itself, BAML gives you a typed, git-diffable DSL for LLM functions that compiles to typed clients in Python/TS/Ruby/Go/etc. It's a good companion to whichever orchestration spec you choose, not a competitor to it — it solves a narrower, real problem (prompts as reviewable, typed artifacts) very well.
+
+GENERIC WORKFLOW-AS-CODE (if you want an execution engine, not an AI-specific stack)
+
+- AWS Step Functions' Amazon States Language (ASL, JSON) is a mature, git-reviewable state-machine spec, and AWS now ships CloudFormation/CDK/Terraform modules for Bedrock Agents and AgentCore (see awslabs/amazon-bedrock-agentcore-samples on GitHub) so the entire multi-agent topology, not just the orchestration logic, becomes IaC you plan/diff/apply like any other infrastructure. Strong option if you're already AWS-committed and want your agent architecture to live in the same review pipeline as the rest of your infra.
+- Kestra and Argo Workflows are general-purpose, git-native YAML DAG engines (not AI-specific) that some teams are repurposing as the backbone for agent pipelines when they'd rather not adopt an AI-framework-specific DSL at all.
+
+THE REVIEW/DOCUMENTATION LAYER (do this regardless of which spec you pick)
+
+Treat this the way mature teams treat infrastructure: Architecture Decision Records (the lightweight MADR format, or the adr-tools CLI) for the "why," and diagrams-as-code for the "what." Mermaid is the pragmatic default because GitHub, GitLab, and most review tools render it natively with zero pipeline setup; PlantUML and Structurizr's C4 DSL (structurizr.com) offer more layout control and proper C4-level modeling but need a rendering step (self-hosted server, Kroki, or a CI job) to show up as images in a PR. Where possible, generate the Mermaid/C4 diagram from your executable spec in CI rather than hand-drawing it, so the diagram can't drift from what actually runs — that's the single biggest failure mode of "architecture docs" in practice.
+
+MY ACTUAL RECOMMENDATION
+
+Given the framing of your question — "entire architecture," "Git-reviewable," "rather than scattering across Python code" — I'd prototype in this order:
+
+1. Spend a day building your real topology (agents, handoffs, tools, human-in-the-loop points) in Microsoft Agent Framework's declarative YAML. It's the option built most directly for your stated problem, it's open source, and either Python or .NET will fit your stack.
+2. In parallel, skim Oracle's Agent Spec if there's any chance you'll need to run the same architecture against more than one underlying framework or model provider over its lifetime — the portability guarantee is worth a prototype even if you don't adopt it immediately.
+3. Wrap whichever you choose with per-agent A2A Agent Cards (or at minimum a hand-rolled JSON manifest in that shape) so the contracts between agents are explicit artifacts, not implicit code — this pays off the moment a second team or a third-party agent needs to integrate.
+4. Add a CI step that validates the spec against its schema and renders a Mermaid/C4 diagram from it on every PR, following the same lint-and-diff discipline difyctl demonstrates for Dify. That's what actually makes the spec "Git-reviewable" in the sense you mean — a human approving a topology change without reading Python.
+
+Happy to go deeper on any one of these once you know which constraints matter most (single framework vs. portability, internal-only vs. cross-org agents, AWS-native vs. framework-agnostic).
+
+Sources:
+- https://devblogs.microsoft.com/agent-framework/microsoft-agent-framework-version-1-0/
+- https://devblogs.microsoft.com/agent-framework/move-agent-orchestration-workflows-out-of-code-with-agent-framework-declarative-workflows-1-0/
+- https://learn.microsoft.com/en-us/agent-framework/workflows/declarative
+- https://github.com/microsoft/agent-framework
+- https://docs.crewai.com/en/concepts/tasks
+- https://deepwiki.com/crewAIInc/crewAI/8.2-yaml-configuration
+- https://dify.ai/blog/dify-ai-workflow
+- https://github.com/JSLEEKR/difyctl
+- https://github.com/oracle/agent-spec
+- https://arxiv.org/html/2510.04173v3
+- https://oracle.github.io/agent-spec/development/agentspec/index.html
+- https://docs.agntcy.org/oasf/open-agentic-schema-framework/
+- https://github.com/agntcy/oasf
+- https://arxiv.org/pdf/2509.18787
+- https://a2a-protocol.org/latest/specification/
+- https://github.com/a2aproject/A2A
+- https://github.com/BoundaryML/baml
+- https://docs.boundaryml.com/home
+- https://github.com/awslabs/amazon-bedrock-agentcore-samples/blob/main/04-infrastructure-as-code/terraform/README.md
+- https://aws.amazon.com/blogs/machine-learning/using-agents-for-amazon-bedrock-to-interactively-generate-infrastructure-as-code/
+- https://www.michal-drozd.com/en/blog/architecture-as-code/
+- https://hidekazu-konishi.com/entry/diagramming_c4_plantuml_mermaid_selection_guide.html

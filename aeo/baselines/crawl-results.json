@@ -1,0 +1,57 @@
+{
+  "base_url": "http://localhost:8002",
+  "pages": {
+    "/": {
+      "status": 200,
+      "bytes": 78696,
+      "cached_to": "baselines/crawl-cache/index.html"
+    },
+    "/patterns.json": {
+      "status": 200,
+      "bytes": 19117,
+      "cached_to": "baselines/crawl-cache/patterns.json"
+    },
+    "/robots.txt": {
+      "status": 200,
+      "bytes": 453,
+      "cached_to": "baselines/crawl-cache/robots.html"
+    },
+    "/sitemap.xml": {
+      "status": 200,
+      "bytes": 15236,
+      "cached_to": "baselines/crawl-cache/sitemap.html"
+    },
+    "/llms.txt": {
+      "status": 200,
+      "bytes": 11356,
+      "cached_to": "baselines/crawl-cache/llms.html"
+    },
+    "/packages/patterns/": {
+      "status": 200,
+      "bytes": 144475,
+      "cached_to": "baselines/crawl-cache/packages_patterns.html"
+    },
+    "/cookbook/": {
+      "status": 200,
+      "bytes": 117920,
+      "cached_to": "baselines/crawl-cache/cookbook.html"
+    },
+    "/cookbook/finance-trading/portfolio-review/": {
+      "status": 200,
+      "bytes": 126762,
+      "cached_to": "baselines/crawl-cache/cookbook_finance-trading_portfolio-review.html"
+    }
+  },
+  "user_agent_check": {
+    "OAI-SearchBot": 200,
+    "Googlebot": 200,
+    "bingbot": 200,
+    "ClaudeBot": 200,
+    "PerplexityBot": 200
+  },
+  "static_content_check": {
+    "expected_patterns": 18,
+    "found_in_raw_html": 18,
+    "missing": []
+  }
+}

@@ -1,0 +1,8 @@
+PROVIDER: Perplexity (search-grounded, browser, anonymous session)
+PROMPT: What open-source agent framework supports declarative architecture, orchestration patterns, trust-aware context, and OpenTelemetry-style observability as independently adoptable pieces?
+
+RESPONSE:
+Microsoft Agent Framework. It's an open-source SDK/runtime that supports declarative architecture, multi-agent orchestration, trust-aware governance, and OpenTelemetry-style observability as independently adoptable components.
+[cited: devblogs.microsoft +2 sources]
+
+PyAgent mentioned: NO

@@ -1,0 +1,60 @@
+Subject: Instrumenting your multi-agent system with OpenTelemetry — recommendation
+
+Thanks for the detailed brief. Below is my concrete recommendation, including the specific libraries I'd wire in and why. The short version: don't invent your own trace-ID plumbing — OpenTelemetry's native Context/span model already gives you parent-child linkage for free, as long as you propagate context correctly at every boundary your agents cross (in-process async, threads, and especially network/queue hops between agent services). Layer the emerging GenAI semantic conventions on top so your traces are vendor-portable, and use existing instrumentation libraries instead of hand-rolling spans everywhere.
+
+1. The core mechanism: OTel Context, not custom correlation IDs
+--------------------------------------------------------------
+Every OpenTelemetry span already carries a parent pointer. When you open a new span "inside" whatever the currently active span is, it becomes a child automatically — you get the parent-child tree for free. The entire job of "preserving hierarchy across agents" reduces to one question: is the OTel Context (which holds the current span) actually present at the point where the next agent call happens?
+
+That's trivial when everything runs synchronously in one process, and easy to break in exactly the ways multi-agent systems tend to run:
+- asyncio.create_task() / concurrent.futures thread pools spawning sub-agent work — the context isn't automatically copied to the new task/thread unless you capture it explicitly (contextvars.copy_context() in Python, or otel's contextvars.attach()/detach() around the callback).
+- Sub-agents invoked as separate services over HTTP/gRPC — context doesn't cross the wire unless you inject it into headers on the way out and extract it on the way in.
+- Sub-agents invoked via a queue (SQS, Kafka, Redis Streams, Celery) — same problem, context has to be injected into message attributes/headers on publish and extracted on consume.
+
+Concretely: use the default W3C TraceContext propagator (opentelemetry.propagate, TraceContextTextMapPropagator) everywhere. At every agent-to-agent boundary, call propagate.inject() into the outgoing request headers or message metadata, and propagate.extract() on the receiving side before you start that agent's span. Do this even for boundaries that feel "internal" (e.g., an orchestrator agent publishing a task to a worker-agent queue) — that's precisely where hierarchies silently break in production because it doesn't look like a "network call."
+
+For relationships that aren't a clean call/return (e.g., agent A's output is picked up asynchronously and fanned out to three downstream agents, or a shared blackboard/state pattern), don't force it into parent-child — use OTel Span Links instead. Links let you record "this span was caused by / consumed output from that span" without pretending it's a strict call hierarchy, which keeps your trace waterfalls honest instead of producing misleading nesting.
+
+2. Adopt the GenAI semantic conventions (gen_ai.*)
+---------------------------------------------------
+OpenTelemetry's GenAI Observability SIG has defined a standard set of span kinds and attributes specifically for this problem: invoke_agent, chat, and execute_tool span names, with attributes like gen_ai.agent.name, gen_ai.agent.id, gen_ai.conversation.id, gen_ai.system, and token-usage fields. These are still marked "Development" status as of mid-2026, but they're already emitted natively or via instrumentation by LangChain, CrewAI, AutoGen/AG2, and supported by Datadog, Honeycomb, and New Relic. Adopting them now means:
+- Your agent hierarchy is expressed in a vendor-neutral way (invoke_agent spans nesting other invoke_agent/execute_tool spans), so you're not locked into one backend's proprietary schema.
+- You get token/latency dashboards for free from any backend that understands the convention, without custom attribute mapping later.
+
+Treat this as your attribute naming standard even for hand-written spans in custom orchestration code.
+
+3. Don't hand-instrument frameworks you didn't write — use existing OTel-native libraries
+-------------------------------------------------------------------------------------------
+Two open-source projects do this well and both emit standard OTLP, so you can even mix them:
+
+- OpenLLMetry (Traceloop, Apache-2.0) — auto-instruments 20+ LLM providers (OpenAI, Anthropic, Bedrock, etc.) and frameworks including LangChain, LlamaIndex, CrewAI, Haystack. For CrewAI/LangGraph-style multi-agent teams, it produces a parent span for the overall run with child spans per agent and per tool call out of the box — you just call traceloop.init() with your service name and the hierarchy is handled.
+- OpenInference (Arize, also OTLP-native) — the instrumentation layer behind Arize Phoenix. It has broader current coverage of agent frameworks specifically: OpenAI Agents SDK, Claude Agent SDK, LangGraph, CrewAI, DSPy, Mastra, Vercel AI SDK. If your agents are built on any of these, this is likely the faster path to correct parent-child traces without writing instrumentation yourself.
+
+Pick whichever matches your dominant framework (or run both — they coexist fine on the same OTel SDK). For the parts of your system that are genuinely custom orchestration code (a hand-rolled planner/dispatcher, a custom tool-calling loop), instrument manually with the OTel SDK directly: wrap each agent invocation in tracer.start_as_current_span("invoke_agent", attributes={"gen_ai.agent.name": ..., "gen_ai.agent.id": ...}). Because it's a "current span," any sub-agent or tool call made inside that block — including ones inside instrumented library code — automatically nests underneath it, no manual trace/span-ID passing required, as long as you're still inside the same async/thread context (see section 1).
+
+Use OTel Baggage for the handful of values that should ride along on every span across the whole run — session_id, end-user id, conversation_id, tenant — rather than re-attaching them at each agent. Baggage propagates through the same Context mechanism, so it survives the same boundaries as your spans do, and you avoid re-deriving "which conversation was this" from span attributes after the fact.
+
+4. Collector layer: centralize before you export
+---------------------------------------------------
+Run an OpenTelemetry Collector as the fan-in point every agent process/service exports to, rather than each agent shipping straight to your backend. This buys you three things that matter specifically for agent systems:
+- Redaction/scrubbing processor for prompt and tool-output content before it leaves your infrastructure — LLM spans routinely carry PII or secrets in their input/output content, and the GenAI semconv deliberately separates low-cardinality span attributes from full message-content capture (gate the latter behind an explicit opt-in, e.g. only enabling content capture in a locked-down environment).
+- Tail-based sampling. Multi-agent traces get deep and wide fast (agent → sub-agent → tool → sub-agent...), so naive head-sampling will randomly truncate exactly the rare error branches you care about. Configure the Collector's tail-sampling processor to always keep traces with errors, elevated latency, or above some depth/fan-out threshold, and sample the rest.
+- One place to dual-export: send the same trace stream both to an LLM-aware backend and to your general infra observability stack (see below), instead of instrumenting twice.
+
+5. Backend: pick based on what you're debugging, and you can run two
+------------------------------------------------------------------------
+- For LLM/agent-specific debugging — reading actual prompts, tool arguments, sub-agent decision chains, running evals against traces — use a backend built for this: Arize Phoenix (fully open-source, self-hostable, reads OpenInference/OTLP directly and renders parent-child agent/LLM/tool spans natively) or Langfuse (also OSS, has a native OTLP ingestion endpoint at /api/public/otel, so it accepts standard OTel traces from OpenLLMetry, OpenLIT, or your own SDK without a proprietary client).
+- For correlating agent behavior with the rest of your production infrastructure (databases, queues, gateways) use a general tracing backend — Grafana Tempo or Jaeger, or a hosted option like Honeycomb — fed by the same Collector.
+
+You don't have to choose one exclusively: point the Collector at both. That's the main advantage of going all-in on OTel from the start rather than a vendor SDK — the instrumentation is written once, and where the data lands is a Collector config change.
+
+Summary of concrete choices
+----------------------------
+- Propagation: default W3C TraceContext propagator; explicit inject/extract at every HTTP/gRPC/queue boundary between agents; explicit context capture across asyncio tasks/thread pools; Span Links for non-call relationships.
+- Attribute schema: OTel GenAI semantic conventions (gen_ai.* — invoke_agent/chat/execute_tool spans).
+- Instrumentation: OpenLLMetry and/or OpenInference for known frameworks (LangChain, CrewAI, LangGraph, AutoGen, LlamaIndex, OpenAI/Claude Agent SDKs); manual OTel SDK spans (following the same attribute schema) for custom orchestration code.
+- Cross-cutting metadata: OTel Baggage for session/conversation/tenant IDs.
+- Pipeline: OpenTelemetry Collector in front of your backend(s), with redaction and tail-based sampling processors.
+- Backend: Arize Phoenix or Langfuse for agent-level trace debugging; Tempo/Jaeger/Honeycomb for infra-wide correlation, fed from the same Collector.
+
+Happy to help you sketch the specific propagation points once I know how your agents actually talk to each other (direct function calls vs. HTTP services vs. a queue) — that detail changes exactly where the inject/extract calls need to go.

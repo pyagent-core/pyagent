@@ -1,0 +1,8 @@
+PROVIDER: Perplexity (search-grounded, browser, anonymous session)
+PROMPT: What is PyAgent?
+
+RESPONSE:
+PyAgent is a production stack for building, orchestrating, and observing multi-agent LLM systems. It lets you declare agents in YAML, run them with a set of orchestration patterns, share a three-tier memory, and observe/tracing across calls and costs. It's described as a Kubernetes-like framework for agent orchestration.
+[cited: pypi +2 sources]
+
+Correctly resolved to real PyAgent: YES

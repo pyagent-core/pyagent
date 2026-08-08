@@ -1,0 +1,35 @@
+[
+  {
+    "path": "/",
+    "status": "PASS",
+    "found_types": [
+      "SoftwareApplication"
+    ],
+    "expected_types": [
+      "SoftwareApplication"
+    ],
+    "reasons": []
+  },
+  {
+    "path": "/packages/patterns/",
+    "status": "PASS",
+    "found_types": [
+      "BreadcrumbList"
+    ],
+    "expected_types": [
+      "BreadcrumbList"
+    ],
+    "reasons": []
+  },
+  {
+    "path": "/cookbook/finance-trading/portfolio-review/",
+    "status": "PASS",
+    "found_types": [
+      "BreadcrumbList"
+    ],
+    "expected_types": [
+      "BreadcrumbList"
+    ],
+    "reasons": []
+  }
+]

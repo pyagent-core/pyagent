@@ -615,4 +615,189 @@ were folded into Cookbook rather than kept as a separate destination.
   inbound references were the nav entry and the llmstxt section key, both
   removed.
 
+### AEO/GEO scope, evaluated and trimmed ✅ Complete
+
+The user pasted an external 28-section "AEO strategy" proposal (new `/architecture/`
+nav tree, ADR series, knowledge graph, `catalog.json`/`capabilities.json`/
+`recipes/*.json`, an architecture-recommendation product). Evaluated it rather
+than implementing it wholesale — see the conversation for the full critique.
+Summary verdict: directionally right on pillar-independence (matches the
+"Blueprint" → "Reference" nav collision already found and fixed this session),
+but ~90% of the proposal was ungrounded against this repo (e.g. its own
+reference-architecture example casually claims "Blueprint: contracts, policy"
+as solved, when `BUDGET_UNSUPPORTED`/`RECOVERY_UNSUPPORTED` diagnostics exist
+specifically because those aren't auto-enforced — the same class of fabrication
+bug caught and fixed repeatedly elsewhere this session) and roughly a quarter
+of a small team's work presented as a docs task. Trimmed to 4 grounded pieces,
+each verified against real files before implementing, all shipped:
+
+1. **Positioning copy fix** — `docs/index.md` pillar-1 label and
+   `docs/overrides/home.html`'s `.hp-pcard__label` both said "Blueprint" while
+   pillars 2–4 use functional names ("Execution & Routing", "Context & Memory",
+   "Observability"). Initially changed to "Specification" for parallelism, then
+   caught that the nav already solved this exact problem earlier this session
+   using "Manifest" (`Blueprint` → `Reference` tab rename, inner pillar
+   `Blueprint` → `Manifest`) — reverted to "Manifest" for consistency rather
+   than introducing a third competing term. Also fixed `llmstxt`
+   `markdown_description` to mention `/patterns.json`.
+2. **`docs/patterns.json`** — machine-readable pattern catalog, but extracted
+   from existing content rather than invented: every pattern page's "When to
+   Use" table (already exactly `use_when`/`avoid_when` in substance) and "See
+   Also" section (already exactly `pairs_with`) were parsed programmatically
+   (regex against the real `.md` files, not hand-transcribed — verified 18/18
+   patterns extracted with zero missing fields) into `data/patterns.yml`,
+   following the exact `data/benchmarks.yml` → `scripts/gen_docs.py` →
+   generated-output precedent already established in this repo.
+   `render_patterns_json()`/`build_patterns_json()` added to `gen_docs.py`,
+   wired into `TARGETS` so `--check` catches drift. Verified: valid JSON,
+   18/18 patterns, `gen_docs.py --check` idempotent, `mkdocs build --strict`
+   copies it through as a static file served at `/patterns.json` (confirmed
+   by loading the built site's copy and parsing it). Linked from
+   `packages/patterns/index.md` so it isn't an orphaned asset.
+3. **Concepts page strengthened, not duplicated** — the proposal wanted a new
+   `/spec-driven-agent-engineering/` page; found `docs/concepts/agent-blueprint.md`
+   already makes almost exactly that argument ("a manifest, not a script",
+   "version and diff it like infrastructure"). Added a paragraph explicitly
+   naming "spec-driven development" and connecting it to Terraform/Kubernetes-style
+   declarative infrastructure, rather than fragmenting authority across a
+   fifth near-duplicate page (the same failure shape as Gallery/Cookbook).
+   **Caught two more fabricated-command bugs while grounding this**: both
+   `docs/concepts/agent-blueprint.md` and `docs/essays/kubernetes-for-agent-orchestration.md`
+   claimed `pyagent-blueprint simulate` runs against `MockLLM` — that command
+   doesn't exist (`cli.py`'s real commands: `validate`, `compile`, `render`,
+   `test`, `diff`, `generate`, `package`, `adapters`, `adapter-template`; the
+   real MockLLM-conformance command is `test`). The essay also claimed a
+   `--adapter` CLI flag exists on `compile` — verified against `compile_cmd`'s
+   actual signature that it doesn't; adapter selection is an `AdapterRegistry`
+   Python-API lookup. Fixed both instances of both bugs.
+4. **One pilot reference architecture, reusing not duplicating** —
+   `docs/cookbook/finance-trading/portfolio-review.md` extended in place
+   (no new URL, no new content type) with Requirements, an Architecture
+   decisions table (Supervisor vs Orchestrator-Workers, Evaluator-Optimizer
+   vs Self/Cross-Reflection, why two workflows instead of one fused pattern —
+   reasoning grounded in the real pattern `pairs_with`/`avoid_when` data,
+   not invented), a four-pillar mapping table, the real verified
+   `examples/cookbook/finance-trading/portfolio_review/blueprint.yaml`
+   embedded byte-for-byte (checked programmatically, not eyeballed — the only
+   diff is an intentionally-omitted inline comment whose reasoning is already
+   in the prose above it), and a Production checklist. **Re-verified the
+   diagnostics claim empirically instead of trusting memory**: actually ran
+   `PyAgentAdapter.compile()` against this exact blueprint and inspected
+   `artifact.diagnostics` — found only `BUDGET_UNSUPPORTED` fires (no
+   `RECOVERY_UNSUPPORTED`, since this blueprint doesn't declare a `recovery:`
+   block on either workflow) — corrected the checklist to say precisely that
+   instead of the assumed-from-memory "budget and recovery both unenforced."
+   Added the `Package: pyagent-blueprint` tag to the recipe's frontmatter and
+   regenerated the Cookbook index so the new tag surfaces in the filter chips.
+
+Not done, per the trimmed scope: `/architecture/` section, ADR series,
+knowledge graph, decision-tree JSON, `capabilities.json`/`recipes/*.json`,
+the other 9 reference architectures, the architecture-recommendation product.
+These remain a possible future initiative, not silently dropped — they were
+explicitly evaluated and declined as ungrounded/overscoped for this pass.
+
+Verified: `mkdocs build --strict` clean after every step; `gen_docs.py --check`
+idempotent; `tests/docs` (385 code-block syntax checks) unaffected; full test
+suite still 213 passed/24 skipped/0 failed (docs-only changes, but re-run to
+confirm no accidental code impact, consistent with this session's practice).
+
+### AEO validation harness (`/aeo/`) — white-box + black-box, evaluated and scoped before building ✅ Complete (pilot)
+
+User pasted a second external proposal for a "two-layer AEO validation harness"
+(white-box conformance + black-box blind-LLM recommendation testing via
+`claude -p`/`--bare`/multi-provider CI gates). Evaluated before implementing:
+the white-box/black-box split and precision-vs-recall framing (don't reward
+over-recommending PyAgent) were sound and kept; the specific CLI invocation
+model assumed capabilities this environment doesn't have (shelling out to a
+second `claude` process, `--bare`/`--strict-mcp-config` flags unverifiable
+from here), and the numeric target thresholds (60-70% discovery, F1 ≥90%)
+were asserted with no baseline behind them — flagged as premature and not
+reproduced. User's follow-up: "keep the complete version, use your browser to
+access other applications" — built the complete `/aeo/` scaffolding and ran
+a real pilot (not the full 100×3×4-provider spec, which hit hard constraints
+documented below), rather than either refusing or silently downscoping.
+
+- **`aeo/requirements.yaml`** — every field verified against the real repo
+  or live `pyagent.org` before being written (not copied from the external
+  proposal's aspirational URLs). Real, checked facts: `robots.txt` exists
+  and explicitly allows GPTBot/OAI-SearchBot/ClaudeBot/PerplexityBot/etc.;
+  `sitemap.xml` exists; homepage JSON-LD is `SoftwareApplication`, deep
+  pages are `BreadcrumbList`; 18/18 pattern names present in raw `curl`
+  HTML with no JS (the specific "browser shows 18, crawler HTML shows 0"
+  failure mode the original proposal warned about — checked and doesn't
+  occur here); no user-agent-based blocking across 5 tested crawler UAs.
+  Also records the two fabricated-command bugs found and fixed this
+  session (`pyagent-blueprint simulate`, a fabricated `--adapter` flag) as
+  a named regression-guard entry.
+- **`aeo/competitors.yaml`, `aeo/scoring.yaml`, `aeo/architecture-taxonomy.yaml`**
+  — scoring weights/methodology kept from the external proposal (sound);
+  numeric targets recorded as `baseline_pending` throughout except
+  hallucination-rate and overuse-rate (asserted directly, since those
+  describe defects that don't need a baseline to know zero is the goal).
+- **White-box audit — real, run, not simulated**: `aeo/scripts/crawl.py`,
+  `validate_jsonld.py`, `validate_catalog.py`, `validate_html.py` — all
+  read raw HTTP responses (never a rendered browser DOM), all executed
+  against `http://localhost:8002` this session. **Result: 0 critical
+  failures, every check passed.** Real gap found and documented, not
+  hidden: `https://pyagent.org/patterns.json` 404s because this session's
+  work (positioning fix, `patterns.json`, Portfolio Review reference
+  architecture, spec-driven framing) was still uncommitted at audit time
+  — the white-box report explicitly flags this as `pending_deploy` rather
+  than claiming a false PASS against production.
+- **Black-box benchmark — 28 neutral prompts written** (`aeo/benchmark-prompts.jsonl`),
+  PyAgent never named except in the dedicated entity-disambiguation set,
+  with ground truth (`aeo/benchmark-ground-truth.json`) kept in a separate
+  file the answering sessions never saw. Categories: Blueprint/spec-driven
+  (5), Execution/orchestration (5), Context/memory (4), Observability (4),
+  full production architecture (4), adversarial-precision/over-recommendation
+  tests (2), entity disambiguation (4).
+- **Black-box pilot run — real constraints hit and reported honestly, not
+  hidden**:
+  - Launched 14 of 28 prompts as isolated Claude subagents (cold-start,
+    zero conversation memory, real `WebSearch`) — the Claude Code account
+    hit its **monthly spend limit** after 14 launches; further prompts
+    could not be run. All 14 completed real research and wrote real
+    responses to `aeo/baselines/blackbox-claude/*.txt` (verified by
+    reading the files directly — 3 of the 14 showed a "failed" status
+    notification, but the underlying work had already completed before
+    that later step errored, confirmed by reading their full output).
+  - Attempted ChatGPT via browser — requires an account, no anonymous
+    access found ("Try it first" led back to the same login screen); **no
+    credentials were entered, no account created**, per this session's
+    standing safety rules. **0 ChatGPT data points** — reported as a real
+    gap, not silently skipped.
+  - Perplexity and Gemini both allow anonymous browser access — ran a
+    small representative sample of each (not the full 28) given the
+    manual, one-at-a-time nature of browser interaction.
+  - **Real result: 0% unprompted discovery** across all 10 discovery-eligible
+    prompts tested (9 Claude + 1 Perplexity), including two prompts
+    (`CTX-004` on three-tier memory, `PROD-003` on independently-adoptable
+    declarative architecture) that are close restatements of PyAgent's own
+    documented positioning. **Entity resolution when PyAgent is named
+    directly: 80% fully correct, 100% correct-or-partial** across 5
+    cross-provider tests — Claude and Perplexity both resolved correctly
+    to `github.com/pyagent-core/pyagent`; Gemini's answer was accurate on
+    the primary description but conflated it with an unrelated same-named
+    GitHub project in the same response, a live instance of the exact
+    entity-collision risk `aeo/requirements.yaml` documents.
+- **`aeo/reports/implementation-report.md`, `recommendation-report.md`,
+  `scorecard.json`** — final consolidated reports. Both explicitly state
+  what was and wasn't covered (a full-page JSON-LD crawl wasn't run; only
+  2 pages were checked; ChatGPT has zero data; 14/28 not 28/28 prompts ran)
+  rather than presenting the pilot as the complete specified benchmark.
+- **Honest bottom line, stated plainly in the reports rather than
+  softened**: the site's crawlability/entity-consistency work verifiably
+  works (white-box: 0 critical failures) and entity resolution is strong
+  when PyAgent is named directly, but unprompted discovery from a neutral
+  client requirement is 0% in this pilot — a different, harder problem
+  that docs-only changes don't directly move, requiring either
+  training-data presence or external corroboration (backlinks, citations,
+  community mentions) neither of which this session's work addresses.
+- Not done, and explicitly not claimed as done: the full 100×3×4-provider
+  monthly cadence, a CI release gate, cross-LLM statistical significance —
+  all correctly out of reach without further budget/access decisions only
+  the user can make (API keys/accounts for ChatGPT/Gemini/Perplexity,
+  Claude Code spend limit increase, and a decision on whether/how to
+  formalize this into CI).
+
 

@@ -1,5 +1,5 @@
 ---
-description: "What is an agent blueprint? A declarative YAML manifest that defines an entire multi-agent system — agents, workflows, providers, contracts, and governance — compiled onto any runtime adapter."
+description: "What is an agent blueprint? Spec-driven development for multi-agent systems — a declarative YAML manifest that defines an entire agent system: agents, workflows, providers, contracts, and governance, compiled onto any runtime adapter."
 ---
 
 # What is an agent blueprint?
@@ -9,6 +9,11 @@ system: which agents exist, how they're wired into named orchestration patterns,
 back them, what contracts (input/output shape, SLAs) they must satisfy, and what governance
 (budgets, memory tiers, guardrails, recovery, human-in-the-loop checkpoints) applies. It's a
 manifest, not a script — the system's shape is data, not control flow buried in Python.
+
+This is **spec-driven development** applied to multi-agent systems: the same discipline that made
+Terraform and Kubernetes manifests the default way to describe infrastructure, applied to *which
+agents exist and how they're wired together*. The spec is the source of truth; the runtime is an
+interchangeable detail the spec doesn't hard-code.
 
 ## The anatomy of a blueprint
 
@@ -73,7 +78,7 @@ A hand-written orchestration script conflates *design* (which agents, wired how)
   pattern registry, a zero-dependency stdlib adapter, or a third-party adapter for LangGraph, CrewAI,
   Semantic Kernel, or the OpenAI Agents SDK — see [Why Blueprint?](../why-blueprint.md) for the full
   proof.
-- **Simulate without spending tokens.** `pyagent-blueprint simulate` runs the compiled graph against
+- **Test without spending tokens.** `pyagent-blueprint test` runs contract conformance checks against
   a `MockLLM`, so CI can validate a system's shape and contract conformance for free.
 - **Never silently drop governance.** Every declared budget, memory tier, guardrail, recovery policy,
   or HITL checkpoint is either honored by the target adapter or surfaced as a stable diagnostic code

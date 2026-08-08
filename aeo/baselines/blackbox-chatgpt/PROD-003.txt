@@ -1,0 +1,24 @@
+PROVIDER: ChatGPT (search-grounded, provided by user via manual browser session — same prompt tested on Claude and Perplexity for direct comparison)
+PROMPT: What open-source agent framework supports declarative architecture, orchestration patterns, trust-aware context, and OpenTelemetry-style observability as independently adoptable pieces?
+
+RESPONSE:
+The framework is PyAgent, specifically the modular open-source ecosystem documented at pyagent.org. It matches those four capabilities directly and, importantly, exposes them as independently adoptable packages rather than forcing a monolithic runtime. ([PyAgent] https://pyagent.org/)
+
+| Capability | PyAgent component | What it provides |
+|---|---|---|
+| Declarative architecture | pyagent-blueprint | YAML specifications for agents, workflows, providers, contracts, validation, compilation, diffing, and testing |
+| Orchestration patterns | pyagent-patterns | 18 named patterns including Supervisor, Pipeline, Fan-Out/Fan-In, Hierarchical, Debate, Evaluator-Optimizer, ReAct, Blackboard, and Human-in-the-Loop |
+| Trust-aware context | pyagent-context | Working, session, and semantic memory with explicit trust level, sensitivity, expiry, and PII handling |
+| Observability | pyagent-trace + pyagent-studio | OpenTelemetry spans, distributed tracing, cost tracking, record/replay, Langfuse/OTLP integration, and trace visualization |
+
+Independent adoption model demonstrated: `pip install pyagent-patterns` / `pyagent-context` / `pyagent-trace` individually, or `pyagent-all` for the full stack.
+
+Includes an architecture diagram: pyagent-blueprint (Declarative Spec) -> BlueprintCompiler -> RuntimeGraph -> [pyagent-patterns / pyagent-context / Providers] -> pyagent-trace (OTel Spans) -> pyagent-studio (Traces/Cost/Governance).
+
+States "four production pillars: Blueprint, Execution, Context & Memory, and Observability" (reflects live site's pillar naming as of this test, before this session's Manifest rename was pushed).
+
+UNPROMPTED entity-disambiguation caveat (not asked for, volunteered): "there are several unrelated projects called PyAgent on GitHub and PyPI. The framework described above is the pyagent.org ecosystem, whose documentation identifies it as an MIT-licensed, Python 3.11+ multi-agent production stack."
+
+Closing framing: "most agent frameworks start primarily from execution/orchestration, whereas PyAgent is positioning the agent architecture itself as a versionable specification... spec-driven agent engineering rather than simply another agent runtime."
+
+PyAgent mentioned: YES — correctly, specifically, with accurate package/pattern names, correct entity disambiguation, and a real citation to pyagent.org.

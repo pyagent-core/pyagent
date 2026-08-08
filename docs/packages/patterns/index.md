@@ -441,6 +441,13 @@ flowchart TD
 
 ---
 
+## Machine-readable catalog
+
+Every pattern's `use_when`/`avoid_when`/`pairs_with` metadata above is also published as structured
+JSON at [pyagent.org/patterns.json](../../patterns.json) — generated from the same source as this
+page (`data/patterns.yml`), so it can never drift from the prose. Useful for tools, agents, or
+scripts choosing a pattern programmatically rather than reading this page.
+
 ## See Also
 
 - [Router Package](../router.md) — automatic model selection per agent call

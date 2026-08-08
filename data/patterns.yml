@@ -1,0 +1,365 @@
+# Structured pattern metadata — single source of truth for docs/patterns.json.
+#
+# Seeded by extracting the real, hand-authored content already on each pattern
+# page (packages/patterns/*/*.md): the "When to Use" table becomes
+# use_when/avoid_when, the "See Also" section becomes pairs_with. This is NOT
+# invented content — every field here already existed in prose form; this file
+# makes it machine-readable without duplicating or contradicting the prose.
+#
+# Do not hand-edit docs/patterns.json — edit this file and regenerate:
+#
+#     python scripts/gen_docs.py
+#
+# CI fails if the committed patterns.json is out of sync with this data.
+
+patterns:
+- id: fan-out-fan-in
+  name: Fan-Out / Fan-In
+  category: orchestration
+  best_for: Multi-perspective analysis, parallel research, ensemble fact-checking.
+  llm_calls: 'N parallel + 1 aggregator. Wall-clock time: max(agent latencies) + aggregator.'
+  use_when:
+  - Multiple independent perspectives improve quality
+  - Wall-clock latency matters (parallel is fast)
+  avoid_when:
+  - Analyses depend on each other → Use Pipeline
+  - Agents need fixed hierarchy → Use Hierarchical
+  - Agents should influence each other iteratively → Use Swarm
+  pairs_with:
+  - pattern: pipeline
+    reason: sequential stages instead of parallel
+  - pattern: voting
+    reason: parallel agents that vote on a discrete answer
+  - pattern: debate
+    reason: agents argue against each other across rounds
+  - pattern: swarm
+    reason: agents interact with neighbors across rounds
+- id: hierarchical
+  name: Hierarchical
+  category: orchestration
+  best_for: Complex projects with defined sub-teams, enterprise workflows.
+  llm_calls: 1 manager + T leads + W workers. Teams execute in parallel.
+  use_when:
+  - Work decomposes into distinct teams
+  - Teams need coordination but can work in parallel
+  avoid_when:
+  - Task is flat and simple → Use Pipeline or Fan-Out/Fan-In
+  - Subtasks aren't known upfront → Use Orchestrator-Workers
+  - Cost is a tight constraint → Many LLM calls — consider Pipeline
+  pairs_with:
+  - pattern: orchestrator-workers
+    reason: dynamic team assignment at runtime
+  - pattern: fan-out-fan-in
+    reason: flat parallel execution without hierarchy
+  - pattern: role-based
+    reason: fixed roles collaborating in shared rounds
+- id: orchestrator-workers
+  name: Orchestrator-Workers
+  category: orchestration
+  best_for: Open-ended goals where subtasks aren't known upfront.
+  llm_calls: 1 planning + N workers (dynamic) + 1 synthesis.
+  use_when:
+  - Subtasks aren't known until you analyze the goal
+  - Worker pool has meaningfully different specializations
+  avoid_when:
+  - Subtasks are always the same for this task type → Use Pipeline or Hierarchical
+  - Workers need to communicate directly with each other → Use Blackboard or Swarm
+  pairs_with:
+  - pattern: hierarchical
+    reason: fixed team structure decided at design time
+  - pattern: pipeline
+    reason: fixed sequential stages, no dynamic planning
+  - pattern: blackboard
+    reason: workers share a state store instead of routing through orchestrator
+- id: pipeline
+  name: Pipeline
+  category: orchestration
+  best_for: ETL, document processing, multi-step transformation.
+  llm_calls: 'N (one per stage). Latency: sum of all stages.'
+  use_when:
+  - Task has clear sequential stages
+  - Each stage transforms output for the next
+  avoid_when:
+  - Stages could run independently → Use Fan-Out/Fan-In
+  - You need quality feedback loops → Use Self-Reflection
+  - A coordinator decides which stages to run → Use Orchestrator-Workers
+  pairs_with:
+  - pattern: fan-out-fan-in
+    reason: same agents running in parallel instead of sequentially
+  - pattern: self-reflection
+    reason: add a critique-refine loop at any stage
+  - pattern: evaluator-optimizer
+    reason: scored quality gate between stages
+- id: supervisor
+  name: Supervisor
+  category: orchestration
+  best_for: Customer support bots, multi-domain Q&A, triage systems.
+  llm_calls: 2–3 (classify + specialist + optional formatter).
+  use_when:
+  - Tasks fall into distinct categories
+  - Specialists are meaningfully better than generalists
+  avoid_when:
+  - Tasks don't have clear categories → Use Orchestrator-Workers
+  - All tasks need the same processing → Use Pipeline
+  - You want adversarial quality checking → Use Debate
+  pairs_with:
+  - pattern: orchestrator-workers
+    reason: dynamic routing where subtasks aren't known upfront
+  - pattern: talker-reasoner
+    reason: route by complexity rather than topic
+- id: cross-reflection
+  name: Cross-Reflection
+  category: resolution
+  best_for: High-stakes writing, code review with independent expert, adversarial
+    quality gates.
+  llm_calls: G + R per round (generator + reviewer). Different models → different
+    blind spots.
+  use_when:
+  - External perspective adds more value than self-review
+  - Reviewer has genuinely different expertise
+  - Two independent provider perspectives reduce blind spots
+  avoid_when:
+  - Speed matters more than quality → Single-shot call
+  - You want a scored output quality gate → Use Evaluator-Optimizer
+  pairs_with:
+  - pattern: self-reflection
+    reason: same agent critiques its own output
+  - pattern: evaluator-optimizer
+    reason: scored quality gate (7/10, 8/10...)
+  - pattern: debate
+    reason: adversarial multi-round with a judge
+- id: debate
+  name: Debate
+  category: resolution
+  best_for: High-stakes decisions, buy-vs-build, investment theses, strategy trade-offs.
+  llm_calls: D × R (debaters × rounds) + 1 judge.
+  use_when:
+  - Decision requires examining opposing viewpoints
+  - Stakes are high — adversarial testing adds value
+  avoid_when:
+  - Answer is factual, not arguable → Single-shot call
+  - Budget is tight → Many LLM calls — consider Cross-Reflection
+  - You need nuanced open-ended output → Use Evaluator-Optimizer
+  pairs_with:
+  - pattern: voting
+    reason: parallel agents that vote independently rather than debate
+  - pattern: cross-reflection
+    reason: generate + review rather than argue + judge
+  - pattern: fan-out-fan-in
+    reason: parallel independent analysis without adversarial framing
+- id: evaluator-optimizer
+  name: Evaluator-Optimizer
+  category: resolution
+  best_for: Ad copy, content quality gates, structured output conformance, scored
+    deliverables.
+  llm_calls: 2 per round (generate + score). Stops early when threshold is crossed.
+  use_when:
+  - You have explicit, measurable quality criteria
+  - Iterative improvement is clearly worthwhile
+  avoid_when:
+  - Quality criteria are subjective or qualitative → Use Cross-Reflection
+  - You just need approve/reject (no score) → Use Self-Reflection or Cross-Reflection
+  - Budget is tight → Single-shot generation
+  pairs_with:
+  - pattern: self-reflection
+    reason: same agent critiques and revises without scoring
+  - pattern: cross-reflection
+    reason: separate reviewer with qualitative feedback
+  - pattern: human-in-the-loop
+    reason: human replaces the evaluator for high-stakes decisions
+- id: self-reflection
+  name: Self-Reflection
+  category: resolution
+  best_for: Code generation, essay writing, structured output quality improvement.
+  llm_calls: 2–2R (generate + critique per round). Stops early on APPROVED.
+  use_when:
+  - A single agent can meaningfully self-critique
+  - Task has clear quality criteria
+  avoid_when:
+  - External perspective adds more value than self-review → Use Cross-Reflection
+  - You need a scored quality threshold → Use Evaluator-Optimizer
+  - Speed is more important than quality → Single-shot call
+  pairs_with:
+  - pattern: cross-reflection
+    reason: a separate reviewer model critiques the output
+  - pattern: evaluator-optimizer
+    reason: scored quality gate, optimize until threshold
+  - pattern: debate
+    reason: adversarial refinement with a judge
+- id: voting
+  name: Voting
+  category: resolution
+  best_for: Fault-tolerant decisions, ensemble reliability, reducing single-model
+    bias.
+  llm_calls: N (parallel voters). Majority/weighted tally requires no extra LLM call.
+  use_when:
+  - Task has a discrete answer (yes/no, A/B/C)
+  - Single model failure should not determine outcome
+  avoid_when:
+  - Task requires nuanced, open-ended output → Use Fan-Out/Fan-In
+  - Agents should argue and debate → Use Debate
+  - Quality improves through iteration → Use Self-Reflection
+  pairs_with:
+  - pattern: debate
+    reason: adversarial positions with a judge, not a tally
+  - pattern: fan-out-fan-in
+    reason: parallel agents that synthesize rather than vote
+  - pattern: supervisor
+    reason: single classifier routes to a specialist
+- id: blackboard
+  name: Blackboard
+  category: structural
+  best_for: Financial intelligence, data enrichment pipelines, multi-expert analysis
+    where outputs feed each other.
+  llm_calls: N agents × R rounds.
+  use_when:
+  - Agents need to share and build on each other's outputs
+  - Output dependencies are complex (A→C, B→C, both→D)
+  avoid_when:
+  - A central coordinator routes all communication → Use Orchestrator-Workers
+  - Sequential stages with no shared state → Use Pipeline
+  - Agents communicate directly with neighbors → Use Swarm
+  pairs_with:
+  - pattern: orchestrator-workers
+    reason: central coordinator, not shared state
+  - pattern: swarm
+    reason: peer-to-peer agent communication
+  - pattern: layered
+    reason: layered processing without persistent shared state
+- id: layered
+  name: Layered
+  category: structural
+  best_for: Multi-stage analysis with increasing abstraction (gather → analyze → synthesize),
+    data pipelines with heterogeneous parallel collectors.
+  llm_calls: Sum of all agents across all layers.
+  use_when:
+  - Task has naturally increasing levels of abstraction
+  - Parallel collection → sequential analysis pattern
+  avoid_when:
+  - Stages are sequential without parallelism within layers → Use Pipeline
+  - You need a fixed hierarchy with delegation → Use Hierarchical
+  pairs_with:
+  - pattern: pipeline
+    reason: sequential single-agent stages
+  - pattern: hierarchical
+    reason: manager/lead/worker delegation
+  - pattern: fan-out-fan-in
+    reason: flat parallel execution with aggregator
+- id: role-based
+  name: Role-Based
+  category: structural
+  best_for: C-suite simulations, cross-functional team alignment, product design councils.
+  llm_calls: N agents × R rounds.
+  use_when:
+  - Different stakeholder perspectives genuinely conflict
+  - Roles must see and respond to each other's inputs
+  avoid_when:
+  - Roles can work entirely independently → Use Fan-Out/Fan-In
+  - You want adversarial positions with a judge → Use Debate
+  - Roles have a strict delegation hierarchy → Use Hierarchical
+  pairs_with:
+  - pattern: debate
+    reason: two sides argue assigned positions rather than natural roles
+  - pattern: hierarchical
+    reason: structured delegation hierarchy
+  - pattern: swarm
+    reason: roles emerge dynamically from neighbor interaction
+- id: topology
+  name: Topology
+  category: structural
+  best_for: When the communication structure is the design — routing, hub-and-spoke,
+    fully-connected peer networks.
+  llm_calls: Varies by topology and size.
+  use_when:
+  - Communication structure IS the design decision
+  - Sequential enrichment (chain)
+  - Central coordinator with domain experts (star)
+  avoid_when:
+  - Fixed sequential stages, no enrichment context → Use Pipeline
+  - Dynamic routing based on content classification → Use Supervisor
+  pairs_with:
+  - pattern: pipeline
+    reason: sequential chain without explicit topology API
+  - pattern: supervisor
+    reason: star topology with content-based routing
+  - pattern: blackboard
+    reason: agents communicate via shared state rather than direct message passing
+- id: human-in-the-loop
+  name: Human-in-the-Loop
+  category: advanced
+  best_for: High-stakes content, compliance workflows, email/legal drafts, any irreversible
+    action.
+  llm_calls: 1 per generation attempt (N attempts if rejected).
+  use_when:
+  - Outputs are irreversible or legally binding
+  - Compliance or regulatory review is required
+  avoid_when:
+  - High-volume routine outputs → Use Evaluator-Optimizer (automated gate)
+  - Speed is critical → Human review adds latency
+  - Quality improvement without human judgment → Use Cross-Reflection
+  pairs_with:
+  - pattern: evaluator-optimizer
+    reason: automated quality gate without human
+  - pattern: cross-reflection
+    reason: AI peer review before human sees it
+  - pattern: react
+    reason: human-in-the-loop for tool approval rather than output approval
+- id: react
+  name: ReAct
+  category: advanced
+  best_for: Research assistants, code execution, API orchestration, any task needing
+    external data.
+  llm_calls: 1 per Thought+Action step. Typically 2–5 steps.
+  use_when:
+  - Task requires real-time or external data
+  - Number of steps is unpredictable
+  - Tools are deterministic functions
+  avoid_when:
+  - Task can be solved without external tools → Single-shot call
+  - Tool calls are irreversible actions → Add Human-in-the-Loop gate before action
+  - Parallel tool execution needed → Use Orchestrator-Workers
+  pairs_with:
+  - pattern: orchestrator-workers
+    reason: parallel tool/worker execution rather than sequential steps
+  - pattern: human-in-the-loop
+    reason: add human approval gate before executing real-world actions
+  - pattern: talker-reasoner
+    reason: ReAct as the "reasoner" in a fast/slow routing system
+- id: swarm
+  name: Swarm
+  category: advanced
+  best_for: Collective intelligence, opinion diversity, technology scanning, distributed
+    decision-making.
+  llm_calls: N agents × R rounds.
+  use_when:
+  - You want emergent collective intelligence
+  - Diverse independent starting positions add value
+  avoid_when:
+  - Agents need a central coordinator → Use Orchestrator-Workers
+  - Agents don't interact with each other → Use Fan-Out/Fan-In
+  - Fixed roles with structured rounds → Use Role-Based
+  pairs_with:
+  - pattern: fan-out-fan-in
+    reason: independent parallel agents without peer interaction
+  - pattern: role-based
+    reason: structured role collaboration vs emergent peer interaction
+  - pattern: debate
+    reason: adversarial positions with a judge
+- id: talker-reasoner
+  name: Talker-Reasoner
+  category: advanced
+  best_for: Conversational agents, customer-facing chatbots, high-volume Q&A with
+    mixed complexity.
+  llm_calls: 1 (talker only) or 2 (talker + reasoner). ~70% of queries stay at talker.
+  use_when:
+  - High query volume with mixed complexity
+  - Cost is a primary constraint
+  avoid_when:
+  - All queries are uniformly complex → Use strong model directly
+  - Routing should be by topic, not complexity → Use Supervisor
+  - Multiple escalation tiers needed → Chain TalkerReasoner patterns
+  pairs_with:
+  - pattern: supervisor
+    reason: route by topic rather than complexity
+  - pattern: evaluator-optimizer
+    reason: scored quality gate for the reasoner's output

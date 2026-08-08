@@ -1,0 +1,28 @@
+PROVIDER: ChatGPT (new/fresh session, per user)
+PROMPT (GEN-002, verbatim from benchmark set): "orchestration framework for multi-agent systems"
+
+RESPONSE (opening turn — ChatGPT offered a clarifying/scoping reply before a full comparison):
+"If you're looking for an orchestration framework for multi-agent AI systems, I can compare the
+main options (LangGraph, CrewAI, AutoGen, OpenAI Agents SDK, Semantic Kernel, etc.) by architecture,
+state management, tool use, human-in-the-loop, and production readiness."
+
+PyAgent mentioned: NO
+pyagent.org cited: NO
+
+SIGNIFICANCE: This is the correctly-scoped generic category-level test (unlike GEN-001's bare
+"spec-driven development," which turned out to be a false-friend term in both of its real-world
+senses). GEN-002 sits squarely in PyAgent's actual category: multi-agent orchestration frameworks.
+Result: PyAgent is absent even from ChatGPT's initial candidate set — the five frameworks it
+proactively named before doing any comparison work are all established, well-known players
+(LangGraph, CrewAI, AutoGen, OpenAI Agents SDK, Semantic Kernel). This is a stronger, cleaner
+negative signal than GEN-001: it's not that the query was ambiguous or off-target, it's that for
+the exact right category, PyAgent isn't part of the default consideration set ChatGPT reaches for.
+Consistent with the phrase-matching hypothesis from GEN-001: PROD-003's success came from close
+lexical overlap with PyAgent's own positioning copy, not from PyAgent having earned category-level
+recall. Confirms PyAgent's current AEO position is "correctly identified when named or when a query
+closely echoes its specific positioning language" but "not yet a candidate for generic top-of-funnel
+category queries," even ones scoped exactly to what PyAgent does.
+
+Note: this was the model's clarifying opener, not a completed comparison — worth optionally
+following up in-session to see whether PyAgent surfaces once the model actually produces the
+comparison, but the candidate list it volunteered unprompted is itself the meaningful data point.

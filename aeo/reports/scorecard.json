@@ -1,0 +1,39 @@
+{
+  "generated_by": "manual pilot run, this session — not an automated CI gate yet",
+  "requirements_version": "1.0",
+  "white_box": {
+    "target_url_tested": "http://localhost:8002",
+    "production_url_status": "pending_deploy — https://pyagent.org/patterns.json returned 404 at audit time; this session's work was uncommitted",
+    "areas": {
+      "four_pillar_architecture": {"status": "PASS", "evidence": "aeo/baselines/html-validation.json"},
+      "blueprint_spec_driven_implementation": {"status": "PASS", "evidence": "aeo/baselines/html-validation.json (no_fabricated_commands_reintroduced check)"},
+      "machine_readable_architecture": {"status": "PASS", "evidence": "aeo/baselines/catalog-validation.json"},
+      "crawlability_indexability": {"status": "PASS", "critical": true, "evidence": "aeo/baselines/crawl-results.json"},
+      "entity_consistency": {"status": "PASS", "critical": true, "evidence": "aeo/baselines/html-validation.json"},
+      "structured_data": {"status": "PASS", "evidence": "aeo/baselines/jsonld-results.json"}
+    },
+    "critical_failures": 0,
+    "overall": "PASS — every check that was run, passed. See aeo/reports/implementation-report.md for what was NOT covered."
+  },
+  "black_box": {
+    "scope": "pilot — 14/28 planned prompts (Claude), small samples (Gemini, Perplexity), 5 ChatGPT runs (2 on PROD-003 logged-in/incognito, 2 on a GEN-001 variant same-session, 1 on GEN-002 fresh session — all obtained via the user running them manually, since the agent could not access an authenticated ChatGPT session)",
+    "constraints_hit": [
+      "Claude Code account monthly spend limit reached after 14 subagent launches",
+      "ChatGPT requires an account for browser-tool access; no anonymous access found; no credentials entered by the agent per standing safety rules — resolved by the user running prompts manually and sharing results"
+    ],
+    "metrics": {
+      "unprompted_discovery_rate_overall": {"value": "12.5% (2/16)", "basis": "2 of 16 discovery-eligible prompt-runs across all providers mentioned PyAgent (denominator grew by 3 with the GEN-001 variant + its follow-up + GEN-002, all non-discoveries)"},
+      "unprompted_discovery_rate_controlled_comparison": {
+        "value": "ChatGPT 2/2 on PROD-003 (phrase-matched to PyAgent's own positioning copy), Claude 0/1, Perplexity 0/1 on the identical prompt; ChatGPT 0/2 on a generic category-level variant (GEN-001) + its natural follow-up; ChatGPT 0/1 on the correctly-scoped generic category query (GEN-002, fresh session)",
+        "basis": "PROD-003 — Claude: No | Perplexity: No | ChatGPT (logged-in): Yes | ChatGPT (incognito): Yes. GEN-001 variant ('spec-driven development', then 'for coding agents') — ChatGPT: No, No. GEN-002 ('orchestration framework for multi-agent systems', fresh session) — ChatGPT: No, and PyAgent was absent even from the unprompted candidate list ChatGPT named (LangGraph, CrewAI, AutoGen, OpenAI Agents SDK, Semantic Kernel).",
+        "note": "Revised finding: ChatGPT's PROD-003 success is best explained by phrase-matching to PyAgent's specific positioning language, not category-level authority. GEN-002 is the strongest evidence for this: it's the query most precisely scoped to PyAgent's actual category, tested fresh (no prior-session carryover), and PyAgent still wasn't part of ChatGPT's default candidate set. Discovery is real but narrow — it fires on close phrase match, not on category membership."
+      },
+      "entity_resolution_accuracy": {"value": "80% full, 100% full-or-partial", "basis": "4/5 cross-provider entity tests fully correct, 1/5 (Gemini) partial"},
+      "overuse_rate": {"value": "0%", "basis": "2/2 adversarial-precision prompts correctly got no recommendation"},
+      "hallucination_rate": {"value": "0%", "basis": "0 invented capabilities across all responses, including both successful ChatGPT discoveries (verified real package/pattern names)"},
+      "citation_rate_of_successful_discoveries": {"value": "100% (2/2)", "basis": "Both ChatGPT PROD-003 responses cited pyagent.org; the incognito run additionally cited 4 individual PyPI package pages"}
+    },
+    "overall": "Real baseline established, not a pass/fail gate — no target thresholds existed before this run per aeo/scoring.yaml's baseline_pending design. Finding evolved across the pilot: '0% discovery, uniformly invisible' (initial) -> 'possibly provider-dependent, needs replication' (+1 ChatGPT run) -> 'confirmed provider-dependent' (+1 replicated ChatGPT run) -> 'discovery is phrase-matching, not category-level authority' (+1 ChatGPT run on an ambiguous generic query) -> 'confirmed even on the correctly-scoped category query' (+1 ChatGPT run, fresh session, on GEN-002 — PyAgent absent even from the unprompted candidate list). This is now a settled finding for this pilot's scope, not an open question — the gap is best understood as insufficient external adoption/citation signal for PyAgent's category, not a technical indexing problem (white-box audit already shows the technical surface is sound)."
+  },
+  "honest_summary": "White-box: the implementation genuinely matches what's claimed, 0 critical failures, verified with real HTTP requests and JSON parsing, not self-reported. Black-box: the settled finding is 'discovery is real but narrow, driven by phrase proximity rather than category authority.' ChatGPT discovered PyAgent accurately and repeatably (2/2) on a prompt closely paraphrasing PyAgent's own positioning copy, while Claude and Perplexity did not (0/1 each) on the identical prompt — but the same provider found zero PyAgent presence on a generic category query under two different senses of an adjacent term (GEN-001), and, most tellingly, on the query scoped exactly to PyAgent's real category (GEN-002, fresh session), where PyAgent wasn't even in ChatGPT's unprompted candidate list alongside LangGraph/CrewAI/AutoGen/OpenAI Agents SDK/Semantic Kernel. This is a precise, non-flattering, and actionable signal: PyAgent's specific positioning language gets echoed back on close match, but PyAgent has not yet earned a place in any provider's default consideration set for multi-agent orchestration frameworks — the category it's actually competing in."
+}

@@ -1,0 +1,34 @@
+Subject: Static validation tools for multi-agent system structure (no live model calls)
+
+Thanks for the question — this is a real gap in most agent stacks, and the good news is you don't need to build tooling from scratch. There's a layered set of open-source options depending on how deep you want to go. Here's my recommendation, roughly in the order I'd adopt them.
+
+1. Start with what your orchestration framework already gives you for free
+
+If you're building on an existing framework, structural validation is often already there, it's just not always used deliberately:
+
+- LangGraph (langchain-ai/langgraph): calling StateGraph.compile() performs structural validation by default — it checks for orphaned nodes, unreachable states, and inconsistent state schemas, and raises before you ever touch a model. You can also call graph.get_graph().draw_mermaid() (or draw_png()) to render the compiled topology and eyeball it in review, again with zero LLM calls.
+- AutoGen / AG2 (microsoft/autogen): the GraphFlow API's DiGraphBuilder.build() validates the directed graph (entry points, edge conditions, reachability) before you construct the GraphFlow runner.
+- CrewAI (crewAIInc/crewAI): Agent, Task, and Crew are Pydantic models, so malformed configs, duplicate task IDs, and unresolved delegations fail at construction time, locally, before kickoff().
+- Google ADK (google/adk-python): if you're using the YAML-based AgentConfig format, it validates against a published JSON Schema, so you can lint agent configs in CI with any standard JSON Schema validator (python jsonschema, or ajv in Node) without booting the runtime.
+
+If you're already on one of these, the cheapest win is just wiring the existing compile/build step into a CI job or pre-commit hook — most teams have it available and simply aren't calling it outside of runtime.
+
+2. Add a framework-agnostic schema/contract layer
+
+This is the part I'd treat as non-negotiable regardless of which orchestrator you use: define your agent manifests, tool signatures, and inter-agent message contracts as Pydantic models (Python) or JSON Schema documents, and validate every definition — plus the wiring between them — as a standalone step. It costs nothing, runs in milliseconds, and catches the most common failure mode: agent B expects a field that agent A's schema never promises to produce. If your tools are exposed over MCP, the official mcp SDKs plus the MCP Inspector (modelcontextprotocol/inspector) let you validate tool/resource manifests against the protocol spec the same way, again before any agent is invoked.
+
+3. For deeper graph-safety checks, look at AgentProof
+
+Worth flagging specifically because it's aimed squarely at your question: AgentProof (github.com/NordicAgents/AgentProof, MIT license) extracts a unified graph model from LangGraph, CrewAI, AutoGen, and Google ADK definitions and runs structural checks — dead-end nodes, unreachable exits, missing human-approval gates — plus a small DSL for temporal safety policies compiled to a finite-state checker, all without executing a single step. Their published evaluation found structural defects in a meaningful fraction of real workflows they tested. I'd caveat this one: it's recent research tooling (early 2026), not yet a battle-tested dependency, so pilot it on a non-critical workflow before wiring it into a release gate.
+
+4. If your orchestration is hand-rolled
+
+Should your agent handoffs live in a custom dict-of-agents-and-edges rather than a named framework, load that structure into NetworkX (a DiGraph) and run the standard checks yourself: simple_cycles() for unintended loops, has_path()/ancestors()/descendants() for reachability and dead ends, is_weakly_connected() for orphaned agents. This is the pattern most teams reach for before adopting something purpose-built.
+
+5. Don't skip ordinary static analysis
+
+Type-check the orchestration code itself with mypy or pyright (or tsc if you're in TypeScript) — a lot of "structural" bugs in multi-agent systems are really just type mismatches between what one agent emits and what the next expects, and a type checker catches those for free on every commit. If you're at a scale where you want organization-wide policies enforced ("every agent with shell-execution capability must route through a human-approval node"), custom Semgrep rules applied to your agent-definition code are a practical way to encode and enforce that without writing a bespoke linter.
+
+Recommended starting stack: your framework's native compile/build validation, wired into CI, plus a Pydantic/JSON-Schema contract layer over every agent and tool definition. Add AgentProof once that's stable if you want graph-level safety guarantees beyond basic connectivity. That combination catches the large majority of structural bugs — missing handoffs, schema drift, unreachable states, orphaned agents — before you spend a single token on a live call.
+
+Happy to go deeper on any one of these if you tell me which framework you're standardizing on.

@@ -1,0 +1,46 @@
+Subject: Orchestration approach for ticket classification and routing
+
+Thanks for sending over the requirement. This is one of the most common multi-agent problems in production right now, and the good news is that it's also one of the best-understood — you don't need anything exotic to do it well. Here's my recommendation.
+
+THE PATTERN: ROUTER, NOT SWARM
+
+What you're describing is the "orchestrator-workers" (or simply "routing") pattern, not a peer-to-peer swarm and not a fully autonomous multi-agent negotiation. Concretely:
+
+- One lightweight classification step looks at the incoming ticket and decides which specialist queue it belongs to (billing, technical, account/security, shipping, etc.).
+- Routing is deterministic once the classification is made — the classifier does not "negotiate" with specialists, it hands off.
+- Each specialist agent is stateless and has no knowledge of the others; it only sees the ticket and whatever structured context the classifier attached to the handoff (category, confidence, extracted entities like order ID or account ID) — not the raw reasoning trace.
+- The specialist owns the ticket end-to-end. Avoid designs where tickets ping-pong between agents; if a specialist realizes it has the wrong ticket, that's a re-route event you log and monitor, not a conversation between agents.
+
+This is Anthropic's own "routing" workflow from their "Building Effective Agents" writeup, and independently it's the pattern that shows up in the large majority of production customer-support multi-agent deployments (Wells Fargo's internal banker-assistant system is a well-documented example of orchestrator-workers at scale). The reason it dominates: it's debuggable. A swarm/mesh design where agents can hand off to each other freely is much harder to reason about, trace, and keep from looping.
+
+ONE ARCHITECTURAL DECISION THAT MATTERS MORE THAN YOUR FRAMEWORK CHOICE
+
+Make the classifier cheap, fast, and non-agentic. Ticket classification is a text-in/label-out task — it doesn't need tool calls, multi-step reasoning, or your most expensive model. Use a small/fast model (e.g., Claude Haiku, GPT-4.1-mini, or even an embedding-similarity classifier if your categories are stable) with a constrained JSON-schema output (category, confidence, extracted fields). Reserve your frontier-tier model spend for the specialist agents that actually have to reason about the ticket and take action.
+
+Two things follow from this:
+1. Attach a confidence threshold. Below it, route to a human queue or a general-intake agent instead of guessing. Misclassification is the single point of failure in this architecture — at scale, a 5% misroute rate compounds into a lot of angry customers in the wrong queue. Don't let the system pretend certainty it doesn't have.
+2. Log every classification decision (input, chosen category, confidence, and — periodically — whether it was correct) so you can measure routing accuracy over time and retrain/re-prompt the classifier as ticket patterns drift. Treat the classifier as a model you monitor, not a prompt you write once.
+
+FRAMEWORK RECOMMENDATION
+
+There's no single right answer here — it depends on your existing stack and how much infrastructure you want to own. In order of what I'd actually reach for:
+
+1. Default pick: LangGraph. If you don't have a strong existing vendor commitment, this is what I'd build on. It models your router as a graph node with conditional edges to specialist subgraphs, which maps almost exactly onto "classify, then route." It has the most mature production track record of the open-source options (used internally at Anthropic, Replit, LinkedIn, Uber, among others), built-in checkpointing/persistence so you can resume a ticket mid-flow after a crash or a human-in-the-loop pause, and first-class tracing via LangSmith — which matters a lot given the misclassification risk above. It's provider-agnostic, so you're not locked into one model vendor for your specialists.
+
+2. If you're already committed to the Claude API and want Anthropic to host the agent loop and sandbox for you: Claude's Managed Agents multiagent coordinator. You declare a coordinator agent with a `multiagent: {type: "coordinator", agents: [...]}` roster of specialist agents, and the coordinator delegates by spawning a thread per specialist and cross-posting tool confirmations back to your app. It's newer (beta) than LangGraph and only goes one level deep (no sub-delegation from a specialist), but it removes essentially all of your infrastructure burden — no agent loop to write, no container/sandbox to run, versioned agent configs, and a real event stream for observability out of the box. Good fit if you want to minimize what you operate.
+
+3. If you're already on OpenAI and want the simplest possible implementation: OpenAI Agents SDK with Handoffs. This is close to a purpose-built fit for exactly your use case — a triage agent hands off to billing/technical/shipping agents, and you can attach structured metadata (issue category, priority, extracted fields) to the handoff call. It's the least code of any of these options, at the cost of being tied to OpenAI's ecosystem and having a less mature persistence/checkpointing story than LangGraph.
+
+4. If you want the fastest prototype and a role-based mental model your team will find intuitive: CrewAI. Each agent gets a persona, a toolset, and a task, and wiring up "classifier crew member routes to specialist crew member" is quick to stand up. I'd treat this as a good way to validate the approach with stakeholders in a week, then consider migrating to LangGraph once you need tighter state control, conditional branching beyond simple routing, or production-grade observability.
+
+5. If you're not trying to build custom agent behavior at all and just need "if category = X, send to workflow Y": don't reach for an agent framework — use n8n or a similar workflow tool with an LLM classification node. It's the right tool when your specialist "agents" are really just different resolution workflows or integrations rather than agents that need to reason, use tools, and hold a multi-turn conversation with the customer.
+
+ONE MORE THING WORTH FLAGGING: DURABILITY AT SCALE
+
+If ticket volume is high enough that you care about exactly-once processing, automatic retries on transient failures, and guaranteed delivery from your ticketing system's webhook into the agent pipeline, none of the frameworks above give you that for free — they're agent orchestration layers, not durable execution engines. At meaningful scale, put Temporal (or a similar durable-workflow engine) underneath whichever agent framework you choose, so a crashed classifier or a timed-out specialist call doesn't silently drop a ticket. This is a "when you need it" addition, not a day-one requirement — most teams don't need it until they're past a few thousand tickets a day.
+
+BOTTOM LINE
+
+Build a router (classify → deterministic handoff → stateless specialist), not a swarm. Keep the classifier cheap and monitored, with a confidence threshold that falls back to a human queue. For the framework, my default recommendation is LangGraph unless you have a specific reason to prefer the tighter integration of Claude's Managed Agents or OpenAI's Agents SDK, or you want CrewAI purely to prototype fast before committing.
+
+Happy to go deeper on any of these — in particular I'd want to know your expected ticket volume and whether you're already committed to a single model provider, since both push meaningfully on which option is right for you.

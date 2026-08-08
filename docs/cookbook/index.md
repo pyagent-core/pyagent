@@ -181,7 +181,7 @@ graph TD
 ```
 <p class="cb-chips"><button class="cb-chip cb-chip--domain" data-axis="Domain" data-value="Finance &amp; Trading">Finance &amp; Trading</button><button class="cb-chip cb-chip--pattern" data-axis="Pattern" data-value="Debate">Debate</button><button class="cb-chip cb-chip--package" data-axis="Package" data-value="pyagent-patterns">pyagent-patterns</button></p>
 </article>
-<article class="cb-card" data-domain="Finance &amp; Trading" data-pattern="Supervisor|Evaluator-Optimizer" data-package="pyagent-patterns">
+<article class="cb-card" data-domain="Finance &amp; Trading" data-pattern="Supervisor|Evaluator-Optimizer" data-package="pyagent-patterns|pyagent-blueprint">
 <h3 class="cb-card__title"><a href="finance-trading/portfolio-review/">Portfolio Review</a> <span class="cb-cx cb-cx--intermediate">Intermediate</span></h3>
 <p class="cb-summary">Analyst panel with an evaluator-optimizer quality gate</p>
 ```mermaid
@@ -200,7 +200,7 @@ graph TD
     router -->|risk| risk
     writer -->|evaluator_optimizer| reviewer
 ```
-<p class="cb-chips"><button class="cb-chip cb-chip--domain" data-axis="Domain" data-value="Finance &amp; Trading">Finance &amp; Trading</button><button class="cb-chip cb-chip--pattern" data-axis="Pattern" data-value="Supervisor">Supervisor</button><button class="cb-chip cb-chip--pattern" data-axis="Pattern" data-value="Evaluator-Optimizer">Evaluator-Optimizer</button><button class="cb-chip cb-chip--package" data-axis="Package" data-value="pyagent-patterns">pyagent-patterns</button></p>
+<p class="cb-chips"><button class="cb-chip cb-chip--domain" data-axis="Domain" data-value="Finance &amp; Trading">Finance &amp; Trading</button><button class="cb-chip cb-chip--pattern" data-axis="Pattern" data-value="Supervisor">Supervisor</button><button class="cb-chip cb-chip--pattern" data-axis="Pattern" data-value="Evaluator-Optimizer">Evaluator-Optimizer</button><button class="cb-chip cb-chip--package" data-axis="Package" data-value="pyagent-patterns">pyagent-patterns</button><button class="cb-chip cb-chip--package" data-axis="Package" data-value="pyagent-blueprint">pyagent-blueprint</button></p>
 </article>
 <article class="cb-card" data-domain="Finance &amp; Trading" data-pattern="Role-Based" data-package="pyagent-patterns">
 <h3 class="cb-card__title"><a href="finance-trading/robo-advisor/">Robo-Advisor Onboarding</a> <span class="cb-cx cb-cx--intermediate">Intermediate</span></h3>

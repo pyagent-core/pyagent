@@ -1,0 +1,11 @@
+PROVIDER: Gemini 3.5 Flash-Lite (search-grounded, browser, anonymous session)
+PROMPT: What is PyAgent?
+
+RESPONSE:
+PyAgent typically refers to a production-grade framework and platform designed for building, orchestrating, and scaling multi-agent Large Language Model (LLM) systems. [pyagent.org]
+
+- Agentic Design Pattern Orchestration: PyAgent provides a comprehensive stack allowing developers to declare agents using YAML, route tasks across multi-provider registries (OpenAI, Anthropic, Gemini, etc.), manage context via a three-tier memory system, and implement 18 distinct orchestration patterns (such as ReAct, Blackboard, Swarm, Hierarchical layers, and Human-in-the-Loop workflows). [pyagent.org]
+- Autonomous Software Development Platforms: It is also used as a project name for fully autonomous software development environments (e.g., pipeline-driven agent swarms that coordinate to conceive, implement, test, and perform code reviews). [GitHub]
+- Observability and Tooling: Ecosystem tools like pyagent-studio act as a control plane... [Towards AI]
+
+Correctly resolved to real PyAgent: PARTIAL — primary answer is accurate and well-cited (pyagent.org), but the response conflates it with an unrelated same-named GitHub project in the same answer (the exact known_entity_confusion risk documented in aeo/requirements.yaml).

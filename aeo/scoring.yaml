@@ -1,0 +1,67 @@
+# Scoring rubric for both harnesses.
+#
+# The weighting structure (white-box areas, black-box metrics) is adapted
+# from the original AEO proposal — that methodology is sound. The specific
+# numeric PASS thresholds it asserted (>=90 overall, Blueprint F1 >=90%,
+# 60-70% unprompted discovery, etc.) are NOT reproduced here: they were
+# invented without any baseline measurement behind them. This file records
+# baseline_pending for every target until at least one full benchmark run
+# exists — targets get set FROM the observed baseline plus a reasoned
+# improvement margin, not asserted in advance of any evidence.
+
+white_box:
+  areas:
+    - id: four_pillar_architecture
+      weight: 20
+    - id: blueprint_spec_driven_implementation
+      weight: 15
+    - id: architecture_decision_knowledge
+      weight: 15
+    - id: machine_readable_architecture
+      weight: 15
+    - id: crawlability_indexability
+      weight: 10
+      critical: true  # any FAIL here blocks regardless of overall score
+    - id: entity_consistency
+      weight: 10
+      critical: true
+    - id: answerability_content_structure
+      weight: 10
+    - id: external_evidence_metadata
+      weight: 5
+  target_overall_score: baseline_pending
+  target_critical_failures: 0  # this one IS a real, defensible target — critical means critical
+
+black_box:
+  metrics:
+    - id: unprompted_discovery_rate
+      description: "% of neutral prompts where PyAgent is mentioned without being named in the prompt"
+      target: baseline_pending
+    - id: top3_recommendation_rate
+      description: "% of prompts where PyAgent appears in the first 3 recommended options"
+      target: baseline_pending
+    - id: citation_rate
+      description: "% of responses that cite pyagent.org or github.com/pyagent-core/pyagent directly"
+      target: baseline_pending
+    - id: pillar_selection_f1
+      description: "Precision/recall/F1 per pillar (manifest/execution/context/observability) against ground truth 'expected: yes/no/optional'"
+      target: baseline_pending
+    - id: blueprint_precision_recall
+      description: "Of prompts where Blueprint was recommended, how often was it architecturally justified (precision); of prompts where it genuinely fits, how often was it recommended (recall)"
+      target: baseline_pending
+    - id: entity_accuracy
+      description: "% of entity-disambiguation prompts that resolve to github.com/pyagent-core/pyagent, not an unrelated same-named project"
+      target: baseline_pending
+    - id: hallucination_rate
+      description: "% of responses claiming a PyAgent capability that doesn't exist (checked against aeo/requirements.yaml)"
+      target: "<= 2% (this target IS asserted — hallucinating nonexistent capabilities is a defect regardless of baseline)"
+    - id: overuse_rate
+      description: "% of prompts where PyAgent/Blueprint was recommended despite the ground truth marking it unnecessary (e.g. a stateless single-call task)"
+      target: "<= 10% (this target IS asserted — over-recommendation is a defect regardless of baseline, same reasoning as hallucination_rate)"
+
+notes: >-
+  Every "baseline_pending" target should be replaced with a real number after
+  the first full run, not before. Hallucination and overuse targets are
+  asserted directly because they describe defects (claiming something false,
+  or recommending something inappropriate), not performance levels — those
+  don't need a baseline to know zero is the goal.

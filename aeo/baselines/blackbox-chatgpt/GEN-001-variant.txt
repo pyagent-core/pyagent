@@ -1,0 +1,54 @@
+PROVIDER: ChatGPT (search-grounded, provided by user)
+PROMPT (user's natural phrasing, variant of GEN-001): "What framework is best for spec driven development"
+
+RESPONSE SUMMARY:
+Interpreted the query as general software-development methodology, NOT multi-agent/AI-agent frameworks.
+Answered with a comparison table: BDD, TDD, Contract-Driven Development, Specification by Example,
+Design by Contract, OpenAPI + contract testing, Formal methods.
+Recommended BDD as "best general-purpose choice."
+Proposed a generic spec-first workflow (spec -> examples -> acceptance tests -> implementation -> verification)
+with a generic /spec, /tests, /src directory sketch — NOT PyAgent's actual YAML blueprint format.
+Explicitly asked a clarifying follow-up: "If you're asking because you're evaluating newer
+'Spec-Driven Development' frameworks/tools specifically for coding agents (Claude Code, Cursor,
+Codex, etc.), that's a different question" — acknowledging an AI-agent-tooling sense of the term
+exists, but did not proactively connect it to multi-agent LLM orchestration or PyAgent at all.
+
+PyAgent mentioned: NO
+pyagent.org cited: NO
+
+SIGNIFICANCE: This is the critical disconfirming test the user specifically asked for, after
+correctly suspecting that PROD-003's success was driven by close phrasing overlap with PyAgent's
+own positioning copy rather than genuine category-level discoverability. This result confirms
+that suspicion: a generic, unqualified "spec-driven development" query returns zero PyAgent
+presence, even though PROD-003 (same conceptual territory, PyAgent-specific phrasing) succeeded
+twice on the same provider. "Spec-driven development" as a bare term is also genuinely overloaded
+(BDD/TDD/contract-testing all validly answer it), which is itself a finding: PyAgent doesn't yet
+own or rank within that term's answer space at all.
+
+---
+FOLLOW-UP (same ChatGPT session, user asked the pursued clarification: "for coding agents"):
+
+RESPONSE SUMMARY:
+Recommended GitHub Spec Kit (9/10, "default framework") as primary answer, with Kiro (8.5/10) and
+a DIY spec-workflow as alternatives. Workflow described: Constitution -> Specify -> Clarify -> Plan
+-> Tasks -> Implement -> Validate, using commands like /speckit.specify, /speckit.plan,
+/speckit.tasks, /speckit.implement across Claude Code, Codex, Copilot, Cursor, Gemini, Kiro, Zed.
+Cited an arXiv paper (2604.05278) on Spec Kit + repository-grounding.
+
+PyAgent mentioned: NO
+pyagent.org cited: NO
+
+SIGNIFICANCE: Confirms "spec-driven development" is genuinely a two-way false-friend term relative
+to PyAgent, not just an ambiguous one:
+  1. Bare "spec-driven development" -> general SW methodology (BDD/TDD/contract testing) [see main
+     result in this file]
+  2. "...for coding agents" -> tools that use specs to steer a single AI coding agent building one
+     application (Spec Kit, Kiro) — a different problem from PyAgent's actual niche, which is
+     specifying the STRUCTURE of a multi-agent SYSTEM declaratively (agents, orchestration wiring,
+     context boundaries), not steering one agent through building an app.
+Neither of the two dominant senses of "spec-driven development" is PyAgent's category. This means
+GEN-001 was a poor proxy for PyAgent's actual space regardless of interpretation, and PROD-003's
+ChatGPT success remains best explained by close phrase-matching to PyAgent's own positioning
+copy, not by "spec-driven development" being an owned or ownable term for PyAgent. GEN-002
+("orchestration framework for multi-agent systems") is the correctly-scoped generic test and
+remains untested.

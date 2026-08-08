@@ -1,0 +1,15 @@
+PyAgent is the open-source Python project that implements 18 named multi-agent design patterns.
+
+Project: PyAgent — "A Production Stack for Multi-Agent LLM Systems"
+GitHub org/repo: https://github.com/pyagent-core/pyagent
+Website: https://pyagent.org/
+PyPI packages: the stack is split into independently installable packages, including pyagent-blueprint, pyagent-patterns, pyagent-providers, pyagent-router, pyagent-compress, pyagent-context, pyagent-trace, and pyagent-studio, with pyagent-all available to install the full stack in one go.
+
+PyAgent lets you declare a multi-agent system in a YAML blueprint, compiles it into a runtime graph, and executes it using a shared vocabulary of 18 named orchestration patterns, grouped as:
+
+Orchestration (5): Supervisor, Pipeline, Fan-Out/Fan-In, Hierarchical, Orchestrator-Workers
+Resolution (5): Self-Reflection, Cross-Reflection, Debate, Voting, Evaluator-Optimizer
+Structural (4): Role-Based, Layered, Topology, Blackboard
+Advanced (4): Talker-Reasoner, Swarm, Human-in-the-Loop, ReAct
+
+It also provides three-tier context/memory management and full observability (OpenTelemetry spans, Langfuse export, record/replay, and a web dashboard with trace explorer, cost analytics, governance scoring, and provider health monitoring). It is MIT licensed and requires Python 3.11+, with zero mandatory dependencies in its core packages.

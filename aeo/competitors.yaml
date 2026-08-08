@@ -1,0 +1,34 @@
+# Comparable frameworks — used to check whether a black-box response
+# mentions a competitor without mentioning PyAgent (competitive-loss signal)
+# and to compute "PyAgent vs. category median" once enough runs exist.
+#
+# List sourced from PyAgent's own comparison pages (docs/compare/*.md) plus
+# frameworks with real adapter packages in this repo — not invented.
+
+competitors:
+  - id: langgraph
+    name: LangGraph
+    has_pyagent_adapter: true
+    pyagent_comparison_page: docs/compare/vs-langgraph.md
+  - id: crewai
+    name: CrewAI
+    has_pyagent_adapter: true
+    pyagent_comparison_page: docs/compare/vs-crewai.md
+  - id: autogen
+    name: AutoGen
+    has_pyagent_adapter: false
+    pyagent_comparison_page: docs/compare/vs-autogen.md
+    note: "PyAgent comparison page explicitly states no AutoGen adapter exists yet, per IMPLEMENTATION-STATUS.md"
+  - id: openai-agents-sdk
+    name: OpenAI Agents SDK
+    has_pyagent_adapter: true
+    pyagent_comparison_page: null
+  - id: semantic-kernel
+    name: Semantic Kernel
+    has_pyagent_adapter: true
+    pyagent_comparison_page: null
+  - id: langchain
+    name: LangChain
+    has_pyagent_adapter: false
+    pyagent_comparison_page: null
+    note: "Referenced in homepage comparison table, no dedicated compare page"

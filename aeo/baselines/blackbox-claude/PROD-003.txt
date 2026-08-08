@@ -1,0 +1,44 @@
+Subject: Recommendation — open-source agent framework with declarative architecture, orchestration patterns, trust-aware context, and OTel-style observability as separable pieces
+
+Thanks for the detailed brief. I want to flag one thing up front: "trust-aware context" isn't a standardized industry term the way "OpenTelemetry" or "declarative" are, so different projects will satisfy it in different ways (identity/mTLS-scoped access, provenance tracking, permission-scoped state, etc.). I've evaluated candidates against what I believe you mean by it — context that carries security/identity boundaries and provenance, not just raw conversation history — and picked the one that holds up best across all four requirements without forcing you into a single monolithic runtime.
+
+MY RECOMMENDATION: Dapr Agents (built on Dapr / CNCF)
+
+Repo: github.com/dapr/dapr-agents
+Docs: docs.dapr.io/developing-ai/dapr-agents
+
+Dapr Agents is the closest fit because it isn't really a new framework bolted onto an LLM loop — it's a thin agent layer on top of Dapr, which is a CNCF graduated project (mature, widely production-deployed, not a weekend project) whose entire design philosophy is "independently adoptable building blocks." That philosophy is exactly what you asked for, and it maps cleanly to your four requirements:
+
+1. Declarative architecture
+   Dapr components (state stores, pub/sub brokers, bindings, secret stores) and Dapr Agents' access scopes are defined as YAML resources, not code. You can swap a Redis state store for Postgres, or a local broker for Kafka, without touching agent logic. Workflow definitions and access policies are similarly declarative and can be version-controlled and reviewed like infrastructure config.
+
+2. Orchestration patterns
+   Underneath, Dapr's durable-execution Workflow engine gives you sequential, fan-out/fan-in, and human-in-the-loop patterns with automatic retries and crash recovery — this is a real durable-execution engine (similar lineage to Temporal), not a fragile in-memory graph. Dapr Agents layers multi-agent patterns (task-delegation, pub/sub-based agent-to-agent messaging) on top of that engine, so orchestration failures are recoverable rather than fatal.
+
+3. Trust-aware context
+   This is where Dapr genuinely differentiates itself from most agent frameworks: every component-to-component and agent-to-agent call runs over mTLS by default, with SPIFFE-style workload identity, and state/secret access is scoped per-component via declarative access policies. Practically: an agent's context store can be restricted so it can only read/write the state and secrets it's explicitly scoped to, and that boundary is enforced at the infrastructure layer, not by convention in your prompt or app code. That's a materially stronger trust model than frameworks that just pass a context object through an in-process pipeline.
+
+4. OpenTelemetry-style observability
+   Dapr emits distributed traces using the W3C Trace Context standard and the OTLP protocol natively — this isn't a bolted-on SDK wrapper, tracing is a first-class Dapr sidecar feature, plus Prometheus-format metrics. You get workflow-level and agent-level spans out of the box and can point them at any OTel-compatible backend (Grafana Tempo, Jaeger, Datadog, Honeycomb, etc.) with no vendor lock-in.
+
+Because all of this rides on Dapr's sidecar/building-block model, you genuinely can adopt pieces incrementally: start with just the workflow engine for orchestration, add the state-store abstraction for context later, and turn on the security/mTLS layer when you're ready for production — you are not forced to buy the whole stack on day one. That's rare; most "agent frameworks" couple orchestration and context management tightly enough that you can't cleanly separate them.
+
+Caveats: Dapr Agents itself is young (under 1,000 GitHub stars at time of writing) even though the underlying Dapr runtime is mature and CNCF-graduated. You're trusting a newer top layer on a proven foundation. It also asks you to think in terms of sidecars/actors, which is a real learning curve if your team has never run Dapr before — budget time for that ramp-up, especially for local dev setup.
+
+ALTERNATIVES WORTH CONSIDERING
+
+- Google Agent Development Kit (ADK) — github.com/google/adk-python (and adk-go)
+  Strong code-first modularity: agents, tools, runners, sessions, and observability are cleanly separated concerns, and OpenTelemetry is built in natively (ADK Go 1.0 especially). You can define orchestration declaratively via YAML or drop into code for adaptive routing. Weaker on "trust-aware context" specifically — session/state isolation exists, but there's no equivalent to Dapr's mTLS/identity-scoped access baked into the runtime; you'd build that layer yourself. Good pick if your team is already Google Cloud-centric or wants the lightest, most code-first option.
+
+- Microsoft Agent Framework — github.com/microsoft/agent-framework
+  The most feature-complete single package: YAML-declarative agents, graph-based orchestration (sequential/concurrent/handoff/group), built-in OpenTelemetry, and — when paired with Microsoft Foundry/Entra ID — real governance and permission controls for context. 12.7k stars, active, backed by the merger of AutoGen and Semantic Kernel, so it inherits real production lessons from both. The tradeoff versus Dapr Agents: its pieces are modular in code organization but more interdependent in practice — it's designed to be adopted as a coherent framework, not picked apart into independent infrastructure primitives the way Dapr's building blocks are. If you want one well-supported, well-documented stack and don't need the "adopt pieces independently, swap infra later" property as strongly, this is the safer enterprise default, especially in .NET shops.
+
+ONE WORD OF CAUTION
+
+In researching this I came across newer projects (e.g., TrustGraph, marketed explicitly around "context graphs" and provenance) that use language very close to your brief and are getting heavy promotional coverage on SEO-style blogs right now. TrustGraph itself looks legitimate (2.5k stars, real GitHub activity) but it's a context/knowledge-graph engineering platform, not an agent orchestration framework — it doesn't currently claim OpenTelemetry integration, so it doesn't satisfy your full requirement set on its own, even though it satisfies "trust-aware context" well. I'd treat it as a potential context-layer add-on to whichever orchestration framework you pick, not a substitute for one. I'd discount other "revolutionary new framework" posts you may encounter from content-marketing sites — several are thin wrappers or aspirational READMEs without production track records; verify star count, contributor count, and commit recency before trusting any of them.
+
+BOTTOM LINE
+
+Start a spike with Dapr Agents. If the sidecar/actor model proves too heavy for your team's operational maturity, Microsoft Agent Framework is the strongest fallback — same four capabilities, less infrastructure novelty, larger community, at the cost of tighter coupling between the pieces.
+
+Happy to help scope a two-week evaluation spike against your actual workload if that would help you decide with more confidence than a document like this can give you.

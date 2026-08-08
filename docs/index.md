@@ -22,8 +22,8 @@ lives on packages/patterns/index.md) or duplicating the comparison table.
 
 ## The four pillars
 
-1. **[Blueprint](packages/blueprint/index.md)** — declare your entire agent system in a single
-   typed YAML file; the `BlueprintCompiler` validates, compiles, diffs, and generates from the spec.
+1. **[Manifest](packages/blueprint/index.md)** — declare your entire agent system in a single
+   typed YAML file with `pyagent-blueprint`; validate, compile, diff, and test from the spec.
 2. **[Execution & Routing](packages/patterns/index.md)** — 18 named orchestration patterns run real
    agents against real providers, with difficulty-based model routing and inter-agent compression.
 3. **[Context & Memory](packages/context.md)** — three-tier memory shared across a run, with trust

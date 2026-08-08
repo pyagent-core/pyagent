@@ -35,7 +35,7 @@ diagnostic (`BUDGET_UNSUPPORTED`, `SLA_UNSUPPORTED`) so you know, deterministica
 runtime doesn't support it — the failure mode is visibility, not silent drift.
 
 **Simulate before you apply.** `kubectl apply --dry-run` validates a manifest against the cluster
-without changing anything. `pyagent-blueprint simulate` runs a compiled workflow against a `MockLLM`
+without changing anything. `pyagent-blueprint test` runs a compiled workflow against a `MockLLM`
 — validating shape and contract conformance without spending a token or calling a live model.
 
 ## Where the analogy breaks down
@@ -54,6 +54,6 @@ convention indefinitely.
 ## The practical upshot
 
 The value isn't the YAML syntax — it's the guarantee that comes with it: a manifest you can validate,
-diff, and simulate before it ever touches a real model, and a contract that means switching execution
-engines is a `--adapter` flag, not a rewrite. That's the same value proposition Kubernetes brought to
-container deployment, applied to multi-agent orchestration.
+diff, and test before it ever touches a real model, and a contract that means switching execution
+engines is an `AdapterRegistry` lookup, not a rewrite. That's the same value proposition Kubernetes
+brought to container deployment, applied to multi-agent orchestration.

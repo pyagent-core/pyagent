@@ -1,0 +1,150 @@
+# PyAgent AEO acceptance contract.
+#
+# Every field in this file was verified against the real repo and/or the
+# live deployed site (curl, JSON parsing, grep against raw HTML — not
+# assumed from docs or plans) before being written here. Fields the
+# original AEO proposal wanted but that don't exist in this codebase
+# (e.g. /architecture/catalog.json, /capabilities.json, an ADR series) are
+# deliberately absent — this contract describes what was actually built
+# after evaluating and trimming that proposal, not what was aspirationally
+# suggested. Update this file when the real implementation changes; the
+# white-box auditor (scripts/crawl.py + friends) checks evidence against
+# this contract, never the other way around.
+#
+# Do not add a requirement here unless you can point to the file/URL that
+# satisfies it.
+
+version: "1.0"
+
+entity:
+  canonical_name: PyAgent
+  canonical_domain: pyagent.org
+  canonical_repo: https://github.com/pyagent-core/pyagent
+  canonical_pypi_prefix: pyagent-  # pyagent-blueprint, pyagent-patterns, etc.
+  positioning:
+    tagline: "A production stack for multi-agent LLM systems"
+    philosophy: "spec-driven development"
+    philosophy_source: docs/concepts/agent-blueprint.md
+  known_entity_confusion:
+    # Found during this evaluation, not hypothetical: other GitHub/PyPI
+    # projects also use the bare name "PyAgent" or "pyagent". Entity checks
+    # must confirm the *specific* org/repo/package, not just the string
+    # "PyAgent" appearing somewhere.
+    - description: "Unrelated GitHub project also named PyAgent exists (e.g. github.com/UndiFineD/PyAgent)"
+      mitigation: "Always require github.com/pyagent-core/pyagent or a pyagent-* PyPI package name as corroborating evidence, not the bare word 'PyAgent'"
+
+architecture:
+  # Real pillar labels as of this audit — "Manifest" not "Blueprint" or
+  # "Specification" (both were tried and reverted this session for
+  # cross-page consistency; see IMPLEMENTATION-STATUS.md).
+  pillars:
+    - id: manifest
+      label: Manifest
+      verb: declare
+      independent: true
+      packages: [pyagent-blueprint]
+      canonical_pages:
+        - docs/guides/blueprint.md
+        - docs/packages/blueprint/index.md
+        - docs/why-blueprint.md
+        - docs/concepts/agent-blueprint.md
+    - id: execution
+      label: "Execution & Routing"
+      verb: execute
+      independent: true
+      packages: [pyagent-patterns, pyagent-providers, pyagent-router, pyagent-compress]
+      canonical_pages:
+        - docs/packages/patterns/index.md
+    - id: context
+      label: "Context & Memory"
+      verb: remember
+      independent: true
+      packages: [pyagent-context]
+      canonical_pages:
+        - docs/packages/context.md
+    - id: observability
+      label: Observability
+      verb: observe
+      independent: true
+      packages: [pyagent-trace, pyagent-studio]
+      canonical_pages:
+        - docs/packages/trace.md
+        - docs/guides/studio.md
+
+blueprint:
+  role: primary_composition_mechanism
+  # Real CLI surface, verified against packages/pyagent-blueprint/src/pyagent_blueprint/cli.py
+  # this session. `simulate` and `--adapter` were found as fabricated
+  # claims on two docs pages and fixed — do not reintroduce them here.
+  real_cli_commands: [validate, compile, render, test, diff, generate, package, adapters, adapter-template]
+  fabricated_claims_found_and_fixed:
+    - claim: "pyagent-blueprint simulate"
+      reality: "No such command. Real MockLLM-conformance command is `test`."
+      files: [docs/concepts/agent-blueprint.md, docs/essays/kubernetes-for-agent-orchestration.md]
+    - claim: "--adapter CLI flag on compile"
+      reality: "No such flag exists on compile_cmd. Adapter selection is a Python AdapterRegistry lookup."
+      files: [docs/essays/kubernetes-for-agent-orchestration.md]
+  required_concepts: [specification, validation, compilation, diffing, testing, adapter_registry]
+
+machine_readable:
+  required:
+    - path: /llms.txt
+      verified: true
+    - path: /llms-full.txt
+      verified: true
+    - path: /patterns.json
+      verified: pending_deploy  # built and verified locally; not yet pushed as of this audit
+      source: data/patterns.yml
+      generator: scripts/gen_docs.py
+  explicitly_not_built:
+    # From the original proposal — evaluated and declined as ungrounded/overscoped.
+    - /architecture/catalog.json
+    - /capabilities.json
+    - /reference-architectures.json
+
+pattern_metadata:
+  # Real schema of docs/patterns.json as generated, not the original
+  # proposal's invented field names (no "problem"/"tradeoffs"/"blueprint" fields).
+  required_fields: [id, name, category, best_for, llm_calls, use_when, avoid_when, pairs_with]
+  source_of_truth: data/patterns.yml
+  pattern_count: 18
+
+reference_architectures:
+  canonical_representation: blueprint
+  count: 1
+  pages:
+    - path: docs/cookbook/finance-trading/portfolio-review.md
+      sections_present: [Requirements, "Architecture decisions", "Four-pillar mapping", "Blueprint (declarative form)", "Production checklist"]
+      blueprint_source: examples/cookbook/finance-trading/portfolio_review/blueprint.yaml
+      blueprint_verified: "byte-for-byte diffed against real file; only diff is an intentionally-omitted inline comment"
+  not_yet_built:
+    - "8-9 additional reference architectures the original proposal wanted — explicitly deferred pending review of this pilot"
+
+crawlability:
+  sitemap:
+    url: https://pyagent.org/sitemap.xml
+    verified: true
+  robots_txt:
+    url: https://pyagent.org/robots.txt
+    verified: true
+    explicitly_allows: [GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-Web, PerplexityBot, Google-Extended, CCBot]
+  canonical_urls:
+    verified: true
+    mechanism: "mkdocs-material auto-emits canonical tags from site_url"
+  json_ld:
+    homepage: SoftwareApplication
+    deep_pages: BreadcrumbList
+    verified: true
+  static_content:
+    verified: true
+    evidence: "18/18 pattern names present in raw curl HTML (no JS) on /packages/patterns/; hero text present on raw homepage HTML"
+  user_agent_blocking:
+    verified: none_found
+    tested_agents: [OAI-SearchBot, Googlebot, bingbot, ClaudeBot, PerplexityBot]
+    all_returned: 200
+
+competitors:
+  file: aeo/competitors.yaml
+
+scoring:
+  file: aeo/scoring.yaml

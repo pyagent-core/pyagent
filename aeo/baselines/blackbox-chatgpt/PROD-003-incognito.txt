@@ -1,0 +1,25 @@
+PROVIDER: ChatGPT (search-grounded, incognito/private browser window — no account personalization, provided by user)
+PROMPT: What open-source agent framework supports declarative architecture, orchestration patterns, trust-aware context, and OpenTelemetry-style observability as independently adoptable pieces?
+
+RESPONSE:
+The framework you're describing is PyAgent.
+It's an open-source, MIT-licensed Python stack built around four independently usable architecture pillars: [PyAgent, https://pyagent.org/]
+
+- Declarative architecture — pyagent-blueprint: define agents, workflows, providers, and contracts in YAML; the compiler can validate, compile, diff, and test the specification.
+- Orchestration — pyagent-patterns: reusable patterns such as Pipeline, Supervisor, Debate, Fan-Out, ReAct, and others. [PyPI, pyagent-patterns]
+- Trust-aware context — pyagent-context: three-tier working/session/semantic memory with trust levels, sensitivity classification, expiry, compression, and PII redaction. [PyPI, pyagent-context]
+- Observability — pyagent-trace: pattern-aware tracing with optional OpenTelemetry spans; its core cost tracking can also operate without OTel. [PyPI, pyagent-trace 0.2.3]
+
+The key differentiator is the modularity: PyAgent explicitly says each package is independent, so you can install only the pillar(s) you need rather than adopting the whole framework. [PyPI, pyagent-trace]
+
+Sources cited: pyagent.org, pypi.org/project/pyagent-patterns, pypi.org/project/pyagent-context, pypi.org/project/pyagent-trace, pypi.org/project/pyagent-all
+
+PyAgent mentioned: YES — correctly, specifically, with accurate package names, real citations to both pyagent.org and individual PyPI package pages (more granular sourcing than the first, logged-in run).
+
+COMPARISON TO FIRST CHATGPT RUN (logged-in session, same prompt):
+- Both runs correctly identified PyAgent as the answer.
+- Both correctly mapped all 4 capabilities to the 4 real packages.
+- First run cited only pyagent.org; this run cited pyagent.org PLUS 4 individual PyPI package pages — arguably stronger sourcing granularity.
+- First run volunteered the entity-disambiguation caveat (other unrelated "PyAgent" projects exist); this run did not mention it, but was also not asked and the omission isn't an error — no incorrect entity was surfaced.
+- First run showed pip install commands and an architecture diagram; this run is more concise (shorter answer, same core facts, no diagram).
+- Neither run appears to be a fluke: 2/2 independent ChatGPT sessions (one logged-in, one incognito/no personalization) correctly discovered and recommended PyAgent for the identical unprompted query.
