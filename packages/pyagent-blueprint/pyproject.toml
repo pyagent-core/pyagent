@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyagent-blueprint"
-version = "0.3.0"
+version = "0.3.1"
 description = "Declarative YAML specs for multi-agent LLM systems — validate, compile, test, diff, render"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -43,6 +43,10 @@ pyagent = [
     "pyagent-providers>=0.1.0",
     "pyagent-context>=0.1.0",
 ]
+langgraph = ["langgraph>=0.2"]
+crewai = ["crewai>=0.80.0"]
+openai-agents = ["openai-agents>=0.1"]
+semantic-kernel = ["semantic-kernel>=1.0"]
 
 [project.entry-points."pyagent_blueprint.adapters"]
 pyagent = "pyagent_blueprint.adapters.pyagent_adapter:PyAgentAdapter"
@@ -50,6 +54,10 @@ simple_loop = "pyagent_blueprint.adapters.reference.simple_loop:SimpleLoopAdapte
 state_machine = "pyagent_blueprint.adapters.reference.state_machine:StateMachineAdapter"
 sequential_chain = "pyagent_blueprint.adapters.reference.sequential_chain:SequentialChainAdapter"
 single_agent = "pyagent_blueprint.adapters.reference.single_agent:SingleAgentAdapter"
+langgraph = "pyagent_blueprint.adapters.integrations.langgraph:LangGraphAdapter"
+crewai = "pyagent_blueprint.adapters.integrations.crewai:CrewAIAdapter"
+openai_agents = "pyagent_blueprint.adapters.integrations.openai_agents:OpenAIAgentsAdapter"
+semantic_kernel = "pyagent_blueprint.adapters.integrations.semantic_kernel:SemanticKernelAdapter"
 
 [project.scripts]
 pyagent-blueprint = "pyagent_blueprint.cli:cli"

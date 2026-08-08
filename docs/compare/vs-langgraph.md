@@ -10,9 +10,10 @@ that exact same `StateGraph` API — so the comparison isn't "YAML vs. LangGraph
 graph as a manifest vs. author it as code," while both ultimately execute the identical LangGraph
 runtime.
 
-This is a real, verified adapter — not an aspirational one. `pyagent-blueprint-adapter-langgraph`'s
-`compile()` builds a genuine `langgraph.graph.StateGraph`, calling `add_node()`/`add_edge()` for each
-agent in the workflow and compiling it with LangGraph's own `.compile()`; `run()` invokes it via the
+This is a real, verified adapter — not an aspirational one. `pip install "pyagent-blueprint[langgraph]"`
+gets you the `langgraph` adapter, whose `compile()` builds a genuine `langgraph.graph.StateGraph`,
+calling `add_node()`/`add_edge()` for each agent in the workflow and compiling it with LangGraph's
+own `.compile()`; `run()` invokes it via the
 real `ainvoke()` path. It's certified against the same `AdapterConformanceSuite` every other adapter
 must pass.
 

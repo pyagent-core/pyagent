@@ -3,10 +3,27 @@
 All notable changes to the PyAgent packages are documented here.
 
 ### Released versions
+## [0.3.1] – 2026-08-08 (pyagent-blueprint only)
 ## [0.3.0] – 2026-08-08
 ## [0.2.4] – 2026-06-19
 ## [0.2.0] – 2026-06-08
 ## [0.1.0] – 2026-06-07
+
+## [0.3.1] – 2026-08-08 (pyagent-blueprint only)
+
+### Added
+- `pyagent-blueprint`: four new optional adapters, each certified against the `RuntimeAdapter`
+  conformance suite and installable as an extra rather than a separate package:
+  - `pip install "pyagent-blueprint[langgraph]"` — targets LangGraph `StateGraph`
+  - `pip install "pyagent-blueprint[crewai]"` — targets CrewAI `Crew`
+  - `pip install "pyagent-blueprint[openai-agents]"` — targets the OpenAI Agents SDK
+  - `pip install "pyagent-blueprint[semantic-kernel]"` — targets Microsoft Semantic Kernel
+
+  These shipped briefly as four separate PyPI packages
+  (`pyagent-blueprint-adapter-{langgraph,crewai,openai-agents,semantic-kernel}`) before this
+  release; that never fully succeeded (PyPI requires a manually-configured Trusted Publisher per
+  new project name) and was reverted in favor of extras, which give the same install-time
+  dependency isolation without the added packaging overhead.
 
 ## [0.3.0] – 2026-08-08
 
@@ -15,12 +32,6 @@ All notable changes to the PyAgent packages are documented here.
   conforming adapter, not just the native `pyagent` pattern registry. Ships with a zero-dependency
   reference implementation (`single_agent`, `sequential_chain`, `state_machine`, `simple_loop`)
   usable with no extra installs.
-- Four new adapter packages, each independently installable and each certified against the same
-  `RuntimeAdapter` conformance suite:
-  - `pyagent-blueprint-adapter-langgraph` — targets LangGraph `StateGraph`
-  - `pyagent-blueprint-adapter-crewai` — targets CrewAI `Crew`
-  - `pyagent-blueprint-adapter-openai-agents` — targets the OpenAI Agents SDK
-  - `pyagent-blueprint-adapter-semantic-kernel` — targets Microsoft Semantic Kernel
 
 ### Changed
 - `pyagent-blueprint`: the `pyagent-patterns`/`pyagent-router`/`pyagent-providers`/`pyagent-context`

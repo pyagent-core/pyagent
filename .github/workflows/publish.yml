@@ -39,18 +39,6 @@ jobs:
       - name: Build pyagent-blueprint
         run: uv build --package pyagent-blueprint --out-dir dist/pyagent-blueprint
 
-      - name: Build pyagent-blueprint-adapter-langgraph
-        run: uv build --package pyagent-blueprint-adapter-langgraph --out-dir dist/pyagent-blueprint-adapter-langgraph
-
-      - name: Build pyagent-blueprint-adapter-crewai
-        run: uv build --package pyagent-blueprint-adapter-crewai --out-dir dist/pyagent-blueprint-adapter-crewai
-
-      - name: Build pyagent-blueprint-adapter-openai-agents
-        run: uv build --package pyagent-blueprint-adapter-openai-agents --out-dir dist/pyagent-blueprint-adapter-openai-agents
-
-      - name: Build pyagent-blueprint-adapter-semantic-kernel
-        run: uv build --package pyagent-blueprint-adapter-semantic-kernel --out-dir dist/pyagent-blueprint-adapter-semantic-kernel
-
       - name: Build pyagent-studio
         run: uv build --package pyagent-studio --out-dir dist/pyagent-studio
 
@@ -124,31 +112,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-blueprint/
-          skip-existing: true
-
-      # Tier 3.5 — depends on pyagent-blueprint + the third-party runtime they target
-      - name: Publish pyagent-blueprint-adapter-langgraph
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/pyagent-blueprint-adapter-langgraph/
-          skip-existing: true
-
-      - name: Publish pyagent-blueprint-adapter-crewai
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/pyagent-blueprint-adapter-crewai/
-          skip-existing: true
-
-      - name: Publish pyagent-blueprint-adapter-openai-agents
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/pyagent-blueprint-adapter-openai-agents/
-          skip-existing: true
-
-      - name: Publish pyagent-blueprint-adapter-semantic-kernel
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/pyagent-blueprint-adapter-semantic-kernel/
           skip-existing: true
 
       # Tier 4 — depends on blueprint + trace

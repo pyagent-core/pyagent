@@ -10,8 +10,9 @@ CrewAI models a multi-agent system as a `Crew`: a list of role-based `Agent`s (`
 `Task`/`Crew` structure — the comparison is about where the role/goal/task wiring lives, not about
 replacing CrewAI's execution engine.
 
-This is a real, verified adapter. `pyagent-blueprint-adapter-crewai`'s `compile()` builds actual
-CrewAI `Agent(role=..., goal=..., backstory=...)` and `Task(description=..., agent=...)` objects for
+This is a real, verified adapter. `pip install "pyagent-blueprint[crewai]"` gets you the `crewai`
+adapter, whose `compile()` builds actual CrewAI `Agent(role=..., goal=..., backstory=...)` and
+`Task(description=..., agent=...)` objects for
 every agent in a workflow, assembles them into a real `Crew(agents=..., tasks=..., process=
 Process.sequential)`, and `run()` calls CrewAI's own `crew.kickoff_async()`. It passes the same
 `AdapterConformanceSuite` as every other adapter.

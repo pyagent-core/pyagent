@@ -3,6 +3,19 @@
 **All PRs from TRANSFORMATION-PLAN.md Section 10 are complete except the
 deferred, optional Step 8 (Agent Spec bridge).**
 
+**Correction (post-hoc, after PR 6 below shipped):** the four external
+adapters were originally published as separate PyPI packages
+(`pyagent-blueprint-adapter-{langgraph,crewai,openai-agents,semantic-kernel}`).
+That was reverted — they now live inside `pyagent-blueprint` itself as
+optional extras (`pip install "pyagent-blueprint[langgraph]"`, etc.),
+under `src/pyagent_blueprint/adapters/integrations/`. Reasoning: the
+dependency-isolation goal is fully served by extras + entry-point
+graceful-degradation (the same mechanism the `pyagent` adapter already
+used for its own optional deps) without the ongoing cost of maintaining
+four separate PyPI projects, each needing its own Trusted Publisher
+setup. The "Package" column in PR 6's table below is stale as a result —
+read it as "module", not "PyPI package".
+
 ## PR 1 — Steps 0–3: Contract, conformance suite, own adapter extraction
 ✅ Complete.
 - `AUDIT-STEP0.md` — grounding audit
