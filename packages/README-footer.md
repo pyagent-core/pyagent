@@ -2,7 +2,7 @@
 
 ## The PyAgent ecosystem
 
-PyAgent is a production stack for multi-agent LLM systems. Each package is independent — install
+PyAgent is a spec-driven architecture for orchestrating multi-agent systems. Each package is independent — install
 only what you need, or get everything with [`pip install pyagent-all`](https://pyagent.org/getting-started/).
 
 | Package | What it gives you |

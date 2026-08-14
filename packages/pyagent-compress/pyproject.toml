@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pyagent-compress"
 version = "0.3.0"
-description = "Inter-agent message compression and token budget management for multi-agent LLM systems"
+description = "Inter-agent message compression and token budget management for multi-agent LLM systems — part of PyAgent's Execution & Routing pillar."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

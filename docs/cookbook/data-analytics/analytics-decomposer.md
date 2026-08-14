@@ -19,6 +19,88 @@ workers, and synthesizes the answer.
 
 ---
 
+## Requirements
+
+- **Functional** — accept an open-ended analytics question, plan the subtasks it actually requires
+  (query/transform/chart, not necessarily all three), dispatch to specialist workers, and
+  synthesize a final answer.
+- **Non-functional** — the planner should only invoke the workers a specific question actually
+  needs — a question needing no chart shouldn't pay for one.
+- **Audit** — the final answer should be traceable to which worker(s) the planner invoked and why.
+- **Not required** — no persistent memory across separate analytics questions; each is planned and
+  answered independently.
+
+## Architecture decisions
+
+| Decision | Why | Why not the alternative |
+|---|---|---|
+| **Orchestrator-Workers**, not Pipeline | The subtasks an analytics question needs aren't known until the question itself is analyzed — "why did churn rise" might need query+transform+chart, "what's our MRR" might need only query. | A **Pipeline** would force every question through query→transform→chart regardless of whether all three are relevant, wasting cost on unneeded stages. |
+| Single planner (`analytics_lead`) owns both decomposition and synthesis | The same agent that understood the original question is best positioned to judge whether the workers' outputs actually answer it. | Splitting planning and synthesis into separate agents would need the synthesis agent to re-derive intent from the plan alone, risking drift from the original question. |
+| All three workers on `fast`, planner on `smart` | Query-writing, transform-description, and chart-recommendation are narrow, well-specified tasks; only the planning/synthesis step benefits from stronger reasoning. | Using `smart` for the workers too would multiply cost for tasks that don't need the extra reasoning quality. |
+
+## Four-pillar mapping
+
+| Requirement | Pillar | Capability |
+|---|---|---|
+| Dynamic subtask planning + dispatch | Execution | `OrchestratorWorkers` pattern |
+| Track daily analytics spend | Observability | `observability.cost_budget` |
+| Trace planning + worker calls | Observability | `observability.tracing` |
+
+## Blueprint (declarative form)
+
+The real, verified file at `examples/cookbook/data-analytics/analytics_decomposer/blueprint.yaml`,
+compiled against `PyAgentAdapter` as part of this repo's test suite:
+
+```yaml
+api_version: pyagent/v1
+metadata:
+  name: analytics-decomposer
+  version: 1.0.0
+  description: Orchestrator breaks analytics request into query, transform, and chart workers
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  analytics_lead: { provider: smart, prompt: "Plan analytics work. Assign workers. Synthesize answer." }
+  query:          { provider: fast,  prompt: "Write SQL for the subtask." }
+  transform:      { provider: fast,  prompt: "Describe transforms needed for the analysis." }
+  chart:          { provider: fast,  prompt: "Recommend chart type and encodings." }
+
+workflows:
+  analyze:
+    pattern: orchestrator_workers
+    agents: { orchestrator: analytics_lead, workers: [query, transform, chart] }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }
+```
+
+```bash
+pyagent-blueprint validate analytics-decomposer.yaml
+pyagent-blueprint test analytics-decomposer.yaml
+```
+
+## Production checklist
+
+Ran this exact blueprint through `PyAgentAdapter.compile()` and inspected the real diagnostics:
+
+- ✅ **The workflow runs as declared** — `analyze` compiles and executes against the native pattern
+  registry with no diagnostics.
+- ⚠️ **`observability.cost_budget` is declared but not auto-enforced** — compiling emits
+  `BUDGET_UNSUPPORTED`: the $50/day budget is recorded but not enforced. Wire real enforcement via
+  `graph.wire_cost_tracker(tracker)`.
+- **Worker count and cost are inherently less predictable than a fixed pipeline** — because the
+  planner decides which of the 3 workers to invoke per-question, cost varies question-to-question;
+  if you need tight cost bounds, budget for the worst case (all 3 workers), not the average.
+- **No actual SQL execution or chart rendering happens in this blueprint** — `query`/`transform`/
+  `chart` produce *descriptions* of what to do; wiring them to a real database/plotting library is
+  downstream work this recipe doesn't cover.
+
+---
+
 ## Architecture
 
 ```mermaid

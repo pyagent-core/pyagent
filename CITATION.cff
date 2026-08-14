@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use PyAgent in your work, please cite it using the metadata below."
+title: "PyAgent: Spec-Driven Architecture for Orchestrating Multi-Agent Systems"
+type: software
+authors:
+  - name: "PyAgent Team"
+    email: team@pyagent.org
+repository-code: "https://github.com/pyagent-core/pyagent"
+url: "https://pyagent.org"
+license: MIT
+abstract: >-
+  PyAgent is a spec-driven architecture for orchestrating multi-agent LLM
+  systems, organized around four independently adoptable pillars: Blueprint
+  (declarative YAML specification, compiled onto any registered runtime
+  adapter), Execution & Routing (18 named orchestration patterns with
+  difficulty-aware model routing), Context & Memory (three-tier memory with
+  a trust-aware context ledger), and Observability (pattern-aware
+  OpenTelemetry tracing with a web dashboard).
+keywords:
+  - multi-agent systems
+  - agent orchestration
+  - large language models
+  - declarative architecture
+  - spec-driven development
+  - OpenTelemetry

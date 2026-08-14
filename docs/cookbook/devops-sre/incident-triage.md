@@ -21,6 +21,92 @@ signal, hypothesizes a root cause, and drafts a *reversible* remediation, then u
 
 ---
 
+## Requirements
+
+- **Functional** — summarize the error signal, hypothesize a root cause, draft a reversible
+  remediation, and format it as a runbook step for on-call approval.
+- **Non-functional** — triage (log analysis through remediation drafting) should run at machine
+  speed; only the actual production-touching action waits on a human.
+- **Audit** — the runbook step presented for approval must show its full reasoning chain: what
+  failed, the hypothesized cause, and why the remediation is believed safe.
+- **Not required** — no automatic execution of the remediation — this recipe stops at a
+  human-approvable runbook step, it never touches production itself.
+
+## Architecture decisions
+
+| Decision | Why | Why not the alternative |
+|---|---|---|
+| **Pipeline** for triage | Every incident goes through the same fixed sequence — analyze logs, hypothesize cause, draft remediation — regardless of the specific failure. | **Supervisor** would imply routing to different specialists by incident category; here every incident gets identical staged treatment. |
+| **Human-in-the-Loop** gates only the final runbook step, not the whole triage | Log analysis and root-cause hypothesis are safe to automate fully; only the step that could touch production needs a human. | Gating the entire pipeline on human review would eliminate the speed benefit that matters most at 3 a.m. |
+| `runbook_writer` explicitly flags `HIGH_RISK` for delete/drop/scale-to-zero/failover/restart | These are the specific action classes that are hard or impossible to reverse — the flag exists to make that risk visible to the approving human, not just implicit in the prose. | Leaving risk classification implicit would put the burden on the on-call engineer to infer it from free text under time pressure. |
+
+## Four-pillar mapping
+
+| Requirement | Pillar | Capability |
+|---|---|---|
+| Staged log analysis → root cause → remediation | Execution | `Pipeline` pattern |
+| Human sign-off before prod-touching action | Execution | `HumanInTheLoop` pattern |
+| Track daily triage spend | Observability | `observability.cost_budget` |
+| Trace each triage stage | Observability | `observability.tracing` |
+
+## Blueprint (declarative form)
+
+The real, verified file at `examples/cookbook/devops-sre/incident_triage/blueprint.yaml`, compiled
+against `PyAgentAdapter` as part of this repo's test suite:
+
+```yaml
+api_version: pyagent/v1
+metadata:
+  name: incident-triage
+  version: 1.0.0
+  description: Pipeline that triages incidents with human sign-off before prod changes
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  log_analyst:    { provider: fast,  prompt: "Summarize error signal: what's failing, since when, blast radius." }
+  root_cause:     { provider: smart, prompt: "Most likely root cause with supporting evidence." }
+  remediation:    { provider: smart, prompt: "Safe reversible remediation. Start with TOUCHES_PROD: yes/no." }
+  runbook_writer: { provider: fast,  prompt: "Format as runbook step. Flag HIGH_RISK for delete/drop/scale-to-zero/failover/restart." }
+
+workflows:
+  triage:
+    pattern: pipeline
+    agents: { stages: [log_analyst, root_cause, remediation] }
+  gate:
+    pattern: human_in_the_loop
+    agents: { agent: runbook_writer }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }
+```
+
+```bash
+pyagent-blueprint validate incident-triage.yaml
+pyagent-blueprint test incident-triage.yaml
+```
+
+## Production checklist
+
+Ran this exact blueprint through `PyAgentAdapter.compile()` and inspected the real diagnostics:
+
+- ✅ **Both workflows run as declared** — `triage` and `gate` each compile and execute against the
+  native pattern registry with no diagnostics on workflow structure.
+- ⚠️ **`observability.cost_budget` is declared but not auto-enforced** — compiling emits
+  `BUDGET_UNSUPPORTED`: the $50/day budget is recorded but not enforced. Wire real enforcement via
+  `graph.wire_cost_tracker(tracker)`.
+- **The `TOUCHES_PROD`/`HIGH_RISK` flagging is prompt-driven, not schema-enforced** — the blueprint
+  declares the agents that produce these flags, but nothing in the spec itself guarantees a
+  malformed or missing flag is caught before reaching the human approver. That's a real gap if
+  false negatives on risk classification are a concern for your deployment.
+- **No recovery policy is declared** — if a stage fails mid-run (e.g. the LLM call errors), this
+  blueprint doesn't specify a retry policy.
+
+---
+
 ## Architecture
 
 ```mermaid

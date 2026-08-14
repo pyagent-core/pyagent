@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pyagent-all"
 version = "0.3.0"
-description = "A production-grade Python framework implementing reusable multi-agent design patterns, stateful orchestration, and resilient execution harnesses for autonomous LLM systems."
+description = "Spec-driven architecture for orchestrating multi-agent systems — installs all four PyAgent pillars: Blueprint, Execution & Routing, Context & Memory, and Observability."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

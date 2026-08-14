@@ -88,6 +88,11 @@ jobs:
       # 0. Generated docs (benchmark tables, cookbook index) must be in sync
       #    with their data sources.
       - run: python scripts/gen_docs.py --check
+      # 0b. Machine-readable catalogs (patterns.json, capabilities.json) must
+      #     match their source YAML and cover every real package — no
+      #     dangling references, no silently-dropped package.
+      - run: python aeo/scripts/validate_catalog.py
+      - run: python aeo/scripts/validate_capabilities_catalog.py
       # 1. Strict build — broken links / bad config fail here.
       - run: DISABLE_MKDOCS_2_WARNING=true mkdocs build --strict
       # 2. Link integrity on the built site. The Material custom_dir template is

@@ -1,0 +1,20 @@
+[
+  {
+    "check": "no_drift_from_source",
+    "status": "PASS",
+    "detail": {
+      "only_in_source": [],
+      "only_in_catalog": []
+    }
+  },
+  {
+    "check": "every_real_package_covered",
+    "status": "PASS",
+    "detail": "all 9 packages under packages/ are covered"
+  },
+  {
+    "check": "required_fields_present",
+    "status": "PASS",
+    "detail": "all packages have all required fields"
+  }
+]

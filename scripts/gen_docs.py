@@ -36,10 +36,15 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "benchmarks.yml"
 PATTERNS_DATA = ROOT / "data" / "patterns.yml"
+CAPABILITIES_DATA = ROOT / "data" / "capabilities.yml"
 BENCHMARKS_MD = ROOT / "docs" / "benchmarks.md"
 PATTERNS_JSON = ROOT / "docs" / "patterns.json"
+CAPABILITIES_JSON = ROOT / "docs" / "capabilities.json"
+BLUEPRINT_SCHEMA_JSON = ROOT / "docs" / "blueprint-schema.json"
 COOKBOOK_INDEX = ROOT / "docs" / "cookbook" / "index.md"
 COOKBOOK_DIR = ROOT / "docs" / "cookbook"
+
+sys.path.insert(0, str(ROOT / "packages" / "pyagent-blueprint" / "src"))
 
 
 def _round2(value: float) -> Decimal:
@@ -388,6 +393,7 @@ def make_pattern_builder(pattern_name: str):
 def render_patterns_json() -> str:
     data = yaml.safe_load(PATTERNS_DATA.read_text(encoding="utf-8"))
     catalog = {
+        "schema_version": "1.0",
         "name": "PyAgent Design Pattern Catalog",
         "source": "https://pyagent.org/packages/patterns/",
         "patterns": data["patterns"],
@@ -400,12 +406,63 @@ def build_patterns_json(_text: str) -> str:
     return render_patterns_json()
 
 
+# ── Machine-readable capability catalog (docs/capabilities.json) ────────────
+#
+# Sourced from data/capabilities.yml — every package's real public API
+# surface (patterns' own 18-entry catalog stays at docs/patterns.json;
+# this is everything else: blueprint's RuntimeAdapters, router's strategies,
+# context's memory tiers, trace's exporters, compress, providers, studio's
+# CLI). See data/capabilities.yml's header for the grounding rule.
+
+
+def render_capabilities_json() -> str:
+    data = yaml.safe_load(CAPABILITIES_DATA.read_text(encoding="utf-8"))
+    catalog = {
+        "schema_version": "1.0",
+        "name": "PyAgent Capability Catalog",
+        "source": "https://pyagent.org/",
+        "see_also": "https://pyagent.org/patterns.json",
+        "packages": data["packages"],
+    }
+    return json.dumps(catalog, indent=2, ensure_ascii=False) + "\n"
+
+
+def build_capabilities_json(_text: str) -> str:
+    return render_capabilities_json()
+
+
+# ── Authoritative JSON Schema (docs/blueprint-schema.json) ──────────────────
+#
+# Generated directly from the real pydantic BlueprintSpec model — the exact
+# schema pyagent-blueprint validates against, not a hand-maintained
+# approximation that can drift from the actual validator.
+
+
+def render_blueprint_schema_json() -> str:
+    from pyagent_blueprint.schema.spec import BlueprintSpec
+
+    schema = BlueprintSpec.model_json_schema()
+    schema = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://pyagent.org/blueprint-schema.json",
+        **schema,
+        "title": "PyAgent Blueprint Specification (pyagent/v1)",
+    }
+    return json.dumps(schema, indent=2, ensure_ascii=False) + "\n"
+
+
+def build_blueprint_schema_json(_text: str) -> str:
+    return render_blueprint_schema_json()
+
+
 # ── Driver ───────────────────────────────────────────────────────────────────
 
 TARGETS = [
     (BENCHMARKS_MD, build_benchmarks),
     (COOKBOOK_INDEX, build_cookbook),
     (PATTERNS_JSON, build_patterns_json),
+    (CAPABILITIES_JSON, build_capabilities_json),
+    (BLUEPRINT_SCHEMA_JSON, build_blueprint_schema_json),
 ]
 
 # One target per pattern page (path → its display name via the slug map).

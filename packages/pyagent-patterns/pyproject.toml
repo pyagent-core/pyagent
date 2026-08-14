@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pyagent-patterns"
 version = "0.3.0"
-description = "18 reusable multi-agent orchestration patterns for LLMs"
+description = "18 reusable multi-agent orchestration patterns for LLMs — the Execution & Routing pillar of PyAgent."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

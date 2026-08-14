@@ -8,7 +8,7 @@
 
 {% block htmltitle %}
   {%- if page and page.is_homepage %}
-    <title>PyAgent — Production Stack for Multi-Agent LLM Systems</title>
+    <title>PyAgent — Spec-Driven Architecture for Orchestrating Multi-Agent Systems</title>
   {%- else %}
     {{ super() }}
   {%- endif %}
@@ -16,7 +16,7 @@
 
 {% block extrahead %}
   {%- if page and page.is_homepage -%}
-    {%- set og_title = "PyAgent — Production Stack for Multi-Agent LLM Systems" -%}
+    {%- set og_title = "PyAgent — Spec-Driven Architecture for Orchestrating Multi-Agent Systems" -%}
   {%- elif page and page.title -%}
     {%- set og_title = page.title | striptags ~ " - " ~ config.site_name -%}
   {%- else -%}
@@ -87,13 +87,26 @@
     "name": "PyAgent",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Cross-platform",
-    "description": "Open-source Python orchestration framework for deploying deterministic multi-agent systems, Supervisor/Worker design patterns, and token-efficient agent harnesses.",
+    "description": "PyAgent: spec-driven architecture for orchestrating multi-agent systems. Four independent pillars — Blueprint, Execution & Routing, Context & Memory, and Observability — declare agents in YAML, orchestrate with 18 named patterns, share three-tier memory, and trace every call and cost.",
     "keywords": "multi-agent orchestration, multi-agent design patterns, agent harness, AXO, agent-experience-optimization, orchestrator-worker pattern, stateful multi-actor workflows, deterministic process orchestration, supervisor pattern, token-efficient agents, YAML agent blueprint, OpenTelemetry LLM tracing, Python multi-agent framework",
     "url": "https://pyagent.org",
     "softwareRequirements": "Python 3.11+",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "license": "https://github.com/pyagent-core/pyagent/blob/main/LICENSE",
     "codeRepository": "https://github.com/pyagent-core/pyagent"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "PyAgent",
+    "url": "https://pyagent.org",
+    "sameAs": [
+      "https://github.com/pyagent-core/pyagent",
+      "https://pypi.org/project/pyagent-all/",
+      "https://pypi.org/project/pyagent-blueprint/"
+    ]
   }
   </script>
   {%- endif %}

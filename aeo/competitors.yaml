@@ -32,3 +32,28 @@ competitors:
     has_pyagent_adapter: false
     pyagent_comparison_page: null
     note: "Referenced in homepage comparison table, no dedicated compare page"
+  - id: google-adk
+    name: Google Agent Development Kit (ADK)
+    has_pyagent_adapter: false
+    pyagent_comparison_page: null
+    note: "Appeared in the BP-001 pilot response (Claude recommended it) and in web research as a declarative-YAML competitor; no PyAgent comparison page yet"
+  - id: microsoft-agent-framework
+    name: Microsoft Agent Framework
+    has_pyagent_adapter: false
+    pyagent_comparison_page: docs/compare/vs-microsoft-agent-framework.md
+    note: "Appeared in the PROD-003 pilot response (Claude's alternative recommendation) as the declarative-YAML, OTel-native competitor closest to PyAgent's own positioning"
+  - id: dify
+    name: Dify
+    has_pyagent_adapter: false
+    pyagent_comparison_page: null
+    note: "Appeared in the BP-001 pilot response (Claude recommended 'Dify DSL') as a declarative-workflow competitor; no PyAgent comparison page yet"
+  - id: dapr-agents
+    name: Dapr Agents
+    has_pyagent_adapter: false
+    pyagent_comparison_page: docs/compare/vs-dapr-agents.md
+    note: "PROD-003 pilot's actual top recommendation from Claude, specifically for the 'independently adoptable pieces' positioning PyAgent itself uses"
+  - id: pydantic-ai
+    name: Pydantic AI
+    has_pyagent_adapter: false
+    pyagent_comparison_page: docs/compare/vs-pydantic-ai.md
+    note: "Verified via web research to now ship declarative YAML/JSON 'Agent Specs' — real emerging overlap with pyagent-blueprint's positioning, though scoped to single-agent config, not multi-agent system specs. 16,500+ GitHub stars as of this comparison."

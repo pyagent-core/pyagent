@@ -1,6 +1,6 @@
 # pyagent-context
 
-**Pillar 3 of the PyAgent production stack for multi-agent LLM systems** — three-tier memory with trust-aware context ledger. Trust levels, sensitivity classification, compression policies, and PII redaction built in.
+**Pillar 3 of the PyAgent spec-driven architecture for orchestrating multi-agent systems** — three-tier memory with trust-aware context ledger. Trust levels, sensitivity classification, compression policies, and PII redaction built in.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -470,7 +470,7 @@ See [pyagent.org](https://pyagent.org) for full API reference and integration gu
 
 ## The PyAgent ecosystem
 
-PyAgent is a production stack for multi-agent LLM systems. Each package is independent — install
+PyAgent is a spec-driven architecture for orchestrating multi-agent systems. Each package is independent — install
 only what you need, or get everything with [`pip install pyagent-all`](https://pyagent.org/getting-started/).
 
 | Package | What it gives you |

@@ -1,6 +1,6 @@
 # pyagent-all
 
-**PyAgent: A Production Stack for Multi-Agent LLM Systems** — one command installs all four architecture pillars.
+**PyAgent: Spec-Driven Architecture for Orchestrating Multi-Agent Systems** — one command installs all four architecture pillars.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -196,7 +196,7 @@ pyagent-all
 
 ## The PyAgent ecosystem
 
-PyAgent is a production stack for multi-agent LLM systems. Each package is independent — install
+PyAgent is a spec-driven architecture for orchestrating multi-agent systems. Each package is independent — install
 only what you need, or get everything with [`pip install pyagent-all`](https://pyagent.org/getting-started/).
 
 | Package | What it gives you |

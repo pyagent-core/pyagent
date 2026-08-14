@@ -1,6 +1,6 @@
 # PyAgent
 
-**A production stack for multi-agent LLM systems** — declare systems in YAML, orchestrate with 18 named patterns, persist state with three-tier memory, and observe everything with OTel tracing and a web dashboard.
+**Spec-Driven Architecture for Orchestrating Multi-Agent Systems** — declare systems in YAML, orchestrate with 18 named patterns, persist state with three-tier memory, and observe everything with OTel tracing and a web dashboard.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -2000,6 +2000,20 @@ Full docs with Mermaid sequence diagrams, code examples, and API reference: [pya
 ```bash
 pip install mkdocs-material mkdocstrings[python] mkdocs-redirects mkdocs-llmstxt
 mkdocs serve  # Preview at http://localhost:8000
+```
+
+## Citing PyAgent
+
+If you use PyAgent in research or in a published architecture, cite it using the metadata in
+[`CITATION.cff`](CITATION.cff), or the BibTeX below:
+
+```bibtex
+@software{pyagent,
+  title  = {PyAgent: Spec-Driven Architecture for Orchestrating Multi-Agent Systems},
+  author = {{PyAgent Team}},
+  url    = {https://github.com/pyagent-core/pyagent},
+  license = {MIT}
+}
 ```
 
 ## Contributing

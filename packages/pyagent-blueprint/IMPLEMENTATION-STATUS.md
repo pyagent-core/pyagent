@@ -16,6 +16,16 @@ four separate PyPI projects, each needing its own Trusted Publisher
 setup. The "Package" column in PR 6's table below is stale as a result —
 read it as "module", not "PyPI package".
 
+**Correction (pillar naming, later session):** Track B's Phase A below renamed
+the inner pillar `Blueprint` → `Manifest` to avoid a "Blueprint › Blueprint"
+breadcrumb collision with the top-level nav tab, which was also called
+`Blueprint` at the time. That top-level tab has since been renamed to
+`Reference`, so the collision this rename was solving no longer exists.
+Per explicit user decision, the pillar has been renamed back to
+`Blueprint` everywhere (docs, `aeo/requirements.yaml`, `aeo/architecture-taxonomy.yaml`,
+`aeo/benchmark-ground-truth.json`, `mkdocs.yml`). Every `Manifest` pillar
+reference below is historical — read it as `Blueprint`.
+
 ## PR 1 — Steps 0–3: Contract, conformance suite, own adapter extraction
 ✅ Complete.
 - `AUDIT-STEP0.md` — grounding audit

@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pyagent-blueprint"
 version = "0.3.1"
-description = "Declarative YAML specs for multi-agent LLM systems — validate, compile, test, diff, render"
+description = "Declarative YAML specs for multi-agent LLM systems — validate, compile, test, diff, render. The Blueprint pillar of PyAgent."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

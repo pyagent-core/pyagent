@@ -1,5 +1,5 @@
 ---
-description: "The PyAgent design-pattern library — 18 named multi-agent orchestration patterns across orchestration, resolution, structural, and advanced tiers, with guidance on when to use each."
+description: "PyAgent's Execution & Routing pillar — 18 named multi-agent orchestration patterns across orchestration, resolution, structural, and advanced tiers, with guidance on when to use each."
 ---
 
 # pyagent-patterns
@@ -415,6 +415,11 @@ flowchart TD
     style P7 fill:#9C27B0,color:#fff
     style P8 fill:#9C27B0,color:#fff
 ```
+
+**Not on the tree on purpose: a single agent, single call, with nothing to hand off to and no state
+to persist.** That's not a degenerate case of any pattern here — it's the case where none of them
+apply. Import your provider's SDK and make the call. Reach for a named pattern only once there's a
+second agent, a review loop, or a routing decision in the picture.
 
 ### All 18 Patterns at a Glance
 

@@ -19,6 +19,90 @@ A tiered multi-agent customer support system that classifies queries, routes to 
 
 ---
 
+## Requirements
+
+- **Functional** — classify every incoming query into billing, technical, account, or escalate;
+  route to the right specialist; hand off to a human when automated handling isn't appropriate.
+- **Non-functional** — most queries should resolve without a senior/expensive model; classification
+  itself needs to be cheap since it runs on every single query.
+- **Audit** — every routed query should be traceable to the classification decision that sent it
+  there.
+- **Not required** — no persistent memory across separate support sessions in this recipe (each
+  query is classified independently).
+
+## Architecture decisions
+
+| Decision | Why | Why not the alternative |
+|---|---|---|
+| **Supervisor** for routing | Categories (billing/technical/account/escalate) are fixed and known in advance. | **Orchestrator-Workers** implies discovering the right specialists per-input; here the categories never change. |
+| Classifier on `fast`, specialists on `smart` | Classification is a cheap pattern-match; specialist responses need real reasoning quality. | Using `smart` for classification alone would multiply the highest-volume call in the system by ~10x cost for no quality benefit. |
+| One workflow (`route`), not a nested Supervisor-inside-TalkerReasoner | `Supervisor.routes` expects `Agent` objects, not `Pattern` objects — nesting patterns inside pattern slots isn't supported by the schema. | The `_fast` tier agents are declared but used outside this workflow (e.g. a cost-optimized fallback), documented directly in the blueprint's own comment. |
+
+## Four-pillar mapping
+
+| Requirement | Pillar | Capability |
+|---|---|---|
+| Classify and route by category | Execution | `Supervisor` pattern |
+| Track daily routing spend | Observability | `observability.cost_budget` |
+| Trace each classify/specialist call | Observability | `observability.tracing` |
+| Escalate to human when needed | Execution | `escalation_writer` agent + downstream `HumanInTheLoop` (Python implementation) |
+
+## Blueprint (declarative form)
+
+The real, verified file at `examples/cookbook/customer-support/support_router/blueprint.yaml`,
+compiled against `PyAgentAdapter` as part of this repo's test suite:
+
+```yaml
+api_version: pyagent/v1
+metadata:
+  name: support-router
+  version: 1.0.0
+  description: Classify customer queries, route to specialist bots, escalate to human when needed
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  supervisor:   { provider: fast,  prompt: "Classify as: billing, technical, account, escalate." }
+  billing_deep: { provider: smart, prompt: "Senior billing specialist — complex cases." }
+  tech_deep:    { provider: smart, prompt: "Senior engineer — deep technical debug." }
+  account_deep: { provider: smart, prompt: "Senior account specialist — SSO, compliance." }
+  escalation_writer: { provider: fast, prompt: "Summarize for human handoff." }
+
+workflows:
+  route:
+    pattern: supervisor
+    agents:
+      classifier: supervisor
+      routes: { billing: billing_deep, technical: tech_deep, account: account_deep, escalate: escalation_writer }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 200.0, alert_threshold: 0.8 }
+```
+
+```bash
+pyagent-blueprint validate support-router.yaml
+pyagent-blueprint test support-router.yaml
+```
+
+## Production checklist
+
+Ran this exact blueprint through `PyAgentAdapter.compile()` and inspected the real diagnostics:
+
+- ✅ **The routing workflow runs as declared** — `route` compiles and executes with no diagnostics
+  on the workflow structure itself.
+- ⚠️ **`observability.cost_budget` is declared but not auto-enforced** — compiling emits
+  `BUDGET_UNSUPPORTED`: the $200/day budget is recorded but not enforced. Wire real enforcement via
+  `graph.wire_cost_tracker(tracker)`.
+- **The `_fast` tier agents and the TalkerReasoner tiering shown in the Python implementation below
+  aren't expressed in the blueprint's `route` workflow** — `Supervisor.routes` requires `Agent`
+  targets, not nested patterns, so the cost-tiering happens in code, not the declared spec. A real,
+  documented schema limitation, not an oversight.
+
+---
+
 ## Architecture
 
 ```mermaid

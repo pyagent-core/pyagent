@@ -1,16 +1,18 @@
 # Pillar -> pattern/capability taxonomy used by the scorer to map a
 # free-text response's mentions back onto ground-truth pillar labels.
-# Cross-referenced against docs/patterns.json — do not add a pattern here
-# that isn't in that catalog.
+# Cross-referenced against docs/patterns.json and docs/capabilities.json —
+# do not add a pattern/capability here that isn't in one of those catalogs.
 
 pillar_signal_terms:
-  manifest:
+  blueprint:
     - blueprint
     - pyagent-blueprint
     - declarative yaml
     - spec-driven
     - specification layer
     - git-reviewable architecture
+    - runtimeadapter
+    - adapter conformance suite
   execution:
     - pyagent-patterns
     - orchestration pattern
@@ -21,6 +23,13 @@ pillar_signal_terms:
     - fan-out
     - model routing
     - pyagent-router
+    - difficulty scorer
+    - difficulty-aware routing
+    - pyagent-providers
+    - fallback chain
+    - capability negotiation
+    - routing strategy
+    - cost-first routing
   context:
     - pyagent-context
     - context ledger
@@ -29,6 +38,11 @@ pillar_signal_terms:
     - semantic memory
     - trust-aware
     - pii redaction
+    - pyagent-compress
+    - token budget
+    - message compression
+    - agent pruning
+    - interaction pruning
   observability:
     - pyagent-trace
     - pyagent-studio
@@ -36,9 +50,39 @@ pillar_signal_terms:
     - distributed tracing
     - cost tracking
     - record/replay
+    - trace event bus
+    - kubectl-style cli
+    - governance dashboard
 
 pattern_signal_terms:
   supervisor: [supervisor pattern, classify and route, classifier + route]
   orchestrator-workers: [orchestrator-workers, dynamic subtask planning, planning + synthesis]
   debate: [debate pattern, adversarial agents, argue opposing]
   human-in-the-loop: [human-in-the-loop, human approval gate, hitl]
+  fan-out-fan-in: [fan-out, fan-in, fan-out/fan-in, parallel dispatch and aggregate]
+  hierarchical: [hierarchical pattern, sub-teams, team of teams]
+  pipeline: [pipeline pattern, sequential stages, linear pipeline]
+  cross-reflection: [cross-reflection, independent expert review, second-opinion review]
+  evaluator-optimizer: [evaluator-optimizer, evaluator/optimizer, scored revision loop, generator + evaluator]
+  self-reflection: [self-reflection, self-critique, self-review loop]
+  voting: [voting pattern, ensemble vote, majority vote, quorum]
+  blackboard: [blackboard pattern, shared workspace, shared scratchpad]
+  layered: [layered pattern, gather-analyze-synthesize, increasing abstraction]
+  role-based: [role-based pattern, stakeholder roles, persona-based agents]
+  topology: [topology pattern, communication topology, hub-and-spoke, peer network]
+  react: [react pattern, reasoning + acting, tool-use loop, thought-action-observation]
+  swarm: [swarm pattern, emergent collective intelligence, decentralized agents]
+  talker-reasoner: [talker-reasoner, talker/reasoner, fast-path slow-path]
+
+# Non-pattern capability signal terms — one entry per docs/capabilities.json
+# package, mirroring pattern_signal_terms' shape but for router/context/
+# trace/compress/providers/studio capabilities rather than orchestration
+# patterns.
+capability_signal_terms:
+  pyagent-router: [difficultyscorer, modelselector, costestimator, routermiddleware]
+  pyagent-context: [workingmemory, sessionmemory, semanticmemoryprotocol, contextledger, contextredactor, trustawareretriever]
+  pyagent-trace: [traceeventbus, recorder, costtracker, patternspanemitter]
+  pyagent-compress: [tokenbudget, messagecompressor, agentpruner, interactionpruner]
+  pyagent-providers: [providerregistry, providerrouter, fallbackchain, capabilitynegotiator, costoptimizer]
+  pyagent-studio: [kubectl-style cli, trace explorer, blueprint diff view]
+  pyagent-blueprint-adapters: [langgraph adapter, crewai adapter, openai agents adapter, semantic kernel adapter, runtimeadapter]

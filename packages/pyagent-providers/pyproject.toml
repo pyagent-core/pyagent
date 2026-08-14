@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pyagent-providers"
 version = "0.3.0"
-description = "Multi-provider abstraction with capability negotiation, health checks, and fallback chains"
+description = "Multi-provider abstraction with capability negotiation, health checks, and fallback chains — part of PyAgent's Execution & Routing pillar."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

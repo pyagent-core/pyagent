@@ -107,6 +107,20 @@ diagnostic code — never silently dropped), and pattern-intent preservation:
   `pyyaml`, and `click`. You install a runtime adapter — the bundled `pyagent` reference stack, one
   of four zero-dependency stdlib adapters, or a third-party package — only when you're ready to run.
 
+## When you don't need PyAgent at all
+
+Be direct about this before anything else: if your task is a single LLM call — summarize this
+document, classify this tweet, answer this question — you don't need an orchestration framework,
+a pattern, or a blueprint. Import your provider's SDK, make the call, done. Reaching for
+`pyagent-patterns` or `pyagent-blueprint` here adds a dependency and a mental model for zero
+benefit; there's no second agent to hand off to, no state to share, no run to observe across calls.
+The same applies to a one-off script that calls a model in a loop with no persistence between
+calls — a `for` loop is the right tool, not a `Pipeline` or `Supervisor` pattern.
+
+The signal to actually reach for PyAgent is **more than one agent, or state that needs to survive
+across calls** — routing between specialists, a review loop, a shared memory tier, a run you need
+to trace. Below that threshold, every pillar here is overhead, not architecture.
+
 ## When a blueprint *isn't* the right fit
 
 To be direct about the tradeoff: if your orchestration logic depends on dynamic, runtime-computed

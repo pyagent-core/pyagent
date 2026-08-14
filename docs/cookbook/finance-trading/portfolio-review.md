@@ -49,7 +49,7 @@ explicit criteria and revises it until it clears the bar.
 | Score against explicit criteria | Execution | `EvaluatorOptimizer` pattern |
 | Track daily spend | Observability | `observability.cost_budget` |
 | Trace each classify/analyze/score call | Observability | `observability.tracing` |
-| Version the workflow as it evolves | Manifest | `pyagent-blueprint diff` between revisions |
+| Version the workflow as it evolves | Blueprint | `pyagent-blueprint diff` between revisions |
 
 ## Blueprint (declarative form)
 

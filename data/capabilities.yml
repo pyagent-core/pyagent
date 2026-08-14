@@ -1,0 +1,322 @@
+# Source data for docs/capabilities.json — the machine-readable catalog of
+# every PyAgent package's real, public capabilities (not just pyagent-patterns'
+# 18 orchestration patterns, which already have their own catalog at
+# docs/patterns.json / data/patterns.yml).
+#
+# Every id/class/CLI-command name below is copied verbatim from each
+# package's public API (`__all__` in its `__init__.py`) or its CLI's real
+# `@command` names — grounded against source, not invented. Re-verify against
+# source before editing if a package's public API changes.
+#
+# use_when/avoid_when/tradeoffs follow the same shape as data/patterns.yml's
+# pattern entries, extended to the non-pattern capabilities that previously
+# had none (aeo backlog items #67-82).
+
+packages:
+  - id: pyagent-blueprint
+    pypi: pyagent-blueprint
+    install: pip install pyagent-blueprint
+    description: >-
+      Declarative YAML specs for multi-agent LLM systems — validate, compile,
+      test, diff, render. Compiles onto any RuntimeAdapter.
+    docs: https://pyagent.org/packages/blueprint/
+    cli_commands: [validate, compile, render, test, diff, generate, adapter-template]
+    runtime_adapters:
+      - id: pyagent
+        execution_model: Full pattern registry (pipeline, supervisor, debate, voting, ...)
+        capability: PARTIAL_WORKFLOW_RUN
+        install: pip install "pyagent-blueprint[pyagent]"
+      - id: single_agent
+        execution_model: Degenerate no-orchestration case
+        capability: SYNC_EXECUTION
+        install: pip install pyagent-blueprint
+      - id: sequential_chain
+        execution_model: Strict linear pipeline
+        capability: (none — baseline)
+        install: pip install pyagent-blueprint
+      - id: state_machine
+        execution_model: Explicit FSM
+        capability: PARTIAL_WORKFLOW_RUN
+        install: pip install pyagent-blueprint
+      - id: simple_loop
+        execution_model: Bare while-loop
+        capability: STREAMING
+        install: pip install pyagent-blueprint
+      - id: langgraph
+        execution_model: Declared node/edge graph (StateGraph)
+        capability: STREAMING
+        install: pip install "pyagent-blueprint[langgraph]"
+      - id: crewai
+        execution_model: Role-based (role/goal/backstory + Task)
+        capability: NONE
+        install: pip install "pyagent-blueprint[crewai]"
+      - id: openai_agents
+        execution_model: Handoff/turn-based (Agent + Runner)
+        capability: NONE
+        install: pip install "pyagent-blueprint[openai-agents]"
+      - id: semantic_kernel
+        execution_model: Event/service-oriented (Kernel + pluggable services)
+        capability: NONE
+        install: pip install "pyagent-blueprint[semantic-kernel]"
+
+  - id: pyagent-patterns
+    pypi: pyagent-patterns
+    install: pip install pyagent-patterns
+    description: 18 composable multi-agent orchestration patterns.
+    docs: https://pyagent.org/packages/patterns/
+    pattern_catalog: https://pyagent.org/patterns.json
+    pattern_count: 18
+
+  - id: pyagent-router
+    pypi: pyagent-router
+    install: pip install pyagent-router
+    description: Difficulty-aware routing and model selection for multi-agent LLM workflows.
+    docs: https://pyagent.org/packages/router/
+    capabilities:
+      - id: DifficultyScorer
+        summary: Heuristic-based task-difficulty scorer (1-10 scale), with an optional LLM classifier.
+        use_when: ["Cost varies a lot by task complexity", "You want cheap tasks on cheap models automatically"]
+        avoid_when: ["Every call already goes to the same fixed model regardless of difficulty"]
+        tradeoffs: Heuristic scoring is fast and free; the optional LLM-classifier mode is more accurate but costs an extra call per scored task.
+      - id: ModelSelector
+        summary: Selects a model/provider given a difficulty score and the available providers.
+        use_when: ["You have 2+ models of different cost/capability and want automatic selection"]
+        avoid_when: ["Only one model is available — there's nothing to select between"]
+        tradeoffs: Selection quality depends entirely on DifficultyScorer's accuracy feeding it.
+      - id: CostEstimator
+        summary: Estimates the dollar cost of a call before it's made.
+        use_when: ["You need pre-flight cost estimates for budgeting or approval gates"]
+        avoid_when: ["Cost is untracked/irrelevant for the workload"]
+        tradeoffs: Estimates are based on published token pricing, not a live quote — actual cost can drift with provider pricing changes.
+      - id: RouterMiddleware
+        summary: Wires difficulty scoring and model selection into an agent call as middleware.
+        use_when: ["You want routing applied automatically without touching each agent's call site"]
+        avoid_when: ["You need per-call manual control over which model is used"]
+        tradeoffs: Middleware adds a scoring step to every call's latency, even when the result would be the same fixed model.
+
+  - id: pyagent-context
+    pypi: pyagent-context
+    install: pip install pyagent-context
+    description: Three-tier memory with a trust-aware context ledger.
+    docs: https://pyagent.org/packages/context/
+    memory_tiers:
+      - id: WorkingMemory
+        summary: Short-term, per-turn working memory.
+        use_when: ["State only needs to survive within a single agent turn"]
+        avoid_when: ["State must survive across the whole run or across sessions — use SessionMemory or SemanticMemoryProtocol instead"]
+        tradeoffs: Cheapest and fastest tier; nothing persists once the turn ends.
+      - id: SessionMemory
+        summary: Session-scoped memory shared across a multi-agent run.
+        use_when: ["Multiple agents in one run need to share state across turns"]
+        avoid_when: ["Memory needs to persist after the run ends — use SemanticMemoryProtocol"]
+        tradeoffs: Scoped to one run; nothing carries over to the next session automatically.
+      - id: SemanticMemoryProtocol
+        summary: Long-term semantic memory protocol, with InMemorySemanticStore as the built-in backend.
+        use_when: ["Knowledge needs to persist and be retrieved across separate runs/sessions"]
+        avoid_when: ["State is only needed within one run — SessionMemory is cheaper and simpler"]
+        tradeoffs: The built-in InMemorySemanticStore doesn't persist across process restarts; a durable backend is a protocol implementation you provide.
+    capabilities:
+      - id: ContextLedger
+        summary: Tracks context items and their provenance across a run.
+        use_when: ["You need an audit trail of which agent produced or saw which piece of context"]
+        avoid_when: ["A single-agent, stateless call has no cross-agent context to track"]
+        tradeoffs: Adds bookkeeping overhead per context item; only worth it once provenance actually matters.
+      - id: TrustLevel
+        summary: Per-item trust classification controlling whether context propagates between agents.
+        use_when: ["Some agents (e.g. external-tool-facing) shouldn't automatically receive everything internal agents see"]
+        avoid_when: ["All agents in the system are equally trusted with all context"]
+        tradeoffs: Requires explicitly classifying every context item's trust level up front, which is design work, not automatic.
+      - id: Sensitivity
+        summary: Per-item sensitivity classification (e.g. for PII handling).
+        use_when: ["Context may contain PII or other sensitive data that needs special handling"]
+        avoid_when: ["Context is entirely non-sensitive synthetic/internal data"]
+        tradeoffs: Only enforces what ContextRedactor and TrustAwareRetriever actually act on — classification alone doesn't redact anything.
+      - id: ContextRedactor
+        summary: PII redaction applied to context items before they cross an agent boundary.
+        use_when: ["Context may contain PII that shouldn't reach a downstream agent or external tool"]
+        avoid_when: ["No PII is ever present in context — redaction would be pure overhead"]
+        tradeoffs: Redaction is lossy by design; over-aggressive rules can strip context an agent legitimately needed.
+      - id: TrustAwareRetriever
+        summary: Retrieves context items filtered by the requesting agent's trust level.
+        use_when: ["Different agents should see different subsets of context based on trust"]
+        avoid_when: ["Every agent should see the full context — filtering adds nothing"]
+        tradeoffs: Filtering happens at retrieval time, so it depends on TrustLevel being set accurately upstream.
+      - id: CompressionPolicy
+        summary: Declarative policy controlling when/how context gets compressed.
+        use_when: ["Long-running sessions are approaching token-budget limits"]
+        avoid_when: ["Sessions are short enough that context never approaches a budget limit"]
+        tradeoffs: A policy declares intent; ContextCompressor is what actually executes it.
+      - id: ContextCompressor
+        summary: Applies a CompressionPolicy to shrink context before it's passed to an agent.
+        use_when: ["A CompressionPolicy is defined and context has grown past its threshold"]
+        avoid_when: ["Context is already small — compression would spend cycles for no benefit"]
+        tradeoffs: Compression is lossy; overly aggressive policies can drop context an agent still needed.
+
+  - id: pyagent-trace
+    pypi: pyagent-trace
+    install: pip install pyagent-trace
+    description: Pattern-aware OpenTelemetry tracing for multi-agent LLM systems.
+    docs: https://pyagent.org/packages/trace/
+    exporters:
+      - id: console
+        summary: Human-readable trace output to stdout.
+        use_when: ["Local development and debugging"]
+        avoid_when: ["Production — nothing is persisted or queryable"]
+        tradeoffs: Zero setup, zero durability.
+      - id: jsonl
+        summary: Newline-delimited JSON trace export, for offline analysis or record/replay.
+        use_when: ["You want a durable local record for later replay or offline analysis"]
+        avoid_when: ["You need real-time observability in a dashboard — use otel or langfuse instead"]
+        tradeoffs: Durable and simple, but nothing consumes it live — analysis happens after the fact.
+      - id: otel
+        summary: Standard OpenTelemetry OTLP export to any OTel-compatible backend.
+        use_when: ["You already run an OTel-compatible backend (Grafana Tempo, Jaeger, Datadog, Honeycomb, ...)"]
+        avoid_when: ["You have no OTel collector and don't want to stand one up for a small project"]
+        tradeoffs: Standards-based and vendor-neutral, but requires a running OTel collector to be useful.
+      - id: langfuse
+        summary: Direct export to Langfuse.
+        use_when: ["You're already using Langfuse for LLM-specific observability"]
+        avoid_when: ["You're standardized on generic OTel tooling instead — use the otel exporter"]
+        tradeoffs: LLM-specific views (prompts, completions, cost) out of the box, but ties you to Langfuse specifically.
+    capabilities:
+      - id: TraceEventBus
+        summary: Pub/sub event bus every pattern and adapter emits trace events onto.
+        use_when: ["You want to hook custom logic (metrics, alerts) onto trace events without modifying exporters"]
+        avoid_when: ["You only need one of the built-in exporters — subscribe to those directly instead"]
+        tradeoffs: Adds an indirection layer; only pays off once more than one consumer needs the same events.
+      - id: Recorder
+        summary: Records a run's trace events for later replay/debugging.
+        use_when: ["You need to reproduce a specific run's exact sequence of events for debugging"]
+        avoid_when: ["Live/aggregate observability is all you need — an exporter is enough"]
+        tradeoffs: Recording has storage cost proportional to run length and volume.
+      - id: CostTracker
+        summary: Aggregates per-call cost across a traced run.
+        use_when: ["You need running cost totals, not just per-call cost"]
+        avoid_when: ["Cost isn't a concern for the workload"]
+        tradeoffs: Depends on accurate per-provider pricing data to be trustworthy.
+      - id: PatternSpanEmitter
+        summary: Emits pattern-aware OTel spans (parent/child relationships between agent calls).
+        use_when: ["You want a trace that reflects the pattern's actual structure (e.g. supervisor -> workers), not a flat call list"]
+        avoid_when: ["A flat list of calls is sufficient — e.g. a single-agent, single-call workflow"]
+        tradeoffs: Requires the pattern to actually declare its structure; unstructured/ad-hoc orchestration won't produce meaningful spans.
+
+  - id: pyagent-compress
+    pypi: pyagent-compress
+    install: pip install pyagent-compress
+    description: Inter-agent message compression and token budget management.
+    docs: https://pyagent.org/packages/compress/
+    capabilities:
+      - id: TokenBudget
+        summary: Declarative per-run or per-agent token budget.
+        use_when: ["You need a hard or soft cap on tokens spent per run or per agent"]
+        avoid_when: ["Token spend is naturally bounded and not a concern (e.g. one short call)"]
+        tradeoffs: A declared budget doesn't enforce itself — it needs MessageCompressor/pruners wired to actually act on it.
+      - id: MessageCompressor
+        summary: Compresses a message history to fit within budget.
+        use_when: ["Long conversation history is approaching a TokenBudget limit"]
+        avoid_when: ["History is already small — compression is pure overhead"]
+        tradeoffs: Lossy by nature; aggressive compression can remove context an agent later needs.
+      - id: AgentPruner
+        summary: Prunes low-value agents/branches from a run to save tokens.
+        use_when: ["A run has many agents/branches and some are consistently low-value"]
+        avoid_when: ["Every agent in the run is load-bearing — nothing safe to prune"]
+        tradeoffs: Pruning is a judgment call about "low value" that can be wrong for edge cases.
+      - id: InteractionPruner
+        summary: Prunes individual low-value interactions from message history.
+        use_when: ["Specific turns/interactions are noise rather than signal (e.g. repeated clarifications)"]
+        avoid_when: ["Every interaction in the history is meaningful"]
+        tradeoffs: Finer-grained than AgentPruner, but still lossy and heuristic-driven.
+      - id: CompressMiddleware
+        summary: Wires compression into an agent call as middleware.
+        use_when: ["You want compression applied automatically without touching each call site"]
+        avoid_when: ["You need manual, call-by-call control over what gets compressed and when"]
+        tradeoffs: Automatic middleware trades precision for convenience — same tradeoff as RouterMiddleware.
+
+  - id: pyagent-providers
+    pypi: pyagent-providers
+    install: pip install pyagent-providers
+    description: Multi-provider abstraction with capability negotiation and fallback chains.
+    docs: https://pyagent.org/packages/providers/
+    routing_strategies:
+      - id: capability_first
+        summary: Routes to the provider that best satisfies required capabilities, cost/latency secondary.
+        use_when: ["A request needs specific capabilities (e.g. vision, function-calling) not every provider has"]
+        avoid_when: ["All candidate providers already support everything the request needs equally"]
+      - id: cost_first
+        summary: Routes to the cheapest provider/model that still satisfies the request.
+        use_when: ["Cost minimization matters more than latency or provider preference"]
+        avoid_when: ["Latency or reliability matters more than saving cents per call"]
+      - id: latency_first
+        summary: Routes to the fastest-responding provider.
+        use_when: ["User-facing latency is the binding constraint"]
+        avoid_when: ["Cost is the binding constraint instead — use cost_first"]
+      - id: round_robin
+        summary: Distributes requests evenly across providers regardless of cost/latency/capability.
+        use_when: ["You want even load distribution for rate-limit management, not optimization"]
+        avoid_when: ["Providers have meaningfully different cost/capability/latency — a smarter strategy will do better"]
+    capabilities:
+      - id: ProviderRegistry
+        summary: Registry of available LLM providers and their capabilities.
+        use_when: ["You have 2+ providers and need a single place that knows what each supports"]
+        avoid_when: ["Only one provider is ever used — a registry adds indirection for no benefit"]
+        tradeoffs: Needs to be kept accurate as providers change their capabilities.
+      - id: ProviderRouter
+        summary: Routes a request to a provider + model pair per a RoutingStrategy.
+        use_when: ["You want provider selection driven by a declared strategy rather than hardcoded"]
+        avoid_when: ["The provider is always fixed — routing has nothing to decide"]
+        tradeoffs: Routing quality is only as good as the chosen RoutingStrategy's fit to the actual workload.
+      - id: FallbackChain
+        summary: Ordered fallback across providers when one fails or is unavailable.
+        use_when: ["Uptime matters and you have 2+ interchangeable providers"]
+        avoid_when: ["Only one provider is available — there's nothing to fall back to"]
+        tradeoffs: Fallback providers may have different capabilities/pricing/quality than the primary — silent degradation is possible without monitoring.
+      - id: CapabilityNegotiator
+        summary: Negotiates which provider can satisfy a request's required capabilities.
+        use_when: ["Requests vary in required capabilities and providers vary in what they support"]
+        avoid_when: ["Every provider supports every capability you use — negotiation always resolves the same way"]
+        tradeoffs: Adds a negotiation step's latency to each routed call.
+      - id: CostOptimizer
+        summary: Picks the cheapest provider/model that still satisfies requirements.
+        use_when: ["Minimizing cost across heterogeneous providers/models is a priority"]
+        avoid_when: ["Cost is fixed/irrelevant, or a single provider is always used"]
+        tradeoffs: Optimizing purely for cost can pick a slower or lower-quality model if the request's minimum requirements are loosely specified.
+      - id: TracedProvider
+        summary: Wraps a provider so every call is automatically traced via pyagent-trace.
+        use_when: ["You want provider calls traced without instrumenting each call site manually"]
+        avoid_when: ["pyagent-trace isn't installed/used at all"]
+        tradeoffs: Requires pyagent-trace as a dependency; adds a thin wrapper around every call.
+
+  - id: pyagent-studio
+    pypi: pyagent-studio
+    install: pip install pyagent-studio
+    description: >-
+      kubectl-style CLI + FastAPI web dashboard for designing, simulating,
+      debugging, and governing agent blueprints.
+    docs: https://pyagent.org/packages/studio/
+    cli_commands:
+      - apply
+      - get
+      - validate
+      - test
+      - diff
+      - simulate
+      - render
+      - generate
+      - providers list
+      - providers health
+      - describe
+      - dashboard
+    dashboard:
+      stack: FastAPI + HTMX + Pico CSS (zero JS build step)
+      capabilities: [trace explorer, blueprint diff view, governance/compliance view]
+      use_when: ["You want a visual way to inspect traces, diff blueprint revisions, and check provider health, rather than reading raw CLI/JSON output"]
+      avoid_when: ["A CI pipeline or script needs the same data — use the CLI commands directly, the dashboard is for humans"]
+      tradeoffs: The dashboard is a convenience layer over the same underlying data the CLI exposes — it adds nothing the CLI can't already do, just a different interface for it.
+
+  - id: pyagent-all
+    pypi: pyagent-all
+    install: pip install pyagent-all
+    description: Meta-package installing every PyAgent package above.
+    docs: https://pyagent.org/
+    use_when: ["You want every pillar available without tracking individual package installs"]
+    avoid_when: ["You only need one or two pillars — installing everything pulls in dependencies (litellm, fastapi, uvicorn, jinja2) you may not need"]

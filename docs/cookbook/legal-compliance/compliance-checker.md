@@ -19,6 +19,98 @@ synthesizes their outputs into a gap-analysis audit report.
 
 ---
 
+## Requirements
+
+- **Functional** — extract every legal obligation from a regulation, map obligations to existing
+  controls, flag gaps where evidence doesn't support a control, and synthesize a single gap-analysis
+  report.
+- **Non-functional** — the two sub-teams (Obligations, Controls) must be able to work without
+  blocking on each other; only the final synthesis depends on both.
+- **Audit** — every flagged gap must trace back to the specific obligation and the specific control
+  (or absence of one) that produced it.
+- **Not required** — no persistent memory across separate compliance checks (each regulation/scope
+  is evaluated independently); no human approval gate in this recipe (a gap-analysis report is a
+  draft for human review downstream, not an action taken automatically).
+
+## Architecture decisions
+
+| Decision | Why | Why not the alternative |
+|---|---|---|
+| **Hierarchical** for the two-team structure | Work decomposes into two genuinely distinct sub-teams (Obligations, Controls) that can each work internally in parallel, coordinated by one director. | **Orchestrator-Workers** would imply the team structure itself is discovered dynamically per-input; here it's fixed — every compliance check always needs an Obligations team and a Controls team. |
+| Two workers per team lead, not a flat 5-agent Supervisor | `requirement_extractor`+`scope_analyst` and `policy_mapper`+`evidence_checker` are each meaningfully coupled sub-tasks within their team — a flat Supervisor routing to 4 independent specialists would lose that grouping. | A flat structure works when specialists are independent; here Controls' output genuinely depends on Obligations' scope, which the hierarchy expresses naturally via the director's synthesis step. |
+| Uniform `fast` model for all 6 leaf workers, `smart` only for the director | Extraction/mapping/checking are pattern-matching tasks; synthesizing a coherent gap-analysis narrative across both teams' outputs needs stronger reasoning. | Using `smart` for every worker would multiply cost by ~7x for tasks that don't need it. |
+
+## Four-pillar mapping
+
+| Requirement | Pillar | Capability |
+|---|---|---|
+| Two-team decomposition with a synthesizing director | Execution | `Hierarchical` pattern |
+| Track daily audit-run spend | Observability | `observability.cost_budget` |
+| Trace each team's internal calls | Observability | `observability.tracing` |
+| Version the check's scope/config as it evolves | Blueprint | `pyagent-blueprint diff` between revisions |
+
+## Blueprint (declarative form)
+
+The real, verified file at `examples/cookbook/legal-compliance/compliance_checker/blueprint.yaml`,
+compiled against `PyAgentAdapter` as part of this repo's test suite:
+
+```yaml
+api_version: pyagent/v1
+metadata:
+  name: compliance-checker
+  version: 1.0.0
+  description: Director delegates obligations + controls teams; synthesizes gap-analysis report
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  compliance_director:   { provider: smart, prompt: "Decompose, delegate, then synthesize gap-analysis report." }
+  obligations_lead:      { provider: fast,  prompt: "Extract and structure all legal obligations." }
+  controls_lead:         { provider: fast,  prompt: "Map obligations to controls; flag gaps." }
+  requirement_extractor: { provider: fast,  prompt: "Extract every MUST/SHALL requirement." }
+  scope_analyst:         { provider: fast,  prompt: "Identify departments, systems, data in scope." }
+  policy_mapper:         { provider: fast,  prompt: "Map obligations to existing policies." }
+  evidence_checker:      { provider: fast,  prompt: "Assess whether audit evidence exists for each control." }
+
+workflows:
+  check:
+    pattern: hierarchical
+    agents:
+      manager: compliance_director
+      teams:
+        - { name: Obligations, lead: obligations_lead, workers: [requirement_extractor, scope_analyst] }
+        - { name: Controls,    lead: controls_lead,    workers: [policy_mapper, evidence_checker] }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }
+```
+
+```bash
+pyagent-blueprint validate compliance-checker.yaml
+pyagent-blueprint test compliance-checker.yaml
+```
+
+## Production checklist
+
+Ran this exact blueprint through `PyAgentAdapter.compile()` and inspected the real diagnostics:
+
+- ✅ **The hierarchical check runs as declared** — `check` compiles and executes against the native
+  pattern registry with no diagnostics on the workflow structure itself.
+- ⚠️ **`observability.cost_budget` is declared but not auto-enforced** — compiling this blueprint
+  emits `BUDGET_UNSUPPORTED`: the $100/day budget is recorded in the spec but nothing stops a run
+  from exceeding it. Wire real enforcement via `graph.wire_cost_tracker(tracker)` if you need a hard
+  stop.
+- **No recovery policy is declared** — if a worker fails mid-run, this blueprint doesn't specify
+  a retry/fallback; add one via the recovery block if that's a real requirement for your deployment.
+- **No human approval gate** — this composes cleanly with
+  [Human-in-the-Loop](../../packages/patterns/advanced/human-in-the-loop.md) as a follow-on step if
+  the gap-analysis report needs sign-off before circulating outside the compliance team.
+
+---
+
 ## Architecture
 
 ```mermaid

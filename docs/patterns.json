@@ -1,4 +1,5 @@
 {
+  "schema_version": "1.0",
   "name": "PyAgent Design Pattern Catalog",
   "source": "https://pyagent.org/packages/patterns/",
   "patterns": [
@@ -8,6 +9,10 @@
       "category": "orchestration",
       "best_for": "Multi-perspective analysis, parallel research, ensemble fact-checking.",
       "llm_calls": "N parallel + 1 aggregator. Wall-clock time: max(agent latencies) + aggregator.",
+      "problem": "Getting N independent perspectives without forcing them through each other sequentially.",
+      "tradeoffs": "Parallel calls mean N-way cost multiplication paid every time, even when perspectives turn out to agree — you can't know that in advance.",
+      "failure_mode": "One slow or failed agent still blocks the aggregator if there's no timeout — the whole run waits on the slowest branch unless you add one.",
+      "production_considerations": "Add a per-branch timeout so one stuck agent doesn't stall the aggregator indefinitely.",
       "use_when": [
         "Multiple independent perspectives improve quality",
         "Wall-clock latency matters (parallel is fast)"
@@ -42,6 +47,10 @@
       "category": "orchestration",
       "best_for": "Complex projects with defined sub-teams, enterprise workflows.",
       "llm_calls": "1 manager + T leads + W workers. Teams execute in parallel.",
+      "problem": "Coordinating multiple sub-teams without flattening them into one big team or losing the manager's synthesis role.",
+      "tradeoffs": "Cost scales with 1+T+W calls even for teams whose subtask turns out simple — the structure is fixed regardless of actual complexity.",
+      "failure_mode": "A failing team lead blocks that whole team's contribution to the manager's synthesis — no partial-team fallback by default.",
+      "production_considerations": "Decide what the manager does if one team fails entirely: proceed with partial results, or fail the whole run.",
       "use_when": [
         "Work decomposes into distinct teams",
         "Teams need coordination but can work in parallel"
@@ -72,6 +81,10 @@
       "category": "orchestration",
       "best_for": "Open-ended goals where subtasks aren't known upfront.",
       "llm_calls": "1 planning + N workers (dynamic) + 1 synthesis.",
+      "problem": "Handling goals whose subtask breakdown can't be known until the goal itself is analyzed.",
+      "tradeoffs": "Dynamic worker count makes cost and latency less predictable than a fixed pipeline — you're trading predictability for flexibility.",
+      "failure_mode": "A bad plan from the orchestrator (wrong subtasks) propagates silently — workers execute an incorrect plan faithfully, with no built-in plan-quality check.",
+      "production_considerations": "Consider adding a plan-review step (human or automated) before dispatching workers if planning errors are costly.",
       "use_when": [
         "Subtasks aren't known until you analyze the goal",
         "Worker pool has meaningfully different specializations"
@@ -101,6 +114,10 @@
       "category": "orchestration",
       "best_for": "ETL, document processing, multi-step transformation.",
       "llm_calls": "N (one per stage). Latency: sum of all stages.",
+      "problem": "Running a fixed sequence of transformations where each stage genuinely depends on the previous one's output.",
+      "tradeoffs": "Total latency is the sum of every stage — there's no way to parallelize stages that are actually independent without switching patterns.",
+      "failure_mode": "A failure at stage K loses all work from stages 1..K-1 unless you checkpoint — pipelines don't retry individual stages by default.",
+      "production_considerations": "Add per-stage checkpointing or idempotent retries if a mid-pipeline failure shouldn't mean starting over.",
       "use_when": [
         "Task has clear sequential stages",
         "Each stage transforms output for the next"
@@ -131,6 +148,10 @@
       "category": "orchestration",
       "best_for": "Customer support bots, multi-domain Q&A, triage systems.",
       "llm_calls": "2–3 (classify + specialist + optional formatter).",
+      "problem": "Routing each input to the right specialist without hand-writing per-input branching logic.",
+      "tradeoffs": "Everything depends on classifier accuracy — a misclassified input gets a confidently wrong specialist, not a visible error.",
+      "failure_mode": "Misrouting is silent — the wrong specialist still produces a fluent-sounding answer to the wrong question.",
+      "production_considerations": "Track classifier confidence and route low-confidence cases to a human or a generalist fallback instead of forcing a category.",
       "use_when": [
         "Tasks fall into distinct categories",
         "Specialists are meaningfully better than generalists"
@@ -157,6 +178,10 @@
       "category": "resolution",
       "best_for": "High-stakes writing, code review with independent expert, adversarial quality gates.",
       "llm_calls": "G + R per round (generator + reviewer). Different models → different blind spots.",
+      "problem": "Getting a genuinely independent second opinion instead of an agent grading its own work.",
+      "tradeoffs": "Doubles the cost of self-reflection (generator + reviewer both run) — worth it only when the independent perspective actually catches something self-review wouldn't.",
+      "failure_mode": "If reviewer and generator share the same blind spot (e.g. same base model, same training-data gap), the \"independent\" review isn't actually independent.",
+      "production_considerations": "Use genuinely different providers/models for generator and reviewer, not just different prompts on the same model, if blind-spot diversity is the point.",
       "use_when": [
         "External perspective adds more value than self-review",
         "Reviewer has genuinely different expertise",
@@ -187,6 +212,10 @@
       "category": "resolution",
       "best_for": "High-stakes decisions, buy-vs-build, investment theses, strategy trade-offs.",
       "llm_calls": "D × R (debaters × rounds) + 1 judge.",
+      "problem": "Forcing genuine consideration of opposing positions before a high-stakes decision, rather than one agent's single take.",
+      "tradeoffs": "D×R+1 calls is the most expensive resolution pattern here — reserve it for decisions where being wrong is expensive enough to justify the cost.",
+      "failure_mode": "A judge that's a weaker model than the debaters can fail to recognize the stronger argument — judge quality bounds the whole pattern's value.",
+      "production_considerations": "Use your strongest available model for the judge role specifically, even if debaters use a cheaper tier.",
       "use_when": [
         "Decision requires examining opposing viewpoints",
         "Stakes are high — adversarial testing adds value"
@@ -217,6 +246,10 @@
       "category": "resolution",
       "best_for": "Ad copy, content quality gates, structured output conformance, scored deliverables.",
       "llm_calls": "2 per round (generate + score). Stops early when threshold is crossed.",
+      "problem": "Iterating a deliverable against explicit, scorable criteria until it clears a quality bar, without a human in the loop for every round.",
+      "tradeoffs": "Stops early on threshold-crossing, which bounds cost — but a badly calibrated threshold either accepts mediocre output too easily or burns rounds chasing an unreachable score.",
+      "failure_mode": "If the evaluator's scoring criteria don't actually correlate with real quality, the loop optimizes for the wrong thing confidently.",
+      "production_considerations": "Validate the evaluator's scores against human judgment on a sample before trusting it to gate real output unsupervised.",
       "use_when": [
         "You have explicit, measurable quality criteria",
         "Iterative improvement is clearly worthwhile"
@@ -247,6 +280,10 @@
       "category": "resolution",
       "best_for": "Code generation, essay writing, structured output quality improvement.",
       "llm_calls": "2–2R (generate + critique per round). Stops early on APPROVED.",
+      "problem": "Improving a single agent's output through its own critique without the cost of a second agent.",
+      "tradeoffs": "Cheapest of the resolution patterns, but a self-critiquing agent can only catch what it already \"knows\" is wrong — no external blind-spot coverage.",
+      "failure_mode": "An agent confidently approves its own flawed output when the flaw is outside what it can self-detect — this pattern has no mechanism to catch that.",
+      "production_considerations": "If failure cost is high, verify with a sample against Cross-Reflection to see how much self-review actually misses before relying on it alone.",
       "use_when": [
         "A single agent can meaningfully self-critique",
         "Task has clear quality criteria"
@@ -277,6 +314,10 @@
       "category": "resolution",
       "best_for": "Fault-tolerant decisions, ensemble reliability, reducing single-model bias.",
       "llm_calls": "N (parallel voters). Majority/weighted tally requires no extra LLM call.",
+      "problem": "Getting a reliable answer to a discrete question without one model's individual failure determining the outcome.",
+      "tradeoffs": "N parallel calls for a tally that a single well-calibrated model might get right anyway — the cost only pays off when failure independence across voters is real, not illusory.",
+      "failure_mode": "If all N voters share the same systematic bias (e.g. identical model, identical prompt), the \"vote\" just repeats one failure mode N times instead of correcting for it.",
+      "production_considerations": "Use genuinely diverse voters (different models/providers, not just re-runs of the same one) if independence is what you're paying for.",
       "use_when": [
         "Task has a discrete answer (yes/no, A/B/C)",
         "Single model failure should not determine outcome"
@@ -307,6 +348,10 @@
       "category": "structural",
       "best_for": "Financial intelligence, data enrichment pipelines, multi-expert analysis where outputs feed each other.",
       "llm_calls": "N agents × R rounds.",
+      "problem": "Letting agents build on each other's outputs when the dependency graph is too tangled for a simple pipeline (A→C, B→C, both→D).",
+      "tradeoffs": "Shared mutable state is powerful but harder to reason about than a pipeline's linear flow — debugging \"why did agent D see this value\" requires tracing the whole blackboard's history, not just the previous stage.",
+      "failure_mode": "A race or ordering bug in which agent writes/reads the blackboard when can produce non-deterministic results across runs.",
+      "production_considerations": "Log every blackboard read/write with a timestamp and agent ID if you need to debug or audit why a given output happened.",
       "use_when": [
         "Agents need to share and build on each other's outputs",
         "Output dependencies are complex (A→C, B→C, both→D)"
@@ -337,6 +382,10 @@
       "category": "structural",
       "best_for": "Multi-stage analysis with increasing abstraction (gather → analyze → synthesize), data pipelines with heterogeneous parallel collectors.",
       "llm_calls": "Sum of all agents across all layers.",
+      "problem": "Structuring a pipeline that has real parallelism within a stage (many collectors) but sequential dependency across stages (gather → analyze → synthesize).",
+      "tradeoffs": "More setup complexity than a flat Pipeline or Fan-Out/Fan-In alone — worth it specifically when you have both properties, not just one.",
+      "failure_mode": "A single failed collector within a layer either silently drops that source's contribution or blocks the whole layer, depending on how failures are handled — decide which explicitly.",
+      "production_considerations": "Decide and document whether a failed collector in layer 1 should exclude that source from the layer-2 synthesis, or fail the whole run.",
       "use_when": [
         "Task has naturally increasing levels of abstraction",
         "Parallel collection → sequential analysis pattern"
@@ -366,6 +415,10 @@
       "category": "structural",
       "best_for": "C-suite simulations, cross-functional team alignment, product design councils.",
       "llm_calls": "N agents × R rounds.",
+      "problem": "Simulating genuinely conflicting stakeholder perspectives that need to see and respond to each other, not just produce independent takes.",
+      "tradeoffs": "N×R calls scale with both team size and how many rounds of back-and-forth are needed to reach a real resolution — open-ended rounds can run longer (and cost more) than expected.",
+      "failure_mode": "Roles can converge to agreement too quickly (groupthink) if the prompts don't genuinely diverge — the simulation stops surfacing real conflict.",
+      "production_considerations": "Cap max rounds and consider a moderator role if roles aren't naturally converging or diverging by round N.",
       "use_when": [
         "Different stakeholder perspectives genuinely conflict",
         "Roles must see and respond to each other's inputs"
@@ -396,6 +449,10 @@
       "category": "structural",
       "best_for": "When the communication structure is the design — routing, hub-and-spoke, fully-connected peer networks.",
       "llm_calls": "Varies by topology and size.",
+      "problem": "Making the communication structure itself an explicit design choice — chain, star, mesh — rather than an implicit side effect of the code.",
+      "tradeoffs": "The most structurally flexible pattern here, which also means the most design decisions to get right — a badly chosen topology (e.g. fully-connected mesh at scale) can explode call count.",
+      "failure_mode": "A mesh topology's call count grows combinatorially with agent count — what works at 3 agents can become impractical at 10.",
+      "production_considerations": "Model expected call count for your chosen topology and agent count before committing — mesh-style topologies need this check more than chain/star.",
       "use_when": [
         "Communication structure IS the design decision",
         "Sequential enrichment (chain)",
@@ -426,6 +483,10 @@
       "category": "advanced",
       "best_for": "High-stakes content, compliance workflows, email/legal drafts, any irreversible action.",
       "llm_calls": "1 per generation attempt (N attempts if rejected).",
+      "problem": "Gating irreversible or compliance-sensitive actions on a human decision without blocking every other output on human review too.",
+      "tradeoffs": "Latency is bounded by how fast a human responds, not the model — plan for minutes-to-hours turnaround, not seconds, on the gated step specifically.",
+      "failure_mode": "If the human-approval step has no timeout, a busy or unavailable reviewer silently stalls the whole workflow indefinitely.",
+      "production_considerations": "Set an explicit timeout/escalation path for the human-approval step — decide what happens if no one responds in time.",
       "use_when": [
         "Outputs are irreversible or legally binding",
         "Compliance or regulatory review is required"
@@ -456,6 +517,10 @@
       "category": "advanced",
       "best_for": "Research assistants, code execution, API orchestration, any task needing external data.",
       "llm_calls": "1 per Thought+Action step. Typically 2–5 steps.",
+      "problem": "Handling tasks where the number of steps and which tools are needed can't be predicted in advance — the agent decides step-by-step based on what it observes.",
+      "tradeoffs": "Unpredictable step count means unpredictable cost and latency per run — a task that usually takes 2 steps can occasionally take much longer if the agent gets stuck reasoning in circles.",
+      "failure_mode": "Without a step cap, a confused agent can loop between Thought/Action indefinitely, calling tools repeatedly without converging.",
+      "production_considerations": "Set a hard max-step cap and a fallback behavior (fail visibly, or hand off) for when the agent hits it without converging.",
       "use_when": [
         "Task requires real-time or external data",
         "Number of steps is unpredictable",
@@ -487,6 +552,10 @@
       "category": "advanced",
       "best_for": "Collective intelligence, opinion diversity, technology scanning, distributed decision-making.",
       "llm_calls": "N agents × R rounds.",
+      "problem": "Getting genuinely emergent collective behavior from diverse independent agents, rather than behavior a central coordinator would have designed anyway.",
+      "tradeoffs": "The most unpredictable pattern here by design — emergence means you're explicitly trading control for the possibility of insight no single planned structure would produce.",
+      "failure_mode": "Emergent convergence isn't guaranteed — a swarm can fail to converge at all, or converge on a degenerate/low-value consensus, with no built-in signal that this happened.",
+      "production_considerations": "Define and check a convergence/quality signal explicitly — don't assume more rounds always means better output.",
       "use_when": [
         "You want emergent collective intelligence",
         "Diverse independent starting positions add value"
@@ -517,6 +586,10 @@
       "category": "advanced",
       "best_for": "Conversational agents, customer-facing chatbots, high-volume Q&A with mixed complexity.",
       "llm_calls": "1 (talker only) or 2 (talker + reasoner). ~70% of queries stay at talker.",
+      "problem": "Serving high query volume where most questions are cheap but some genuinely need stronger reasoning, without paying reasoner cost on every query.",
+      "tradeoffs": "The cost savings depend entirely on the talker/reasoner routing threshold being well-calibrated — set it too conservatively and you lose the savings; too aggressively and complex queries get shallow talker-only answers.",
+      "failure_mode": "A miscalibrated escalation threshold routes genuinely complex queries to the cheap talker, producing confident-but-shallow answers with no visible error.",
+      "production_considerations": "Monitor the escalation rate in production and recalibrate the threshold if it drifts from the expected ~30% baseline this pattern assumes.",
       "use_when": [
         "High query volume with mixed complexity",
         "Cost is a primary constraint"

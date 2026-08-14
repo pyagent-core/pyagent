@@ -1,0 +1,523 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pyagent.org/blueprint-schema.json",
+  "$defs": {
+    "AgentSpec": {
+      "description": "Specification of a single agent.",
+      "properties": {
+        "prompt": {
+          "description": "System prompt for this agent",
+          "title": "Prompt",
+          "type": "string"
+        },
+        "provider": {
+          "default": "",
+          "description": "Provider ref from providers dict",
+          "title": "Provider",
+          "type": "string"
+        },
+        "tools": {
+          "description": "Tool names available to this agent",
+          "items": {
+            "type": "string"
+          },
+          "title": "Tools",
+          "type": "array"
+        },
+        "description": {
+          "default": "",
+          "description": "What this agent does",
+          "title": "Description",
+          "type": "string"
+        },
+        "guardrails": {
+          "description": "Guardrail refs",
+          "items": {
+            "type": "string"
+          },
+          "title": "Guardrails",
+          "type": "array"
+        }
+      },
+      "required": [
+        "prompt"
+      ],
+      "title": "AgentSpec",
+      "type": "object"
+    },
+    "CompressionConfig": {
+      "description": "Compression policy configuration.",
+      "properties": {
+        "policy": {
+          "default": "none",
+          "description": "none | fifo | semantic_lossless | sawtooth",
+          "title": "Policy",
+          "type": "string"
+        },
+        "target_ratio": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Target Ratio",
+          "type": "number"
+        },
+        "threshold_tokens": {
+          "default": 10000,
+          "exclusiveMinimum": 0,
+          "title": "Threshold Tokens",
+          "type": "integer"
+        },
+        "floor_tokens": {
+          "default": 5000,
+          "exclusiveMinimum": 0,
+          "title": "Floor Tokens",
+          "type": "integer"
+        }
+      },
+      "title": "CompressionConfig",
+      "type": "object"
+    },
+    "ContextConfigSpec": {
+      "description": "Context configuration for a blueprint.",
+      "properties": {
+        "memory": {
+          "$ref": "#/$defs/MemoryConfig"
+        },
+        "compression": {
+          "$ref": "#/$defs/CompressionConfig"
+        },
+        "redaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RedactionConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "ContextConfigSpec",
+      "type": "object"
+    },
+    "ContractSpec": {
+      "description": "Input/output contract for a workflow.",
+      "properties": {
+        "input": {
+          "additionalProperties": true,
+          "description": "Input schema (JSON Schema-like)",
+          "title": "Input",
+          "type": "object"
+        },
+        "output": {
+          "additionalProperties": true,
+          "description": "Output schema (JSON Schema-like)",
+          "title": "Output",
+          "type": "object"
+        },
+        "sla": {
+          "$ref": "#/$defs/SLASpec",
+          "description": "SLA constraints"
+        }
+      },
+      "title": "ContractSpec",
+      "type": "object"
+    },
+    "CostBudgetConfig": {
+      "description": "Cost budget and alerting.",
+      "properties": {
+        "daily_usd": {
+          "default": 100.0,
+          "exclusiveMinimum": 0,
+          "title": "Daily Usd",
+          "type": "number"
+        },
+        "alert_threshold": {
+          "default": 0.8,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Alert Threshold",
+          "type": "number"
+        }
+      },
+      "title": "CostBudgetConfig",
+      "type": "object"
+    },
+    "MemoryConfig": {
+      "description": "Memory tier configuration.",
+      "properties": {
+        "working_max_tokens": {
+          "default": 50000,
+          "exclusiveMinimum": 0,
+          "title": "Working Max Tokens",
+          "type": "integer"
+        },
+        "session_backend": {
+          "default": "json",
+          "description": "'json' or 'sqlite'",
+          "title": "Session Backend",
+          "type": "string"
+        },
+        "semantic_enabled": {
+          "default": false,
+          "title": "Semantic Enabled",
+          "type": "boolean"
+        }
+      },
+      "title": "MemoryConfig",
+      "type": "object"
+    },
+    "MetadataSpec": {
+      "description": "Blueprint metadata.",
+      "properties": {
+        "name": {
+          "description": "Human-readable blueprint name",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "default": "0.1.0",
+          "description": "Semantic version",
+          "title": "Version",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "description": "What this blueprint does",
+          "title": "Description",
+          "type": "string"
+        },
+        "tags": {
+          "description": "Categorization tags",
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "owner": {
+          "default": "",
+          "description": "Team or individual owner",
+          "title": "Owner",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "MetadataSpec",
+      "type": "object"
+    },
+    "ObservabilitySpec": {
+      "description": "Observability configuration for a blueprint.",
+      "properties": {
+        "tracing": {
+          "$ref": "#/$defs/TracingConfig"
+        },
+        "cost_budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CostBudgetConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "ObservabilitySpec",
+      "type": "object"
+    },
+    "PackageSpec": {
+      "description": "Optional packaging metadata for producing an 'Agent Unit' artifact.",
+      "properties": {
+        "name": {
+          "description": "Distribution name for the packaged Agent Unit",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "default": "0.1.0",
+          "description": "Semantic version of the Agent Unit",
+          "title": "Version",
+          "type": "string"
+        },
+        "author": {
+          "default": "",
+          "description": "Author or team publishing this unit",
+          "title": "Author",
+          "type": "string"
+        },
+        "runtime": {
+          "description": "Name of the RuntimeAdapter this unit targets (e.g. 'pyagent', 'simple_loop', 'state_machine', 'sequential_chain', 'single_agent', or a third-party adapter name). Must match a discoverable adapter at packaging time.",
+          "title": "Runtime",
+          "type": "string"
+        },
+        "dependencies": {
+          "description": "Extra distribution dependencies beyond the runtime adapter itself",
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "runtime"
+      ],
+      "title": "PackageSpec",
+      "type": "object"
+    },
+    "ProviderBindingSpec": {
+      "description": "Binding of a logical provider name to a model + backend.",
+      "properties": {
+        "model": {
+          "description": "Model identifier (e.g., 'gpt-4.1-mini')",
+          "title": "Model",
+          "type": "string"
+        },
+        "provider": {
+          "default": "mock",
+          "description": "Provider backend (mock, openai, anthropic, litellm)",
+          "title": "Provider",
+          "type": "string"
+        },
+        "fallback_ref": {
+          "default": "",
+          "description": "Fallback provider ref name",
+          "title": "Fallback Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model"
+      ],
+      "title": "ProviderBindingSpec",
+      "type": "object"
+    },
+    "RecoverySpec": {
+      "description": "Bounded execution / recovery configuration.",
+      "properties": {
+        "max_retries": {
+          "default": 2,
+          "minimum": 0,
+          "title": "Max Retries",
+          "type": "integer"
+        },
+        "timeout_seconds": {
+          "default": 30.0,
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "number"
+        },
+        "fallback_provider": {
+          "default": "",
+          "description": "Provider ref to use on failure",
+          "title": "Fallback Provider",
+          "type": "string"
+        }
+      },
+      "title": "RecoverySpec",
+      "type": "object"
+    },
+    "RedactionConfig": {
+      "description": "Redaction configuration.",
+      "properties": {
+        "max_sensitivity": {
+          "default": "internal",
+          "description": "public | internal | confidential | restricted",
+          "title": "Max Sensitivity",
+          "type": "string"
+        },
+        "exclude_above": {
+          "default": false,
+          "title": "Exclude Above",
+          "type": "boolean"
+        }
+      },
+      "title": "RedactionConfig",
+      "type": "object"
+    },
+    "SLASpec": {
+      "description": "Service-level agreement for a workflow.",
+      "properties": {
+        "latency_p95_ms": {
+          "default": 5000.0,
+          "exclusiveMinimum": 0,
+          "title": "Latency P95 Ms",
+          "type": "number"
+        },
+        "cost_max_usd": {
+          "default": 0.1,
+          "exclusiveMinimum": 0,
+          "title": "Cost Max Usd",
+          "type": "number"
+        },
+        "quality_min": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Quality Min",
+          "type": "number"
+        }
+      },
+      "title": "SLASpec",
+      "type": "object"
+    },
+    "TracingConfig": {
+      "description": "Tracing/telemetry configuration.",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "exporter": {
+          "default": "console",
+          "description": "console | otlp | jaeger",
+          "title": "Exporter",
+          "type": "string"
+        },
+        "endpoint": {
+          "default": "",
+          "title": "Endpoint",
+          "type": "string"
+        }
+      },
+      "title": "TracingConfig",
+      "type": "object"
+    },
+    "WorkflowSpec": {
+      "additionalProperties": false,
+      "description": "Specification of a workflow: pattern + agent wiring.",
+      "properties": {
+        "pattern": {
+          "description": "Pattern registry name (e.g., 'supervisor', 'pipeline')",
+          "title": "Pattern",
+          "type": "string"
+        },
+        "agents": {
+          "additionalProperties": true,
+          "description": "Role → agent ref mapping",
+          "title": "Agents",
+          "type": "object"
+        },
+        "config": {
+          "additionalProperties": true,
+          "description": "Pattern-specific config",
+          "title": "Config",
+          "type": "object"
+        },
+        "recovery": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RecoverySpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Recovery configuration"
+        },
+        "guardrails": {
+          "description": "Guardrail refs",
+          "items": {
+            "type": "string"
+          },
+          "title": "Guardrails",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pattern"
+      ],
+      "title": "WorkflowSpec",
+      "type": "object"
+    }
+  },
+  "description": "Root specification for a declarative agent system.\n\nThis is the top-level Pydantic model that represents a complete\nblueprint YAML/JSON document.",
+  "properties": {
+    "api_version": {
+      "default": "pyagent/v1",
+      "description": "Schema version",
+      "title": "Api Version",
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/$defs/MetadataSpec"
+    },
+    "package": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PackageSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional 'Agent Unit' packaging metadata"
+    },
+    "providers": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ProviderBindingSpec"
+      },
+      "title": "Providers",
+      "type": "object"
+    },
+    "context": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ContextConfigSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "agents": {
+      "additionalProperties": {
+        "$ref": "#/$defs/AgentSpec"
+      },
+      "title": "Agents",
+      "type": "object"
+    },
+    "workflows": {
+      "additionalProperties": {
+        "$ref": "#/$defs/WorkflowSpec"
+      },
+      "title": "Workflows",
+      "type": "object"
+    },
+    "contracts": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ContractSpec"
+      },
+      "title": "Contracts",
+      "type": "object"
+    },
+    "observability": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ObservabilitySpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "metadata",
+    "agents",
+    "workflows"
+  ],
+  "title": "PyAgent Blueprint Specification (pyagent/v1)",
+  "type": "object"
+}

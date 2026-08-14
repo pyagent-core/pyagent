@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pyagent-context"
 version = "0.3.0"
-description = "Three-tier memory with trust-aware context ledger for multi-agent LLM systems"
+description = "Three-tier memory with trust-aware context ledger for multi-agent LLM systems — the Context & Memory pillar of PyAgent."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

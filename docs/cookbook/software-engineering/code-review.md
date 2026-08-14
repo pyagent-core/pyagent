@@ -19,6 +19,100 @@ A production-grade multi-agent code review system that automatically guards inpu
 
 ---
 
+## Requirements
+
+- **Functional** — iteratively review code for correctness/maintainability until a reviewer agent
+  approves it; separately scan for security vulnerabilities; escalate low security scores to a
+  human.
+- **Non-functional** — the review loop must terminate (bounded rounds), not iterate indefinitely on
+  a disagreement between generator and reviewer.
+- **Audit** — every approval must show the specific review round and reviewer feedback that led to
+  it; every escalation must show the security score that triggered it.
+- **Not required** — no automatic merge action — this recipe produces a review verdict and, for
+  low-security-score cases, a human-readable escalation; it doesn't itself touch the repository.
+
+## Architecture decisions
+
+| Decision | Why | Why not the alternative |
+|---|---|---|
+| **Cross-Reflection** for the review loop | The reviewer is a genuinely different agent/expertise from the code generator — an independent second opinion, not self-review. | **Self-Reflection** would have the code-writing agent critique its own work, losing the independent-perspective signal that catches blind spots. |
+| Security scan as its own **Pipeline**, not folded into the review loop | Security scanning is a single-pass check, not an iterative negotiation — it doesn't need Cross-Reflection's multi-round structure. | Folding it into the review loop would force every review round to re-run a security scan, wasting cost on an unchanging concern. |
+| **Human-in-the-Loop** gates only escalation, not every review | Bounded, iterative peer review runs at machine speed for the common case; only genuinely low security scores need a human. | Gating every review round on a human would eliminate the whole point of automating iterative review. |
+| Dedicated `security` provider tier, separate from `fast`/`smart` | Security scanning benefits from a specific model choice independent of the cost/quality tradeoff driving the other two tiers. | Reusing `smart` for security scanning would work, but conflates two independent provider decisions (review quality vs. security-scan model choice) into one knob. |
+
+## Four-pillar mapping
+
+| Requirement | Pillar | Capability |
+|---|---|---|
+| Iterative review until approved | Execution | `CrossReflection` pattern |
+| Security vulnerability scan | Execution | `Pipeline` pattern |
+| Escalate low scores to a human | Execution | `HumanInTheLoop` pattern |
+| Track daily review spend | Observability | `observability.cost_budget` |
+| Trace each review round | Observability | `observability.tracing` |
+
+## Blueprint (declarative form)
+
+The real, verified file at `examples/cookbook/software-engineering/code_review/blueprint.yaml`,
+compiled against `PyAgentAdapter` as part of this repo's test suite:
+
+```yaml
+api_version: pyagent/v1
+metadata:
+  name: code-review
+  version: 1.0.0
+  description: Iterative review + security scan with human escalation
+
+providers:
+  fast:     { model: gpt-4o-mini }
+  smart:    { model: claude-sonnet-4-20250514 }
+  security: { model: gpt-4o }
+
+agents:
+  code_agent:       { provider: smart,    prompt: "Review for correctness, maintainability, best practices." }
+  review_agent:     { provider: smart,    prompt: "Review clarity, test gaps, design. Return APPROVED when ready." }
+  security_agent:   { provider: security, prompt: "Scan for vulns. Score 1-10. If < 8, escalate." }
+  escalation_agent: { provider: fast,     prompt: "Summarize security finding for human review." }
+
+workflows:
+  review:
+    pattern: cross_reflection
+    agents: { generator: code_agent, reviewer: review_agent }
+    config: { max_rounds: 3, stop_phrase: APPROVED }
+  security:
+    pattern: pipeline
+    agents: { stages: [security_agent] }
+  escalate:
+    pattern: human_in_the_loop
+    agents: { agent: escalation_agent }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 50.0, alert_threshold: 0.8 }
+```
+
+```bash
+pyagent-blueprint validate code-review.yaml
+pyagent-blueprint test code-review.yaml
+```
+
+## Production checklist
+
+Ran this exact blueprint through `PyAgentAdapter.compile()` and inspected the real diagnostics:
+
+- ✅ **All three workflows run as declared** — `review`, `security`, and `escalate` each compile
+  and execute against the native pattern registry with no diagnostics on workflow structure.
+- ⚠️ **`observability.cost_budget` is declared but not auto-enforced** — compiling emits
+  `BUDGET_UNSUPPORTED`: the $50/day budget is recorded but not enforced. Wire real enforcement via
+  `graph.wire_cost_tracker(tracker)`.
+- **The three workflows aren't sequenced by the blueprint itself** — deciding to run `security` and
+  `escalate` only when the security score is below threshold is caller logic, not declared in the
+  spec. If that branching needs to be reviewable/diffable, it currently isn't.
+- **The `GuardrailChain`/`RouterMiddleware` behavior shown in some Python variants of this recipe
+  isn't represented in this blueprint** — the blueprint captures the three named patterns' structure,
+  not every middleware layer a full production deployment might add.
+
+---
+
 ## Architecture
 
 ```mermaid

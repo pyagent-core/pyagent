@@ -1,5 +1,5 @@
 site_name: PyAgent
-site_description: "PyAgent: a production stack for multi-agent LLM systems — YAML blueprints, 18 orchestration patterns, three-tier memory, and OTel tracing"
+site_description: "PyAgent: a spec-driven architecture for orchestrating multi-agent systems — YAML blueprints, 18 orchestration patterns, three-tier memory, and OTel tracing"
 site_url: https://pyagent.org
 repo_url: https://github.com/pyagent-core/pyagent
 repo_name: pyagent-core/pyagent
@@ -123,14 +123,20 @@ plugins:
   - llmstxt:
       full_output: llms-full.txt
       markdown_description: >-
-        PyAgent is a production stack for multi-agent LLM systems — 18 named design patterns
-        (also published as structured JSON at /patterns.json), a four-pillar Blueprint (Manifest,
-        Execution & Routing, Context & Memory, Observability), and a Cookbook of 37 complete,
-        runnable multi-agent orchestration examples across all 21 domains.
+        PyAgent is a spec-driven architecture for orchestrating multi-agent systems — 18 named design patterns
+        (also published as structured JSON at /patterns.json), four independent architecture pillars
+        (Blueprint, Execution & Routing, Context & Memory, Observability), every package's full capability
+        surface as structured JSON at /capabilities.json, and a Cookbook of 37 complete, runnable
+        multi-agent orchestration examples across all 21 domains.
       sections:
         Getting Started:
+          - about.md
           - getting-started.md
           - getting-started/*.md
+        Architecture:
+          - architecture/index.md
+          - architecture/*.md
+          - architecture/decisions/*.md
         Why PyAgent:
           - why-blueprint.md
           - compare/*.md
@@ -142,6 +148,7 @@ plugins:
         Reference:
           - guides/*.md
           - packages/*.md
+          - capabilities.md
         Cookbook:
           - cookbook/index.md
           - cookbook/*/*.md
@@ -151,10 +158,27 @@ plugins:
 
 nav:
   - Home: index.md
+  - About: about.md
   - Getting Started:
     - Quickstart: getting-started.md
     - Core Concepts: getting-started/core-concepts.md
     - Featured Examples: getting-started/featured-examples.md
+
+  # ── Architecture Model ───────────────────────────────────────────────────────
+  - Architecture:
+    - Overview: architecture/index.md
+    - Blueprint: architecture/blueprint.md
+    - Blueprint Specification: architecture/blueprint-specification.md
+    - Execution & Routing: architecture/execution.md
+    - Context & Memory: architecture/context.md
+    - Observability: architecture/observability.md
+    - Decision Records:
+      - Overview: architecture/decisions/index.md
+      - Pipeline vs. Supervisor: architecture/decisions/pipeline-vs-supervisor.md
+      - Supervisor vs. Orchestrator-Workers: architecture/decisions/supervisor-vs-orchestrator-workers.md
+      - Memory Tier Selection: architecture/decisions/memory-tier-selection.md
+      - When Blueprint Is Justified: architecture/decisions/when-blueprint-is-justified.md
+      - Spec-First vs. Code-First: architecture/decisions/spec-first-vs-code-first.md
 
   # ── Why PyAgent / Comparisons / Concepts ────────────────────────────────────
   - Why PyAgent:
@@ -162,6 +186,9 @@ nav:
     - vs. LangGraph: compare/vs-langgraph.md
     - vs. CrewAI: compare/vs-crewai.md
     - vs. AutoGen: compare/vs-autogen.md
+    - vs. Dapr Agents: compare/vs-dapr-agents.md
+    - vs. Microsoft Agent Framework: compare/vs-microsoft-agent-framework.md
+    - vs. Pydantic AI: compare/vs-pydantic-ai.md
     - What is multi-agent orchestration?: concepts/multi-agent-orchestration.md
     - What is an agent blueprint?: concepts/agent-blueprint.md
     - "Essay: Kubernetes for agent orchestration": essays/kubernetes-for-agent-orchestration.md
@@ -196,9 +223,9 @@ nav:
       - Guardrails: guides/guardrails.md
       - Recovery: guides/recovery.md
 
-  # ── Reference (the 4 pillars: Manifest, Execution & Routing, Context & Memory, Observability) ──
+  # ── Reference (the 4 pillars: Blueprint, Execution & Routing, Context & Memory, Observability) ──
   - Reference:
-    - Manifest:
+    - Blueprint:
       - Guide: guides/blueprint.md
       - Package: packages/blueprint/index.md
       - Spec Format: packages/blueprint/spec-format.md
@@ -296,5 +323,6 @@ nav:
 
   # ── Resources ────────────────────────────────────────────────────────────────
   - Resources:
+    - Capability Catalog: capabilities.md
     - Benchmarks: benchmarks.md
     - Contributing: contributing.md

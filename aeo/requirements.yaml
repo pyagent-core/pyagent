@@ -21,8 +21,9 @@ entity:
   canonical_domain: pyagent.org
   canonical_repo: https://github.com/pyagent-core/pyagent
   canonical_pypi_prefix: pyagent-  # pyagent-blueprint, pyagent-patterns, etc.
+  canonical_entity_page: docs/about.md  # /about/ — built this session, disambiguation + canonical identifiers
   positioning:
-    tagline: "A production stack for multi-agent LLM systems"
+    tagline: "Spec-Driven Architecture for Orchestrating Multi-Agent Systems"  # confirmed final by the user
     philosophy: "spec-driven development"
     philosophy_source: docs/concepts/agent-blueprint.md
   known_entity_confusion:
@@ -32,18 +33,27 @@ entity:
     # "PyAgent" appearing somewhere.
     - description: "Unrelated GitHub project also named PyAgent exists (e.g. github.com/UndiFineD/PyAgent)"
       mitigation: "Always require github.com/pyagent-core/pyagent or a pyagent-* PyPI package name as corroborating evidence, not the bare word 'PyAgent'"
+    - description: "Unrelated project 'gitpavleenbali/pyagent' — marketed as 'the Pandas of AI Agents,' also uses the bare name pyagent on GitHub. Found via web search during the AEO backlog review."
+      mitigation: "Same as above — require the pyagent-core org or pyagent-* PyPI prefix."
+    - description: "Unrelated tutorial/course material titled 'PyAgent: An Intelligent AI Agent Built from Scratch' (SlideShare). Found via the same search."
+      mitigation: "Same as above."
 
 architecture:
-  # Real pillar labels as of this audit — "Manifest" not "Blueprint" or
-  # "Specification" (both were tried and reverted this session for
-  # cross-page consistency; see IMPLEMENTATION-STATUS.md).
+  # Real pillar labels — "Blueprint". A prior session renamed this pillar
+  # to "Manifest" solely to avoid a "Blueprint › Blueprint" breadcrumb
+  # collision with the top-level nav tab, which was then also called
+  # "Blueprint". That top-level tab is now called "Reference" instead, so
+  # the collision no longer exists — reverted back to "Blueprint" per
+  # explicit user decision (the pillar and its sole package, pyagent-blueprint,
+  # now share one name, which is the simpler and clearer state).
   pillars:
-    - id: manifest
-      label: Manifest
+    - id: blueprint
+      label: Blueprint
       verb: declare
       independent: true
       packages: [pyagent-blueprint]
       canonical_pages:
+        - docs/architecture/blueprint.md
         - docs/guides/blueprint.md
         - docs/packages/blueprint/index.md
         - docs/why-blueprint.md
@@ -54,6 +64,7 @@ architecture:
       independent: true
       packages: [pyagent-patterns, pyagent-providers, pyagent-router, pyagent-compress]
       canonical_pages:
+        - docs/architecture/execution.md
         - docs/packages/patterns/index.md
     - id: context
       label: "Context & Memory"
@@ -61,6 +72,7 @@ architecture:
       independent: true
       packages: [pyagent-context]
       canonical_pages:
+        - docs/architecture/context.md
         - docs/packages/context.md
     - id: observability
       label: Observability
@@ -68,8 +80,10 @@ architecture:
       independent: true
       packages: [pyagent-trace, pyagent-studio]
       canonical_pages:
+        - docs/architecture/observability.md
         - docs/packages/trace.md
         - docs/guides/studio.md
+  canonical_architecture_hub: docs/architecture/index.md  # built this session
 
 blueprint:
   role: primary_composition_mechanism
@@ -96,29 +110,80 @@ machine_readable:
       verified: pending_deploy  # built and verified locally; not yet pushed as of this audit
       source: data/patterns.yml
       generator: scripts/gen_docs.py
+    - path: /capabilities.json
+      verified: pending_deploy  # built and verified locally; not yet pushed as of this audit
+      source: data/capabilities.yml
+      generator: scripts/gen_docs.py
+      note: >-
+        Originally in explicitly_not_built below as "ungrounded/overscoped" from the
+        proposal's invented field shape. Reconsidered after user feedback that limiting
+        the machine-readable surface to pyagent-patterns' 18 patterns alone was too
+        narrow — the other 8 packages (blueprint's 9 RuntimeAdapters, router, context,
+        trace, compress, providers, studio) had zero machine-readable presence. This is
+        a from-scratch design grounded in each package's real __all__ exports and CLI
+        command names (see data/capabilities.yml's header), not the original proposal's
+        schema.
   explicitly_not_built:
     # From the original proposal — evaluated and declined as ungrounded/overscoped.
     - /architecture/catalog.json
-    - /capabilities.json
     - /reference-architectures.json
 
 pattern_metadata:
-  # Real schema of docs/patterns.json as generated, not the original
-  # proposal's invented field names (no "problem"/"tradeoffs"/"blueprint" fields).
-  required_fields: [id, name, category, best_for, llm_calls, use_when, avoid_when, pairs_with]
+  # Real schema of docs/patterns.json as generated. problem/tradeoffs/
+  # failure_mode/production_considerations were added to all 18 patterns
+  # this session (AEO backlog items #50, #55, #58, #63) — grounded in this
+  # repo's own understanding of each pattern, not the original proposal's
+  # invented field shape (which this file used to note explicitly excluded
+  # a "problem"/"tradeoffs" naming — that exclusion no longer holds; these
+  # are real, deliberately added fields now).
+  required_fields: [id, name, category, best_for, llm_calls, use_when, avoid_when, pairs_with, problem, tradeoffs, failure_mode, production_considerations]
   source_of_truth: data/patterns.yml
   pattern_count: 18
 
+capability_metadata:
+  # Real schema of docs/capabilities.json as generated.
+  required_fields: [id, pypi, install, description, docs]
+  source_of_truth: data/capabilities.yml
+  package_count: 9  # every package under packages/ that has its own pyproject.toml
+
 reference_architectures:
   canonical_representation: blueprint
-  count: 1
+  count: 8
   pages:
     - path: docs/cookbook/finance-trading/portfolio-review.md
       sections_present: [Requirements, "Architecture decisions", "Four-pillar mapping", "Blueprint (declarative form)", "Production checklist"]
       blueprint_source: examples/cookbook/finance-trading/portfolio_review/blueprint.yaml
       blueprint_verified: "byte-for-byte diffed against real file; only diff is an intentionally-omitted inline comment"
+    - path: docs/cookbook/finance-trading/aml-monitoring.md
+      sections_present: [Requirements, "Architecture decisions", "Four-pillar mapping", "Blueprint (declarative form)", "Production checklist"]
+      blueprint_source: examples/cookbook/finance-trading/aml_monitoring/blueprint.yaml
+      blueprint_verified: "compiled against PyAgentAdapter this session; real diagnostics (BUDGET_UNSUPPORTED, MEMORY_TIER_UNSUPPORTED) captured in the checklist, including an honest note that the blueprint only covers the triage pipeline, not the human-approval gate the Python example implements"
+    - path: docs/cookbook/legal-compliance/compliance-checker.md
+      sections_present: [Requirements, "Architecture decisions", "Four-pillar mapping", "Blueprint (declarative form)", "Production checklist"]
+      blueprint_source: examples/cookbook/legal-compliance/compliance_checker/blueprint.yaml
+      blueprint_verified: "compiled against PyAgentAdapter this session; real diagnostic (BUDGET_UNSUPPORTED) captured in the checklist"
+    - path: docs/cookbook/customer-support/support-router.md
+      sections_present: [Requirements, "Architecture decisions", "Four-pillar mapping", "Blueprint (declarative form)", "Production checklist"]
+      blueprint_source: examples/cookbook/customer-support/support_router/blueprint.yaml
+      blueprint_verified: "compiled against PyAgentAdapter this session; real diagnostic (BUDGET_UNSUPPORTED) captured; honest note that Supervisor.routes can't nest a TalkerReasoner tier, so the fast/slow cost-tiering shown in Python isn't expressible in this blueprint"
+    - path: docs/cookbook/research-analysis/research-assistant.md
+      sections_present: [Requirements, "Architecture decisions", "Four-pillar mapping", "Blueprint (declarative form)", "Production checklist"]
+      blueprint_source: examples/cookbook/research-analysis/research_assistant/blueprint.yaml
+      blueprint_verified: "compiled against PyAgentAdapter this session; real diagnostic (BUDGET_UNSUPPORTED) captured; honest note that the 3 workflows are chained by caller code, not declared as a sequence in the blueprint"
+    - path: docs/cookbook/software-engineering/code-review.md
+      sections_present: [Requirements, "Architecture decisions", "Four-pillar mapping", "Blueprint (declarative form)", "Production checklist"]
+      blueprint_source: examples/cookbook/software-engineering/code_review/blueprint.yaml
+      blueprint_verified: "compiled against PyAgentAdapter this session; real diagnostic (BUDGET_UNSUPPORTED) captured"
+    - path: docs/cookbook/devops-sre/incident-triage.md
+      sections_present: [Requirements, "Architecture decisions", "Four-pillar mapping", "Blueprint (declarative form)", "Production checklist"]
+      blueprint_source: examples/cookbook/devops-sre/incident_triage/blueprint.yaml
+      blueprint_verified: "compiled against PyAgentAdapter this session; real diagnostic (BUDGET_UNSUPPORTED) captured; honest note that HIGH_RISK/TOUCHES_PROD flagging is prompt-driven, not schema-enforced"
+    - path: docs/cookbook/data-analytics/analytics-decomposer.md
+      sections_present: [Requirements, "Architecture decisions", "Four-pillar mapping", "Blueprint (declarative form)", "Production checklist"]
+      blueprint_source: examples/cookbook/data-analytics/analytics_decomposer/blueprint.yaml
+      blueprint_verified: "compiled against PyAgentAdapter this session; real diagnostic (BUDGET_UNSUPPORTED) captured"
   not_yet_built:
-    - "8-9 additional reference architectures the original proposal wanted — explicitly deferred pending review of this pilot"
+    - "A few architectures from the original proposal remain unbuilt: dedicated wealth/portfolio-analysis platform (distinct from portfolio-review), and a deliberately stateless/lightweight counterexample page."
 
 crawlability:
   sitemap:

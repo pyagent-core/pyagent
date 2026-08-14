@@ -20,6 +20,102 @@ A multi-agent research system that parallelizes information gathering, debates f
 
 ---
 
+## Requirements
+
+- **Functional** — gather information from web, academic, and industry sources in parallel; surface
+  disagreement between an optimistic and a skeptical read of the findings; synthesize a structured
+  report under 500 words.
+- **Non-functional** — parallel gathering should be as fast as the slowest single source, not the
+  sum of all three.
+- **Audit** — the final report's claims should be traceable to which source agent (web/academic/
+  industry) surfaced them, and the debate stage's verdict should show both sides considered.
+- **Not required** — no persistent memory across separate research sessions (each topic is
+  researched independently).
+
+## Architecture decisions
+
+| Decision | Why | Why not the alternative |
+|---|---|---|
+| **Fan-Out/Fan-In** for gathering | Three source types (web, academic, industry) are independent — none needs another's output to run. | A **Pipeline** here would force web→academic→industry sequencing with no benefit, tripling latency for zero quality gain. |
+| **Debate** for surfacing disagreement | The value is explicitly adversarial: an optimist and a skeptic force genuine counter-evidence into the record, judged by a third agent. | **Self-Reflection** would have one agent critique itself — it can't produce a genuinely opposing read the way two independently-prompted agents can. |
+| Three separate workflows (`gather`, `debate`, `synthesize`), chained by the caller | Each stage is independently testable and independently reusable — a caller could run just `gather` for a lighter-weight summary without the debate stage. | A single fused workflow would need a new composite pattern; three workflows reuse existing patterns and let each be validated on its own. |
+
+## Four-pillar mapping
+
+| Requirement | Pillar | Capability |
+|---|---|---|
+| Parallel source gathering | Execution | `FanOutFanIn` pattern |
+| Adversarial fact-checking | Execution | `Debate` pattern |
+| Stay within a token budget across all three stages | Context | `pyagent-compress` `CompressMiddleware` |
+| Track daily research spend | Observability | `observability.cost_budget` |
+| Trace each source/debate/synthesis call | Observability | `observability.tracing` |
+
+## Blueprint (declarative form)
+
+The real, verified file at `examples/cookbook/research-analysis/research_assistant/blueprint.yaml`,
+compiled against `PyAgentAdapter` as part of this repo's test suite:
+
+```yaml
+api_version: pyagent/v1
+metadata:
+  name: research-assistant
+  version: 1.0.0
+  description: Parallel research, debate, and synthesis pipeline
+
+providers:
+  fast:  { model: gpt-4o-mini }
+  smart: { model: claude-sonnet-4-20250514 }
+
+agents:
+  web_agent:      { provider: smart, prompt: "Web research specialist — gather facts." }
+  academic_agent: { provider: smart, prompt: "Academic specialist — find papers." }
+  industry_agent: { provider: fast,  prompt: "Industry analyst — find news." }
+  optimist:       { provider: smart, prompt: "Argue positive interpretation with evidence." }
+  sceptic:        { provider: smart, prompt: "Challenge findings with counter-evidence." }
+  judge:          { provider: smart, prompt: "Weigh arguments and produce balanced verdict." }
+  synthesizer:    { provider: smart, prompt: "Write structured research report under 500 words." }
+
+workflows:
+  gather:
+    pattern: fan_out_fan_in
+    agents: { agents: [web_agent, academic_agent, industry_agent], aggregator: synthesizer }
+  debate:
+    pattern: debate
+    agents: { debaters: [optimist, sceptic], judge: judge }
+    config: { rounds: 2 }
+  synthesize:
+    pattern: pipeline
+    agents: { stages: [synthesizer] }
+
+observability:
+  tracing: { enabled: true }
+  cost_budget: { daily_usd: 100.0, alert_threshold: 0.8 }
+```
+
+```bash
+pyagent-blueprint validate research-assistant.yaml
+pyagent-blueprint test research-assistant.yaml
+```
+
+## Production checklist
+
+Ran this exact blueprint through `PyAgentAdapter.compile()` and inspected the real diagnostics:
+
+- ✅ **All three workflows run as declared** — `gather`, `debate`, and `synthesize` each compile and
+  execute against the native pattern registry with no diagnostics on workflow structure.
+- ⚠️ **`observability.cost_budget` is declared but not auto-enforced** — compiling emits
+  `BUDGET_UNSUPPORTED`: the $100/day budget is recorded but not enforced. Wire real enforcement via
+  `graph.wire_cost_tracker(tracker)`.
+- **No `context.compression` block is declared in this blueprint** — the `CompressMiddleware`
+  token-budget behavior shown in the Python implementation isn't yet expressed as a `context:` block
+  here, so it isn't captured by a compile-time diagnostic either. Add one if declared enforcement
+  matters for your deployment.
+- **The three workflows are chained by the caller, not by the blueprint itself** — there's no
+  single declared "run gather, then debate, then synthesize" sequence; that orchestration between
+  workflows currently lives in whatever code invokes them.
+
+---
+
 ## Architecture
 
 ```mermaid

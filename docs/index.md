@@ -1,6 +1,6 @@
 ---
 template: home.html
-description: "PyAgent is a production stack for multi-agent LLM systems — declare agents in YAML, orchestrate with 18 named patterns, share three-tier memory, and trace every call and cost."
+description: "PyAgent is a spec-driven architecture for orchestrating multi-agent systems — declare agents in YAML, orchestrate with 18 named patterns, share three-tier memory, and trace every call and cost."
 ---
 
 <!--
@@ -14,7 +14,7 @@ lives on packages/patterns/index.md) or duplicating the comparison table.
 
 # PyAgent
 
-**A production stack for multi-agent LLM systems** — declare, execute, remember, and observe.
+**Spec-Driven Architecture for Orchestrating Multi-Agent Systems** — declare, execute, remember, and observe.
 
 [Get Started](getting-started.md){ .md-button .md-button--primary }
 &nbsp;
@@ -22,7 +22,7 @@ lives on packages/patterns/index.md) or duplicating the comparison table.
 
 ## The four pillars
 
-1. **[Manifest](packages/blueprint/index.md)** — declare your entire agent system in a single
+1. **[Blueprint](packages/blueprint/index.md)** — declare your entire agent system in a single
    typed YAML file with `pyagent-blueprint`; validate, compile, diff, and test from the spec.
 2. **[Execution & Routing](packages/patterns/index.md)** — 18 named orchestration patterns run real
    agents against real providers, with difficulty-based model routing and inter-agent compression.
@@ -42,3 +42,14 @@ lives on packages/patterns/index.md) or duplicating the comparison table.
 - [Design Patterns](packages/patterns/index.md) — the full 18-pattern catalog with a comparison-and-selection guide
 - [Cookbook](cookbook/index.md) — complete, runnable multi-agent recipes by domain
 - [Benchmarks](benchmarks.md) — cost, quality, latency, and routing-savings measurements
+
+## Machine-readable catalogs
+
+Every package's real capabilities are published as structured JSON, generated from the same source
+as the prose on this site so neither can drift from the other:
+
+- [pyagent.org/patterns.json](patterns.json) — all 18 orchestration patterns (`use_when`/`avoid_when`/`pairs_with`)
+- [pyagent.org/capabilities.json](capabilities.json) — every package's public API: Blueprint's 9
+  `RuntimeAdapter`s, Router's difficulty scoring and model selection, Context's three memory tiers
+  and trust/redaction primitives, Trace's exporters and cost tracking, Compress's budget and pruning
+  tools, Providers' routing strategies and fallback chains, and Studio's full CLI surface.

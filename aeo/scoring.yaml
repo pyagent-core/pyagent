@@ -44,7 +44,7 @@ black_box:
       description: "% of responses that cite pyagent.org or github.com/pyagent-core/pyagent directly"
       target: baseline_pending
     - id: pillar_selection_f1
-      description: "Precision/recall/F1 per pillar (manifest/execution/context/observability) against ground truth 'expected: yes/no/optional'"
+      description: "Precision/recall/F1 per pillar (blueprint/execution/context/observability) against ground truth 'expected: yes/no/optional'"
       target: baseline_pending
     - id: blueprint_precision_recall
       description: "Of prompts where Blueprint was recommended, how often was it architecturally justified (precision); of prompts where it genuinely fits, how often was it recommended (recall)"

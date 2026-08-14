@@ -86,7 +86,7 @@ A hand-written orchestration script conflates *design* (which agents, wired how)
 
 ## Where a blueprint fits in the stack
 
-A blueprint is Pillar 1 of PyAgent's four-pillar production stack — Manifest, Execution & Routing,
+A blueprint is Pillar 1 of PyAgent's four-pillar spec-driven architecture — Blueprint, Execution & Routing,
 Context & Memory, and Observability. See the [Blueprint guide](../guides/blueprint.md) for the full
 spec format, or [What is multi-agent orchestration?](multi-agent-orchestration.md) for the
 coordination patterns a blueprint's `workflows:` block declares.
