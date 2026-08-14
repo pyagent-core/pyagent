@@ -1,0 +1,172 @@
+/*
+  PyAgent design tokens.
+
+  Palette encodes the product's own mechanism, not a generic accent:
+  --forge  (amber)  marks the declared YAML spec — the source.
+  --signal (blue)   marks compiled runtime output — the target.
+  They are never used interchangeably; forge is always "what you write",
+  signal is always "what runs".
+*/
+
+:root,
+[data-md-color-scheme="slate"] {
+  --pa-ink: #0b0e14;
+  --pa-ink-raised: #10141d;
+  --pa-paper: #e8e6de;
+  --pa-forge: #ff8a4c;
+  --pa-signal: #7c9cff;
+  --pa-line: #262b38;
+  --pa-ok: #5fd4a0;
+
+  --md-default-bg-color: var(--pa-ink);
+  --md-default-fg-color: #e8e6de;
+  --md-default-fg-color--light: #a6acbb;
+  --md-default-fg-color--lighter: #6b7280;
+  --md-default-fg-color--lightest: var(--pa-line);
+
+  --md-primary-fg-color: var(--pa-ink);
+  --md-primary-bg-color: var(--pa-paper);
+
+  --md-accent-fg-color: var(--pa-signal);
+  --md-accent-fg-color--transparent: #7c9cff1a;
+  --md-accent-bg-color: var(--pa-ink);
+
+  --md-typeset-a-color: var(--pa-signal);
+
+  --md-code-bg-color: var(--pa-ink-raised);
+  --md-code-fg-color: #d6d9e0;
+
+  --pa-source-tint: #ff8a4c14;
+  --pa-target-tint: #7c9cff14;
+}
+
+[data-md-color-scheme="default"] {
+  --pa-ink: #fbfaf6;
+  --pa-ink-raised: #f1efe8;
+  --pa-paper: #16181f;
+  --pa-forge: #d96a2c;
+  --pa-signal: #3b5bdb;
+  --pa-line: #ddd9cd;
+  --pa-ok: #1f8f66;
+
+  --md-default-bg-color: var(--pa-ink);
+  --md-default-fg-color: #16181f;
+  --md-default-fg-color--light: #4a4f5b;
+  --md-default-fg-color--lighter: #767c88;
+  --md-default-fg-color--lightest: var(--pa-line);
+
+  --md-primary-fg-color: var(--pa-ink);
+  --md-primary-bg-color: var(--pa-paper);
+
+  --md-accent-fg-color: var(--pa-signal);
+  --md-accent-fg-color--transparent: #3b5bdb1a;
+  --md-accent-bg-color: var(--pa-paper);
+
+  --md-typeset-a-color: var(--pa-signal);
+
+  --md-code-bg-color: var(--pa-ink-raised);
+  --md-code-fg-color: #2a2d36;
+
+  --pa-source-tint: #d96a2c14;
+  --pa-target-tint: #3b5bdb14;
+}
+
+/* Header/tabs bar: quiet chrome, not a loud brand-color band. */
+.md-header,
+.md-tabs {
+  background-color: var(--pa-ink-raised);
+  color: var(--md-default-fg-color);
+  border-bottom: 1px solid var(--pa-line);
+}
+
+[data-md-color-scheme="default"] .md-header,
+[data-md-color-scheme="default"] .md-tabs {
+  color: var(--md-default-fg-color);
+}
+
+.md-header__title,
+.md-tabs__link {
+  color: inherit;
+}
+
+.md-tabs__link--active,
+.md-tabs__link:focus,
+.md-tabs__link:hover {
+  color: var(--pa-signal);
+}
+
+/* Display type: headings share the mono face used for real compiled code —
+   the headline and the code block are the same material. */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  font-family: var(--md-code-font, "IBM Plex Mono");
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Diagnostic-style admonitions lean on the ok/forge/signal vocabulary
+   instead of Material's stock red/orange/blue set. */
+.md-typeset .admonition.note,
+.md-typeset .admonition.info {
+  border-color: var(--pa-signal);
+}
+.md-typeset .note > .admonition-title,
+.md-typeset .info > .admonition-title {
+  background-color: var(--pa-target-tint);
+}
+.md-typeset .note > .admonition-title::before,
+.md-typeset .info > .admonition-title::before {
+  background-color: var(--pa-signal);
+}
+
+.md-typeset .admonition.warning {
+  border-color: var(--pa-forge);
+}
+.md-typeset .warning > .admonition-title {
+  background-color: var(--pa-source-tint);
+}
+.md-typeset .warning > .admonition-title::before {
+  background-color: var(--pa-forge);
+}
+
+.md-typeset .admonition.tip,
+.md-typeset .admonition.success {
+  border-color: var(--pa-ok);
+}
+.md-typeset .tip > .admonition-title,
+.md-typeset .success > .admonition-title {
+  background-color: color-mix(in srgb, var(--pa-ok) 12%, transparent);
+}
+.md-typeset .tip > .admonition-title::before,
+.md-typeset .success > .admonition-title::before {
+  background-color: var(--pa-ok);
+}
+
+/* Tables: hairline structure over heavy borders, matching the
+   compiler-diagram vocabulary used in the hero and pillar sections. */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--pa-line);
+}
+.md-typeset table:not([class]) th {
+  background-color: var(--pa-ink-raised);
+  font-family: var(--md-code-font, "IBM Plex Mono");
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.md-typeset table:not([class]) td,
+.md-typeset table:not([class]) th {
+  border-color: var(--pa-line);
+}
+
+/* Code blocks get the raised surface, not the same flat background as body text. */
+.md-typeset pre > code,
+.md-typeset .highlight {
+  background-color: var(--pa-ink-raised);
+}

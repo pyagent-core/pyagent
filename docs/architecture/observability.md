@@ -64,7 +64,7 @@ API and dashboard walkthrough.
 
 ## Related pillars
 
-Observability instruments [Execution & Routing](execution.md) patterns and adapters automatically
+Observability instruments [Execution & Routing](index.md#execution-routing) patterns and adapters automatically
 once wired in, and can be declared inside a [Blueprint](blueprint.md)'s `observability:` block.
 Context-tier changes and redaction events are traceable too — none of that integration is required
 to use tracing standalone.

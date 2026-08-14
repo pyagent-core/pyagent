@@ -1,0 +1,40 @@
+/* API & Hooks Bibliography live filter (docs/api/bibliography.md). */
+
+#bib-filter-bar {
+  position: sticky;
+  top: 3.2rem;
+  z-index: 2;
+  background: var(--pa-ink, var(--md-default-bg-color));
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--pa-line, var(--md-default-fg-color--lightest));
+}
+
+#bib-filter {
+  width: 100%;
+  font-family: var(--md-code-font);
+  font-size: 0.85rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--pa-line, var(--md-default-fg-color--lightest));
+  border-radius: 6px;
+  background: var(--pa-ink-raised, var(--md-code-bg-color));
+  color: var(--md-default-fg-color);
+}
+#bib-filter:focus {
+  outline: 2px solid var(--pa-signal, var(--md-accent-fg-color));
+  outline-offset: 1px;
+}
+
+#bib-filter-count {
+  font-size: 0.7rem;
+  color: var(--md-default-fg-color--light);
+  margin-top: 0.4rem;
+  min-height: 1em;
+}
+
+.bib-source {
+  font-family: var(--md-code-font);
+  font-size: 0.68rem;
+  font-weight: 400;
+  margin-left: 0.6rem;
+}

@@ -1,212 +1,323 @@
-/* ── Home page: full-width layout ─────────────────────────────────────────── */
+/*
+  Homepage — signature is the compile visualization in the hero: one YAML
+  spec (--pa-forge/amber) fanning into five real runtime targets
+  (--pa-signal/blue). Everything else on this page stays quiet so that one
+  moment reads as the memorable thing, not a wall of animated pieces.
+*/
 
-.md-content__inner:has(.home-hero) {
-  max-width: 100%;
-  padding: 0;
-  margin: 0;
+.hp { max-width: 100%; }
+.md-typeset .hp h1,
+.md-typeset .hp h2,
+.md-typeset .hp h3 { border: none; }
+
+.hp-wrap { max-width: 74rem; margin: 0 auto; padding: 0 1.5rem; }
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+
+.hp-hero {
+  padding: 5rem 0 4rem;
+  border-bottom: 1px solid var(--pa-line);
 }
 
-/* ── Hero ────────────────────────────────────────────────────────────────── */
-.home-hero {
-  text-align: center;
-  padding: 5rem 2rem 3.5rem;
-  max-width: 900px;
-  margin: 0 auto;
+.hp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--md-code-font);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pa-forge);
+  margin-bottom: 1.25rem;
 }
-
-.home-hero h1 {
-  font-size: clamp(2rem, 4.5vw, 3.2rem);
-  font-weight: 800;
-  line-height: 1.15;
-  margin-bottom: 1rem;
-}
-
-.home-hero > p strong {
-  font-size: 1.15rem;
-  opacity: 0.9;
-}
-
-.hero-pills {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 1.75rem 0 2rem;
-}
-
-.hero-pill {
-  background: var(--md-primary-fg-color);
-  color: var(--md-primary-bg-color);
-  padding: 0.3rem 0.9rem;
+.hp-eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  background: var(--pa-forge);
+  display: inline-block;
+}
+
+.hp-hero h1 {
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  line-height: 1.05;
+  margin: 0 0 1.25rem;
+  max-width: 18ch;
+}
+
+.hp-hero__lead {
+  font-family: var(--md-text-font);
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--md-default-fg-color--light);
+  max-width: 46rem;
+  margin: 0 0 2rem;
+}
+
+.hp-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 3.5rem;
+}
+
+.hp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--md-code-font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.7rem 1.25rem;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.hp-btn:hover { transform: translateY(-1px); }
+.hp .hp-btn--primary { background: var(--pa-signal); color: #05070c; }
+.hp .hp-btn--primary:hover { opacity: 0.9; }
+.hp .hp-btn--outline {
+  border: 1px solid var(--pa-line);
+  color: var(--md-default-fg-color);
+}
+.hp-btn--outline:hover { border-color: var(--pa-signal); }
+
+.hp-install {
+  font-family: var(--md-code-font);
+  font-size: 0.85rem;
+  color: var(--md-default-fg-color--light);
+  padding: 0.6rem 0.9rem;
+  border: 1px dashed var(--pa-line);
+  border-radius: 6px;
+}
+.hp-install code { background: none; }
+
+/* ── Compile visualization (signature element) ───────────────────────── */
+
+.hp-compile {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) auto minmax(0, 0.9fr);
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.hp-source {
+  border: 1px solid var(--pa-forge);
+  border-radius: 8px;
+  background: var(--pa-source-tint);
+  overflow: hidden;
+}
+.hp-source__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--pa-line);
+  font-family: var(--md-code-font);
+  font-size: 0.72rem;
   letter-spacing: 0.04em;
+  color: var(--pa-forge);
+}
+.hp-source__bar::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--pa-forge);
+}
+.hp-source pre {
+  margin: 0;
+  padding: 1rem;
+  background: transparent;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+.hp-source code { background: none; }
+
+.hp-compile__arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--md-default-fg-color--lighter);
+  font-family: var(--md-code-font);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.hp-compile__arrow svg { width: 28px; height: 28px; color: var(--pa-signal); }
 
-/* ── Pillar stripes ──────────────────────────────────────────────────────── */
-.pillar-stripe {
-  padding: 5rem 2rem;
-  overflow: hidden;
-  position: relative;
-}
-
-.stripe-inner {
+.hp-targets {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  align-items: start;
+  gap: 0.6rem;
+}
+.hp-target {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 0.15rem 0.6rem;
+  border: 1px solid var(--pa-line);
+  background: var(--pa-target-tint);
+  border-radius: 6px;
+  padding: 0.55rem 0.8rem;
+}
+.hp-target__name {
+  font-family: var(--md-code-font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--pa-signal);
+}
+.hp-target__code {
+  grid-column: 1 / -1;
+  font-family: var(--md-code-font);
+  font-size: 0.68rem;
+  color: var(--md-default-fg-color--light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Execution + Observability: code on left, text on right */
-.stripe-execution .stripe-inner .stripe-code,
-.stripe-observability .stripe-inner .stripe-code {
-  order: 1;
+@media (max-width: 76rem) {
+  .hp-compile { grid-template-columns: 1fr; }
+  .hp-compile__arrow { flex-direction: row; transform: rotate(90deg); width: fit-content; margin: 0 auto; }
 }
 
-.stripe-execution .stripe-inner .stripe-text,
-.stripe-observability .stripe-inner .stripe-text {
-  order: 2;
+@media (max-width: 30rem) {
+  .hp-source pre { font-size: 0.68rem; padding: 0.85rem; }
 }
 
-/* Stripe backgrounds — dark scheme */
-[data-md-color-scheme="slate"] .stripe-blueprint     { background: rgba(124, 58, 237, 0.10); }
-[data-md-color-scheme="slate"] .stripe-execution     { background: rgba(29,  78, 216, 0.10); }
-[data-md-color-scheme="slate"] .stripe-context       { background: rgba(5,  150, 105, 0.10); }
-[data-md-color-scheme="slate"] .stripe-observability { background: rgba(180, 83,   9, 0.10); }
+/* ── Pipeline (four pillars, verbs not numbers) ──────────────────────── */
 
-/* Stripe backgrounds — light scheme */
-[data-md-color-scheme="default"] .stripe-blueprint     { background: rgba(124, 58, 237, 0.06); }
-[data-md-color-scheme="default"] .stripe-execution     { background: rgba(29,  78, 216, 0.06); }
-[data-md-color-scheme="default"] .stripe-context       { background: rgba(5,  150, 105, 0.06); }
-[data-md-color-scheme="default"] .stripe-observability { background: rgba(180, 83,   9, 0.06); }
-
-/* Stripe text */
-.stripe-text h3 {
-  font-size: 1.5rem;
-  margin-top: 0;
-  margin-bottom: 0.75rem;
+.hp-section { padding: 4rem 0; border-bottom: 1px solid var(--pa-line); }
+.hp-section__kicker {
+  font-family: var(--md-code-font);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--md-default-fg-color--lighter);
+  margin: 0 0 0.5rem;
+}
+.hp-section h2 {
+  font-size: 1.75rem;
+  margin: 0 0 2.5rem;
+  max-width: 32ch;
 }
 
-.stripe-text p {
-  font-size: 1.05rem;
-  line-height: 1.7;
+.hp-pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+.hp-pipe {
+  position: relative;
+  padding: 1.5rem 1.25rem 1.5rem 0;
+  border-right: 1px dashed var(--pa-line);
+}
+.hp-pipe:last-child { border-right: none; padding-right: 0; }
+.hp-pipe__verb {
+  font-family: var(--md-code-font);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pa-signal);
+  margin-bottom: 0.5rem;
+}
+.hp-pipe h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
+.hp-pipe p {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--md-default-fg-color--light);
+  margin: 0 0 0.9rem;
+}
+.hp-pipe__pkg {
+  font-family: var(--md-code-font);
+  font-size: 0.68rem;
+  color: var(--md-default-fg-color--lighter);
+  display: block;
+  margin-bottom: 0.7rem;
+}
+.hp-pipe a {
+  font-family: var(--md-code-font);
+  font-size: 0.78rem;
+  text-decoration: none;
 }
 
+@media (max-width: 60rem) {
+  .hp-pipeline { grid-template-columns: 1fr 1fr; }
+  .hp-pipe:nth-child(2) { border-right: none; }
+}
+@media (max-width: 34rem) {
+  .hp-pipeline { grid-template-columns: 1fr; }
+  .hp-pipe { border-right: none !important; border-bottom: 1px dashed var(--pa-line); padding: 1.5rem 0; }
+  .hp-pipe:last-child { border-bottom: none; }
+}
 
-/* ── Scroll reveal — IntersectionObserver adds .stripe-visible ───────────── */
+/* ── Two-column feature list (What you get) ──────────────────────────── */
 
-/* Slide-from-left: Blueprint/Context text + Execution/Observability code */
-.stripe-blueprint .stripe-text,
-.stripe-context   .stripe-text,
-.stripe-execution .stripe-code,
-.stripe-observability .stripe-code {
-  transform: translateX(-90px);
+.hp-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+.hp-feature { padding-top: 0.9rem; border-top: 1px solid var(--pa-line); margin-bottom: 1.75rem; }
+.hp-feature h4 { font-size: 0.95rem; margin: 0 0 0.4rem; }
+.hp-feature p { font-size: 0.85rem; line-height: 1.55; color: var(--md-default-fg-color--light); margin: 0; }
+.hp-feature code { font-size: 0.78em; }
+
+@media (max-width: 50rem) {
+  .hp-grid2 { grid-template-columns: 1fr; }
+}
+
+/* ── Quick start ──────────────────────────────────────────────────────── */
+
+.hp-quickstart pre {
+  border: 1px solid var(--pa-line);
+  border-radius: 8px;
+  padding: 1.25rem;
+  overflow-x: auto;
+}
+
+/* ── Where to start ───────────────────────────────────────────────────── */
+
+.hp-paths {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+.hp .hp-path {
+  border: 1px solid var(--pa-line);
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: border-color 0.15s ease;
+}
+.hp-path:hover { border-color: var(--pa-signal); }
+.hp-path__label {
+  font-family: var(--md-code-font);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pa-signal);
+  margin-bottom: 0.6rem;
+}
+.hp-path h4 { font-size: 1rem; margin: 0 0 0.4rem; }
+.hp-path p { font-size: 0.83rem; color: var(--md-default-fg-color--light); margin: 0; }
+
+@media (max-width: 50rem) {
+  .hp-paths { grid-template-columns: 1fr; }
+}
+
+/* ── Motion: one deliberate reveal, respects reduced-motion ──────────── */
+
+.hp-reveal {
   opacity: 0;
-  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
-              opacity 0.65s ease;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
+.hp-reveal.hp-in { opacity: 1; transform: none; }
 
-/* Slide-from-right: Blueprint/Context code + Execution/Observability text */
-.stripe-blueprint .stripe-code,
-.stripe-context   .stripe-code,
-.stripe-execution .stripe-text,
-.stripe-observability .stripe-text {
-  transform: translateX(90px);
-  opacity: 0;
-  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
-              opacity 0.65s ease 0.1s;
-}
-
-/* Settled state added by JS */
-.stripe-text.stripe-visible,
-.stripe-code.stripe-visible {
-  transform: translateX(0) !important;
-  opacity: 1 !important;
-}
-
-/* ── Architecture section (cream to match image background) ───────────────── */
-.arch-stripe {
-  padding: 4rem 2rem;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-/* Match the parchment tone of the architecture image */
-[data-md-color-scheme="default"] .arch-stripe {
-  background: #F8F3EA;
-  border-radius: 16px;
-  margin: 0 auto 2rem;
-  padding: 3.5rem 3rem;
-}
-
-[data-md-color-scheme="slate"] .arch-stripe {
-  background: rgba(248, 243, 234, 0.06);
-  border-radius: 16px;
-  margin: 0 auto 2rem;
-  padding: 3.5rem 3rem;
-}
-
-.arch-stripe h2 {
-  margin-top: 0;
-}
-
-.arch-image-wrap {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.arch-image-wrap img {
-  max-width: 100%;
-  width: 900px;
-  border-radius: 12px;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.12);
-}
-
-/* ── Why / comparison section ────────────────────────────────────────────── */
-.why-section {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 3rem 2rem;
-}
-
-/* ── Content sections (Quick Start, Patterns, Where to start) ─────────────── */
-.home-content-section {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 2rem 2rem 3rem;
-}
-
-/* ── Hover lift on grid cards ────────────────────────────────────────────── */
-.md-content__inner:has(.home-hero) .grid.cards > ul > li,
-.md-content__inner:has(.home-hero) .grid.cards > * {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.md-content__inner:has(.home-hero) .grid.cards > ul > li:hover,
-.md-content__inner:has(.home-hero) .grid.cards > *:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.18);
-}
-
-/* ── Responsive ───────────────────────────────────────────────── */
-@media screen and (max-width: 960px) {
-  .stripe-inner {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .stripe-execution .stripe-inner .stripe-code,
-  .stripe-execution .stripe-inner .stripe-text,
-  .stripe-observability .stripe-inner .stripe-code,
-  .stripe-observability .stripe-inner .stripe-text {
-    order: unset;
-  }
-
-  .home-hero { padding: 3rem 1.5rem 2.5rem; }
-  .pillar-stripe { padding: 3rem 1.5rem; }
-  .arch-stripe { padding: 2.5rem 1.5rem; border-radius: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .hp-reveal { opacity: 1; transform: none; transition: none; }
+  .hp-btn:hover { transform: none; }
 }

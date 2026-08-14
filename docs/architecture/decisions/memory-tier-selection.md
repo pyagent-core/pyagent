@@ -38,5 +38,5 @@ Match the tier to how long the state actually needs to survive — nothing more:
 - If no state needs to persist across agents or turns at all, none of the three tiers is needed —
   see [why-blueprint.md's "when you don't need PyAgent at all"](../../why-blueprint.md#when-you-dont-need-pyagent-at-all).
 
-See the [Context & Memory pillar page](../context.md) and the [Context guide](../../guides/context.md)
+See the [Context & Memory pillar page](../index.md#context-memory) and the [Context guide](../../guides/context.md)
 for the full API.

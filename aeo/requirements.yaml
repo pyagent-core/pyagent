@@ -64,7 +64,7 @@ architecture:
       independent: true
       packages: [pyagent-patterns, pyagent-providers, pyagent-router, pyagent-compress]
       canonical_pages:
-        - docs/architecture/execution.md
+        - docs/architecture/index.md  # merged in from architecture/execution.md (retired) — see canonical_architecture_hub
         - docs/packages/patterns/index.md
     - id: context
       label: "Context & Memory"
@@ -72,7 +72,7 @@ architecture:
       independent: true
       packages: [pyagent-context]
       canonical_pages:
-        - docs/architecture/context.md
+        - docs/architecture/index.md  # merged in from architecture/context.md (retired) — see canonical_architecture_hub
         - docs/packages/context.md
     - id: observability
       label: Observability

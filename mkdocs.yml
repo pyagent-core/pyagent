@@ -7,16 +7,21 @@ repo_name: pyagent-core/pyagent
 theme:
   name: material
   custom_dir: docs/overrides
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
   palette:
     - scheme: slate
-      primary: indigo
-      accent: cyan
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
     - scheme: default
-      primary: indigo
-      accent: cyan
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -40,12 +45,16 @@ theme:
     repo: fontawesome/brands/github
 
 extra_css:
+  - stylesheets/tokens.css
+  - stylesheets/home.css
   - stylesheets/recipe-filter.css
+  - stylesheets/bibliography.css
 
 extra_javascript:
   - javascripts/guided-mode.js
   - javascripts/mermaid-reinit.js
   - javascripts/recipe-filter.js
+  - javascripts/bibliography-filter.js
 
 markdown_extensions:
   - admonition
@@ -104,6 +113,9 @@ plugins:
         cookbook/software-engineering/index.md: cookbook/index.md
         cookbook/travel-hospitality/index.md: cookbook/index.md
         cookbook/tags.md: cookbook/index.md
+        architecture/execution.md: architecture/index.md
+        architecture/context.md: architecture/index.md
+        getting-started/featured-examples.md: cookbook/index.md
   - mkdocstrings:
       handlers:
         python:
@@ -129,69 +141,104 @@ plugins:
         surface as structured JSON at /capabilities.json, and a Cookbook of 37 complete, runnable
         multi-agent orchestration examples across all 21 domains.
       sections:
-        Getting Started:
-          - about.md
-          - getting-started.md
-          - getting-started/*.md
-        Architecture:
-          - architecture/index.md
-          - architecture/*.md
-          - architecture/decisions/*.md
-        Why PyAgent:
-          - why-blueprint.md
-          - compare/*.md
-          - concepts/*.md
-          - essays/*.md
+        Docs:
+          - api/*.md
+          - api/patterns/*.md
+          - guides/hooks.md
+          - guides/router.md
+          - guides/providers.md
+          - guides/compression.md
+          - guides/context.md
+          - packages/router.md
+          - packages/providers.md
+          - packages/compress.md
+          - packages/context.md
+        Blueprint (Spec-Driven):
+          - architecture/blueprint.md
+          - architecture/blueprint-specification.md
+          - guides/blueprint.md
+          - packages/blueprint/*.md
         Design Patterns:
           - packages/patterns/index.md
           - packages/patterns/*/*.md
-        Reference:
-          - guides/*.md
-          - packages/*.md
+          - guides/composition.md
+          - guides/guardrails.md
+          - guides/recovery.md
+        Observability:
+          - architecture/observability.md
+          - guides/tracing.md
+          - guides/studio.md
+          - packages/trace.md
+          - packages/studio/*.md
+        Why PyAgent:
+          - getting-started.md
+          - getting-started/core-concepts.md
+          - about.md
+          - architecture/index.md
+          - why-blueprint.md
+          - compare/*.md
+          - essays/*.md
+          - concepts/*.md
+          - architecture/decisions/*.md
           - capabilities.md
+          - benchmarks.md
+          - contributing.md
         Cookbook:
           - cookbook/index.md
           - cookbook/*/*.md
-        API Reference:
-          - api/*.md
-          - api/patterns/*.md
 
 nav:
   - Home: index.md
-  - About: about.md
-  - Getting Started:
-    - Quickstart: getting-started.md
-    - Core Concepts: getting-started/core-concepts.md
-    - Featured Examples: getting-started/featured-examples.md
 
-  # ── Architecture Model ───────────────────────────────────────────────────────
-  - Architecture:
-    - Overview: architecture/index.md
-    - Blueprint: architecture/blueprint.md
-    - Blueprint Specification: architecture/blueprint-specification.md
-    - Execution & Routing: architecture/execution.md
-    - Context & Memory: architecture/context.md
-    - Observability: architecture/observability.md
-    - Decision Records:
-      - Overview: architecture/decisions/index.md
-      - Pipeline vs. Supervisor: architecture/decisions/pipeline-vs-supervisor.md
-      - Supervisor vs. Orchestrator-Workers: architecture/decisions/supervisor-vs-orchestrator-workers.md
-      - Memory Tier Selection: architecture/decisions/memory-tier-selection.md
-      - When Blueprint Is Justified: architecture/decisions/when-blueprint-is-justified.md
-      - Spec-First vs. Code-First: architecture/decisions/spec-first-vs-code-first.md
+  # ── Docs (API reference, grouped by package) ──────────────────────────────────
+  - Docs:
+    - API & Hooks Bibliography: api/bibliography.md
+    - Adapters: api/adapters.md
+    - pyagent-blueprint:
+      - API: api/blueprint.md
+    - pyagent-patterns:
+      - Hooks Guide: guides/hooks.md
+      - Base Classes: api/patterns/base.md
+      - Orchestration: api/patterns/orchestration.md
+      - Resolution: api/patterns/resolution.md
+      - Structural: api/patterns/structural.md
+      - Advanced: api/patterns/advanced.md
+      - Composition, Guardrails & Recovery: api/patterns/composition-safety.md
+    - pyagent-router:
+      - Guide: guides/router.md
+      - Package: packages/router.md
+      - API: api/router.md
+    - pyagent-providers:
+      - Guide: guides/providers.md
+      - Package: packages/providers.md
+      - API: api/providers.md
+    - pyagent-compress:
+      - Guide: guides/compression.md
+      - Package: packages/compress.md
+      - API: api/compress.md
+    - pyagent-context:
+      - Guide: guides/context.md
+      - Package: packages/context.md
+      - API: api/context.md
+    - pyagent-trace:
+      - API: api/trace.md
+    - pyagent-studio:
+      - API: api/studio.md
 
-  # ── Why PyAgent / Comparisons / Concepts ────────────────────────────────────
-  - Why PyAgent:
-    - Overview: why-blueprint.md
-    - vs. LangGraph: compare/vs-langgraph.md
-    - vs. CrewAI: compare/vs-crewai.md
-    - vs. AutoGen: compare/vs-autogen.md
-    - vs. Dapr Agents: compare/vs-dapr-agents.md
-    - vs. Microsoft Agent Framework: compare/vs-microsoft-agent-framework.md
-    - vs. Pydantic AI: compare/vs-pydantic-ai.md
-    - What is multi-agent orchestration?: concepts/multi-agent-orchestration.md
-    - What is an agent blueprint?: concepts/agent-blueprint.md
-    - "Essay: Kubernetes for agent orchestration": essays/kubernetes-for-agent-orchestration.md
+  # ── Blueprint (Spec-Driven) ────────────────────────────────────────────────────
+  - Blueprint (Spec-Driven):
+    - Overview: architecture/blueprint.md
+    - Specification: architecture/blueprint-specification.md
+    - Guide: guides/blueprint.md
+    - Package: packages/blueprint/index.md
+    - Spec Format: packages/blueprint/spec-format.md
+    - Agents: packages/blueprint/agents.md
+    - Workflows: packages/blueprint/workflows.md
+    - Providers Config: packages/blueprint/providers.md
+    - Context Config: packages/blueprint/context.md
+    - Contracts & Observability: packages/blueprint/contracts.md
+    - CLI: packages/blueprint/cli.md
+    - Python API: packages/blueprint/compiler.md
 
   # ── Design Patterns (flagship: full pattern library) ─────────────────────────
   - Design Patterns:
@@ -223,44 +270,49 @@ nav:
       - Guardrails: guides/guardrails.md
       - Recovery: guides/recovery.md
 
-  # ── Reference (the 4 pillars: Blueprint, Execution & Routing, Context & Memory, Observability) ──
-  - Reference:
-    - Blueprint:
-      - Guide: guides/blueprint.md
-      - Package: packages/blueprint/index.md
-      - Spec Format: packages/blueprint/spec-format.md
-      - Agents: packages/blueprint/agents.md
-      - Workflows: packages/blueprint/workflows.md
-      - Providers Config: packages/blueprint/providers.md
-      - Context Config: packages/blueprint/context.md
-      - Contracts & Observability: packages/blueprint/contracts.md
-      - CLI: packages/blueprint/cli.md
-      - Python API: packages/blueprint/compiler.md
-    - Execution & Routing:
-      - Hooks: guides/hooks.md
-      - Providers:
-        - Guide: guides/providers.md
-        - Package: packages/providers.md
-      - Router:
-        - Guide: guides/router.md
-        - Package: packages/router.md
-      - Compress:
-        - Guide: guides/compression.md
-        - Package: packages/compress.md
-    - Context & Memory:
-      - Guide: guides/context.md
-      - Package: packages/context.md
-    - Observability:
-      - Tracing:
-        - Guide: guides/tracing.md
-        - Package: packages/trace.md
-      - Studio:
-        - Guide: guides/studio.md
-        - Overview: packages/studio/index.md
-        - CLI: packages/studio/cli.md
-        - Dashboard: packages/studio/dashboard.md
-        - Services: packages/studio/services.md
-        - Traces: packages/studio/traces.md
+  # ── Observability ──────────────────────────────────────────────────────────────
+  - Observability:
+    - Overview: architecture/observability.md
+    - Tracing:
+      - Guide: guides/tracing.md
+      - Package: packages/trace.md
+    - Studio:
+      - Guide: guides/studio.md
+      - Overview: packages/studio/index.md
+      - CLI: packages/studio/cli.md
+      - Dashboard: packages/studio/dashboard.md
+      - Services: packages/studio/services.md
+      - Traces: packages/studio/traces.md
+
+  # ── Why PyAgent (onboarding, positioning, concepts, resources) ────────────────
+  - Why PyAgent:
+    - Quickstart: getting-started.md
+    - Core Concepts: getting-started/core-concepts.md
+    - About: about.md
+    - Architecture Overview: architecture/index.md
+    - Comparisons:
+      - Overview: why-blueprint.md
+      - vs. LangGraph: compare/vs-langgraph.md
+      - vs. CrewAI: compare/vs-crewai.md
+      - vs. AutoGen: compare/vs-autogen.md
+      - vs. Dapr Agents: compare/vs-dapr-agents.md
+      - vs. Microsoft Agent Framework: compare/vs-microsoft-agent-framework.md
+      - vs. Pydantic AI: compare/vs-pydantic-ai.md
+      - "Essay: Kubernetes for agent orchestration": essays/kubernetes-for-agent-orchestration.md
+    - Concepts:
+      - What is multi-agent orchestration?: concepts/multi-agent-orchestration.md
+      - What is an agent blueprint?: concepts/agent-blueprint.md
+      - Decision Records:
+        - Overview: architecture/decisions/index.md
+        - Pipeline vs. Supervisor: architecture/decisions/pipeline-vs-supervisor.md
+        - Supervisor vs. Orchestrator-Workers: architecture/decisions/supervisor-vs-orchestrator-workers.md
+        - Memory Tier Selection: architecture/decisions/memory-tier-selection.md
+        - When Blueprint Is Justified: architecture/decisions/when-blueprint-is-justified.md
+        - Spec-First vs. Code-First: architecture/decisions/spec-first-vs-code-first.md
+    - Resources:
+      - Capability Catalog: capabilities.md
+      - Benchmarks: benchmarks.md
+      - Contributing: contributing.md
 
   # ── Cookbook (20 domains scaffolded; 12 with runnable recipes today) ─────────
   - Cookbook:
@@ -302,27 +354,3 @@ nav:
     - CI/CD Validation & Diff: cookbook/blueprint-ops/ci-cd-validation.md
     - Contract Testing with MockLLM: cookbook/blueprint-ops/contract-testing.md
     - Declaring Governance in YAML: cookbook/blueprint-ops/governance-in-yaml.md
-
-  # ── API Reference ────────────────────────────────────────────────────────────
-  - API Reference:
-    - API & Hooks Bibliography: api/bibliography.md
-    - pyagent-patterns:
-      - Base Classes: api/patterns/base.md
-      - Orchestration: api/patterns/orchestration.md
-      - Resolution: api/patterns/resolution.md
-      - Structural: api/patterns/structural.md
-      - Advanced: api/patterns/advanced.md
-      - Composition, Guardrails & Recovery: api/patterns/composition-safety.md
-    - pyagent-router: api/router.md
-    - pyagent-compress: api/compress.md
-    - pyagent-trace: api/trace.md
-    - pyagent-providers: api/providers.md
-    - pyagent-context: api/context.md
-    - pyagent-blueprint: api/blueprint.md
-    - pyagent-studio: api/studio.md
-
-  # ── Resources ────────────────────────────────────────────────────────────────
-  - Resources:
-    - Capability Catalog: capabilities.md
-    - Benchmarks: benchmarks.md
-    - Contributing: contributing.md

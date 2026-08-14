@@ -21,73 +21,10 @@ runs. The same manifest compiles against five structurally different adapters to
 
 ## The same manifest, five runtimes
 
-```yaml
-api_version: pyagent/v1
-metadata:
-  name: customer-support
-  version: 1.0.0
-providers:
-  primary:
-    model: gpt-4.1-mini
-agents:
-  classifier:
-    prompt: "Classify into: billing, tech, general"
-    provider: primary
-  billing:
-    prompt: "Handle billing inquiries"
-    provider: primary
-  tech:
-    prompt: "Handle technical support"
-    provider: primary
-workflows:
-  support:
-    pattern: supervisor
-    agents:
-      classifier: classifier
-      routes:
-        billing: billing
-        tech: tech
-```
-
-```bash
-pyagent-blueprint validate customer-support.yaml
-pyagent-blueprint adapters                      # list every registered adapter
-pyagent-blueprint test customer-support.yaml     # contract conformance vs. MockLLM, no live API calls
-```
-
-Choosing *which* adapter compiles and runs a workflow is a Python-API decision today (the CLI's
-`compile` command uses the bundled native runtime by default) — pick an adapter class from
-`AdapterRegistry.discover()` and call its `compile()`/`run()` directly:
-
-```python
-from pyagent_blueprint.adapter import AdapterRegistry
-from pyagent_blueprint.ir import BlueprintIR
-from pyagent_blueprint.loader import load_blueprint
-
-spec = load_blueprint("customer-support.yaml")
-ir = BlueprintIR.from_spec(spec)
-
-for name in ("langgraph", "crewai", "pyagent"):
-    adapter_cls = AdapterRegistry.discover()[name]
-    adapter = adapter_cls()
-    artifact = adapter.compile(ir)
-    result = await adapter.run(artifact, workflow="support", input_="I was charged twice")
-```
-
-That's not a hypothetical — it's what the `RuntimeAdapter` conformance suite actually certifies.
-Every adapter below implements the same contract (`compile(ir) -> CompiledArtifact`, an always-async
-`run()`) and is tested against the same `AdapterConformanceSuite`, which checks compile/run
-correctness, diagnostic completeness (governance features are honored or reported via a stable
-diagnostic code — never silently dropped), and pattern-intent preservation:
-
-| Adapter | Execution model | What actually runs |
-|---|---|---|
-| `pyagent` (native) | Full 18-pattern registry | `pyagent_patterns.orchestration.Supervisor` etc. |
-| `langgraph` | Declared node/edge graph | Real `StateGraph(...).add_node(...).add_edge(...)`, compiled and invoked |
-| `openai_agents` | Handoff/turn-based | Real `Agent` + `Runner.run()` |
-| `crewai` | Role-based crew | Real `Agent`/`Task`/`Crew.kickoff_async()` |
-| `semantic_kernel` | Event/service-oriented | Real `Kernel` + `ChatCompletionAgent.get_response()` |
-| `single_agent` / `sequential_chain` / `state_machine` / `simple_loop` | Zero-dependency reference shapes | Pure stdlib, ships in core |
+`pyagent-blueprint`'s `RuntimeAdapter` layer compiles one YAML manifest against five structurally
+different execution engines unmodified — a real blueprint example, the adapter-selection API, and
+the full conformance table (native, LangGraph, CrewAI, OpenAI Agents, Semantic Kernel) now live on
+their own page: **[Adapters](api/adapters.md)**.
 
 ## What you get that hand-written orchestration code doesn't
 

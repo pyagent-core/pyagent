@@ -79,7 +79,7 @@ the complete spec format, CLI, and cross-framework comparison.
 
 ## Related pillars
 
-Blueprint's `agents`/`workflows` compile onto [Execution & Routing](execution.md); its `providers`
-block feeds routing; its `context`/`observability` blocks wire [Context & Memory](context.md) and
+Blueprint's `agents`/`workflows` compile onto [Execution & Routing](index.md#execution-routing); its `providers`
+block feeds routing; its `context`/`observability` blocks wire [Context & Memory](index.md#context-memory) and
 [Observability](observability.md) — but none of that wiring is required to use Blueprint's
 validate/diff/test capabilities on their own.

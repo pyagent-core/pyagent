@@ -2,1566 +2,195 @@
 
 {% block extrahead %}
 {{ super() }}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <style>
-/* ── Reset md constraints for home ─────────────────────────────────────────── */
-.md-main .md-grid  { max-width: 100% !important; } /* expand content, NOT header */
-.md-main__inner    { display: block; padding-top: 0 !important; margin-top: 0 !important; }
-.md-content        { max-width: 100% !important; flex-basis: 100% !important; }
-.md-content__inner { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
-.md-content__inner::before { display: none !important; }
-body               { overflow-x: clip; }
-
-/* ── Base ──────────────────────────────────────────────────────────────────── */
-.hp {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --bp: #7C3AED;
-  --ex: #2563EB;
-  --cx: #059669;
-  --ob: #D97706;
-  --radius: 10px;
-  --max-w: 1200px;
-}
-
-/* ── Hero ──────────────────────────────────────────────────────────────────── */
-.hp-hero {
-  height: 100svh;
-  min-height: 500px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem 2rem 1.5rem;
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  /* hero background */
-  background: radial-gradient(ellipse 80% 60% at 20% 40%, rgba(99,102,241,0.18) 0%, transparent 70%),
-              radial-gradient(ellipse 60% 50% at 80% 60%, rgba(37,99,235,0.13) 0%, transparent 70%);
-}
-
-/* Parallax background layer */
-.hp-hero__bg {
-  position: absolute;
-  inset: -30%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Animated gradient blobs */
-.hp-hero__blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-}
-.hp-hero__blob--1 {
-  width: 65vw; height: 65vw;
-  background: radial-gradient(circle at center, rgba(99,102,241,0.55) 0%, transparent 65%);
-  top: -5%; left: -10vw;
-  animation: blob-drift 16s ease-in-out infinite alternate;
-}
-.hp-hero__blob--2 {
-  width: 52vw; height: 52vw;
-  background: radial-gradient(circle at center, rgba(37,99,235,0.42) 0%, transparent 65%);
-  bottom: 10%; right: -8vw;
-  animation: blob-drift 20s ease-in-out infinite alternate-reverse;
-  animation-delay: -7s;
-}
-.hp-hero__blob--3 {
-  width: 40vw; height: 40vw;
-  background: radial-gradient(circle at center, rgba(139,92,246,0.38) 0%, transparent 65%);
-  top: 30%; left: 40%;
-  animation: blob-drift 24s ease-in-out infinite alternate;
-  animation-delay: -12s;
-}
-@keyframes blob-drift {
-  0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(50px, 35px) scale(1.1); }
-}
-
-/* Dot-grid mesh overlay */
-.hp-hero__mesh {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(99,102,241,0.35) 1px, transparent 1px);
-  background-size: 36px 36px;
-  -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 40%, black 30%, transparent 80%);
-  mask-image: radial-gradient(ellipse 85% 65% at 50% 40%, black 30%, transparent 80%);
-}
-
-[data-md-color-scheme="default"] .hp-hero__blob { opacity: 0.45; }
-[data-md-color-scheme="default"] .hp-hero__mesh { opacity: 0.3; }
-
-/* Hero content sits above the bg */
-.hp-hero__content { position: relative; z-index: 1; }
-
-/* Eyebrow pill */
-.hp-hero__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--md-default-fg-color);
-  opacity: 0.6;
-  margin-bottom: 2rem;
-  padding: 0.32rem 1rem;
-  border: 1px solid rgba(128,128,128,0.22);
-  border-radius: 999px;
-  background: rgba(128,128,128,0.05);
-}
-.hp-hero__dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 7px #22c55e;
-  flex-shrink: 0;
-  animation: dot-pulse 2.4s ease-in-out infinite;
-}
-@keyframes dot-pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 7px #22c55e; }
-  50%       { opacity: 0.45; box-shadow: 0 0 2px #22c55e; }
-}
-
-/* Heading */
-.hp-hero h1 {
-  font-size: clamp(2.2rem, 3.8vw, 2.8rem);
-  font-weight: 900;
-  line-height: 1.1;
-  margin: 0 auto 1.5rem;
-  max-width: 1000px;
-  letter-spacing: -0.03em;
-  color: var(--md-default-fg-color);
-}
-
-/* Animated gradient on key phrase */
-.hp-grad {
-  background: linear-gradient(270deg, #818cf8, #6366f1, #4f46e5, #7c3aed, #6366f1);
-  background-size: 300% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: grad-pan 6s linear infinite;
-}
-@keyframes grad-pan {
-  0%   { background-position: 0% center; }
-  100% { background-position: 300% center; }
-}
-
-/* Lead */
-.hp-hero p.lead {
-  font-size: clamp(1rem, 1.8vw, 1.18rem);
-  max-width: 560px;
-  margin: 0 auto 3rem;
-  opacity: 0.62;
-  line-height: 1.8;
-  font-weight: 400;
-}
-
-/* CTAs */
-.hp-ctas {
-  display: flex; align-items: center;
-  gap: 0.85rem; flex-wrap: wrap; justify-content: center;
-}
-
-.hp-btn {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.72rem 1.5rem;
-  border-radius: 8px;
-  font-family: inherit; font-weight: 600; font-size: 0.92rem;
-  text-decoration: none;
-  border: 1.5px solid transparent;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-}
-
-.hp-btn--primary {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: #fff !important;
-}
-.hp-btn--primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(99,102,241,0.5);
-}
-
-.hp-btn--outline {
-  border-color: rgba(128,128,128,0.28);
-  color: var(--md-default-fg-color) !important;
-  background: rgba(128,128,128,0.06);
-}
-.hp-btn--outline:hover {
-  border-color: rgba(128,128,128,0.55);
-  transform: translateY(-2px);
-  background: rgba(128,128,128,0.1);
-}
-
-/* Ghost button (used in pillar sections) */
-.hp-btn--ghost {
-  padding: 0.5rem 0; border: none; background: none;
-  color: var(--md-primary-fg-color) !important;
-  font-size: 0.9rem; font-weight: 600;
-  opacity: 0.85;
-}
-.hp-btn--ghost:hover { opacity: 1; transform: translateX(3px); }
-
-.hp-install {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.83rem; padding: 0.65rem 1.1rem;
-  background: var(--md-code-bg-color);
-  border-radius: 7px; color: var(--md-code-fg-color);
-  border: 1px solid rgba(128,128,128,0.12);
-}
-
-/* ── Terminal-loop asset (validate → diff → apply → simulate → dashboard) ── */
-.hp-terminal {
-  width: 100%;
-  max-width: 620px;
-  margin: 2.2rem auto 0;
-  border-radius: 10px;
-  overflow: hidden;
-  text-align: left;
-  background: #0d1117;
-  border: 1px solid rgba(128,128,128,0.18);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-  animation: hp-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both 0.65s;
-}
-.hp-terminal__bar {
-  display: flex; align-items: center; gap: 0.5rem;
-  padding: 0.6rem 0.9rem;
-  background: #161b22;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.hp-terminal__dot {
-  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-}
-.hp-terminal__dot--r { background: #ff5f56; }
-.hp-terminal__dot--y { background: #ffbd2e; }
-.hp-terminal__dot--g { background: #27c93f; }
-.hp-terminal__title {
-  margin-left: 0.4rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.4);
-}
-.hp-terminal__body {
-  margin: 0;
-  padding: 1rem 1.1rem 1.2rem;
-  height: 190px;
-  overflow: hidden;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.8rem;
-  line-height: 1.65;
-  color: #c9d1d9;
-  text-align: left;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.hp-term-prompt { color: #58a6ff; }
-.hp-term-out     { color: #8b949e; }
-.hp-term-ok      { color: #3fb950; }
-.hp-term-cursor {
-  display: inline-block;
-  width: 0.5em;
-  color: #58a6ff;
-  animation: hp-term-blink 1s step-end infinite;
-}
-@keyframes hp-term-blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hp-term-cursor { animation: none; }
-}
-
-/* Scroll chevron */
-.hp-hero__scroll {
-  position: absolute; bottom: 2.2rem;
-  left: 50%; transform: translateX(-50%);
-  opacity: 0.3; z-index: 1;
-  animation: scroll-bounce 2.4s ease-in-out infinite;
-}
-.hp-hero__scroll svg { width: 26px; height: 26px; display: block; }
-@keyframes scroll-bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.3; }
-  50%       { transform: translateX(-50%) translateY(8px); opacity: 0.6; }
-}
-
-/* Staggered load animations */
-@keyframes hp-fade-up {
-  from { opacity: 0; transform: translateY(26px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.hp-hero__eyebrow { animation: hp-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both 0.05s; }
-.hp-hero h1       { animation: hp-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both 0.2s;  }
-.hp-hero p.lead   { animation: hp-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both 0.38s; }
-.hp-hero .hp-ctas { animation: hp-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both 0.52s; }
-
-/* ── Pillar stacking stage ────────────────────────────────────────────────── */
-#hp-pillars-track {
-  height: 500vh;
-  position: relative;
-}
-
-#hp-pillars-stage {
-  position: sticky;
-  top: 3rem;            /* just below header */
-  height: calc(100vh - 3rem);
-  overflow: hidden;
-  z-index: 10;
-}
-
-.hp-pcard {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translateY(100%); /* starts below viewport, JS drives it up */
-  will-change: transform, filter;
-  transform-origin: top center;
-}
-
-.hp-pcard--bp { background: radial-gradient(ellipse 60% 80% at 12% 55%, rgba(124,58,237,0.28) 0%, transparent 65%), var(--md-default-bg-color); z-index: 1; }
-.hp-pcard--ex { background: radial-gradient(ellipse 60% 80% at 88% 45%, rgba(37,99,235,0.28) 0%, transparent 65%), var(--md-default-bg-color); z-index: 2; }
-.hp-pcard--cx { background: radial-gradient(ellipse 60% 80% at 12% 45%, rgba(5,150,105,0.25) 0%, transparent 65%), var(--md-default-bg-color); z-index: 3; }
-.hp-pcard--ob { background: radial-gradient(ellipse 60% 80% at 88% 55%, rgba(217,119,6,0.25) 0%, transparent 65%), var(--md-default-bg-color); z-index: 4; }
-
-/* Decorative oversized pillar number */
-.hp-pcard__num {
-  position: absolute;
-  right: 2.5rem; bottom: -1.5rem;
-  font-size: clamp(9rem, 18vw, 16rem);
-  font-weight: 900; line-height: 1;
-  opacity: 0.04; letter-spacing: -0.05em;
-  pointer-events: none; user-select: none;
-  color: currentColor;
-}
-
-.hp-pcard__inner {
-  width: min(1160px, 90vw);
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 3rem;
-  align-items: center;
-}
-
-/* Execution + Observability: code is first in DOM, text second — flip column sizing */
-.hp-pcard--ex .hp-pcard__inner,
-.hp-pcard--ob .hp-pcard__inner { grid-template-columns: 0.8fr 1.2fr; }
-
-.hp-pcard__label {
-  font-size: 0.7rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.1em;
-  opacity: 0.5; margin-bottom: 0.55rem;
-}
-
-.hp-pcard__h2 {
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-  font-weight: 800; margin: 0 0 1.1rem;
-  line-height: 1.12; letter-spacing: -0.01em;
-}
-.hp-pcard--bp .hp-pcard__h2 { color: #7C3AED; }
-.hp-pcard--ex .hp-pcard__h2 { color: #2563EB; }
-.hp-pcard--cx .hp-pcard__h2 { color: #059669; }
-.hp-pcard--ob .hp-pcard__h2 { color: #D97706; }
-
-.hp-pcard__text p { font-size: 1.05rem; line-height: 1.8; opacity: 0.8; margin-bottom: 1.4rem; }
-
-.hp-pcard__pkgs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.8rem; }
-.hp-pcard__pkgs code {
-  font-size: 0.8rem; padding: 0.22rem 0.65rem;
-  background: rgba(128,128,128,0.12);
-  border-radius: 5px; color: var(--md-default-fg-color);
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.hp-btn--ghost {
-  font-size: 0.9rem; font-weight: 600;
-  color: var(--md-primary-fg-color) !important;
-  padding: 0; border: none; background: none;
-  text-decoration: none;
-  border-bottom: 2px solid var(--md-primary-fg-color);
-  border-radius: 0; padding-bottom: 1px;
-  transition: opacity 0.15s;
-}
-.hp-btn--ghost:hover { opacity: 0.65; }
-
-.hp-pcard__code pre {
-  margin: 0; border-radius: var(--radius); overflow-x: auto;
-  font-size: 0.72rem; line-height: 1.6;
-  background: #1e2127 !important;
-  padding: 1.2rem 1.4rem !important;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  color: #abb2bf;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.32);
-}
-.hp-pcard__code pre code.hljs { background: transparent !important; padding: 0 !important; }
-
-/* ── Global h2 reset (neutralise mkdocs md-typeset h2 baseline) ─────────── */
-.hp h2 {
-  border-bottom: none !important;
-  padding-bottom: 0 !important;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-}
-
-/* ── Divider ───────────────────────────────────────────────────────────────── */
-.hp-divider {
-  border: none;
-  border-top: 1px solid var(--md-default-fg-color--lightest, rgba(0,0,0,0.08));
-  margin: 0;
-}
-
-/* ── Comparison ──────────────────────────────────────────────────────────── */
-.hp-compare { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
-
-.hp-compare__hdr {
-  text-align: center; margin-bottom: 2.5rem;
-}
-.hp-compare__hdr .hp-section-tag {
-  display: block; font-size: 0.72rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.12em;
-  opacity: 0.42; margin-bottom: 0.75rem;
-}
-.hp-compare__hdr h2 {
-  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
-  font-weight: 800; margin: 0 0 0.8rem;
-  letter-spacing: -0.02em;
-}
-.hp-compare__sub { font-size: 1rem; opacity: 0.58; margin: 0; }
-
-/* CSS-grid comparison table */
-.hp-cmp {
-  display: grid;
-  grid-template-columns: 2fr 1.35fr 1fr 1fr 1fr;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid rgba(128,128,128,0.15);
-}
-.hp-cmp__cell {
-  padding: 0.85rem 1.2rem;
-  display: flex; align-items: center; justify-content: center;
-  border-bottom: 1px solid rgba(128,128,128,0.07);
-  font-size: 0.9rem;
-}
-.hp-cmp__cell.hp-cmp__last { border-bottom: none; }
-.hp-cmp__feat { justify-content: flex-start; font-weight: 500; opacity: 0.88; }
-.hp-cmp__head {
-  padding: 1rem 1.2rem;
-  font-size: 0.73rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.07em;
-  opacity: 0.4; justify-content: center;
-  border-bottom: 2px solid rgba(128,128,128,0.12);
-}
-.hp-cmp__head.hp-cmp__feat { opacity: 0.32; }
-.hp-cmp__pycol {
-  background: rgba(99,102,241,0.07);
-  box-shadow: inset 2px 0 0 rgba(99,102,241,0.28), inset -2px 0 0 rgba(99,102,241,0.28);
-}
-.hp-cmp__head.hp-cmp__pycol {
-  opacity: 1; font-size: 0.82rem;
-  text-transform: none; letter-spacing: 0;
-}
-.hp-cmp__badge {
-  display: inline-flex; gap: 0.35rem; align-items: center;
-  padding: 0.3rem 0.85rem;
-  background: rgba(99,102,241,0.13);
-  border: 1px solid rgba(99,102,241,0.35);
-  border-radius: 99px; color: #6366f1;
-  font-size: 0.78rem; font-weight: 700;
-}
-.hp-cmp__yes::before  { content: "✓"; color: #22c55e; font-weight: 800; font-size: 1.1rem; }
-.hp-cmp__no::before   { content: "·"; font-size: 1.4rem; opacity: 0.22; line-height: 1; }
-.hp-cmp__count        { font-weight: 800; color: #22c55e; font-size: 1.1rem; }
-.hp-cmp__par          { font-size: 0.8rem; font-weight: 600; color: #F59E0B; }
-
-/* ── Sections ──────────────────────────────────────────────────────────────── */
-.hp-section {
-  max-width: 1100px; margin: 0 auto; padding: 4rem 2rem 3rem;
-}
-
-.hp-section-tag {
-  display: block; font-size: 0.72rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.12em;
-  opacity: 0.42; margin-bottom: 0.65rem; text-align: center;
-}
-
-.hp-section h2 {
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
-  font-weight: 800; margin-bottom: 2rem;
-  letter-spacing: -0.01em;
-  text-align: center;
-}
-
-/* ── Tabs ──────────────────────────────────────────────────────────────────── */
-.hp-tabs__nav {
-  display: flex; gap: 0;
-  border-bottom: 2px solid rgba(128,128,128,0.15);
-  margin-bottom: 1.5rem; flex-wrap: wrap;
-}
-
-.hp-tabs__btn {
-  padding: 0.55rem 1.15rem; cursor: pointer;
-  font-family: inherit; font-weight: 600; font-size: 0.88rem;
-  background: none; border: none;
-  color: var(--md-default-fg-color); opacity: 0.45;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px; transition: all 0.15s; border-radius: 0;
-}
-.hp-tabs__btn:hover { opacity: 0.8; }
-.hp-tabs__btn.active {
-  opacity: 1; border-bottom-color: var(--md-primary-fg-color);
-  color: var(--md-primary-fg-color);
-}
-
-.hp-tabs__panel { display: none; }
-.hp-tabs__panel.active { display: block; }
-
-.hp-tabs__panel pre {
-  border-radius: var(--radius); margin: 0.75rem 0;
-  font-size: 0.83rem; line-height: 1.65; overflow-x: auto;
-  background: #1e2127 !important;
-  padding: 1.4rem !important;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  color: #abb2bf;
-}
-.hp-tabs__panel pre code.hljs { background: transparent !important; padding: 0 !important; }
-
-/* ── Architecture ──────────────────────────────────────────────────────────── */
-.hp-arch-wrap {
-  max-width: 1200px; margin: 0 auto;
-  padding: 4rem 2rem 3rem;
-}
-
-.hp-arch-hdr {
-  text-align: center; margin-bottom: 2.5rem;
-}
-.hp-arch-hdr .hp-section-tag {
-  display: block; font-size: 0.72rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.12em;
-  opacity: 0.42; margin-bottom: 0.75rem;
-}
-.hp-arch-hdr h2 {
-  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
-  font-weight: 800; margin: 0 0 0.8rem;
-  letter-spacing: -0.02em;
-}
-.hp-arch-hdr p {
-  font-size: 1rem; opacity: 0.58; max-width: 540px;
-  margin: 0 auto; line-height: 1.8;
-}
-
-.hp-arch-card {
-  border-radius: 16px;
-  padding: 2.5rem 2.5rem 2rem;
-  margin-bottom: 2.5rem;
-  border: 1px solid rgba(128,128,128,0.12);
-}
-[data-md-color-scheme="default"] .hp-arch-card { background: #F8F3EA; }
-[data-md-color-scheme="slate"]   .hp-arch-card {
-  background: rgba(255,255,255,0.025);
-  border-color: rgba(128,128,128,0.14);
-  box-shadow: 0 0 0 1px rgba(99,102,241,0.08),
-              inset 0 1px 0 rgba(255,255,255,0.04);
-}
-
-.hp-arch-card img {
-  display: block; width: 100%; max-width: 900px;
-  margin: 0 auto;
-  border-radius: 10px;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.22);
-}
-
-.hp-arch-steps {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: rgba(128,128,128,0.12);
-  border: 1px solid rgba(128,128,128,0.12);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.hp-arch-step {
-  position: relative;
-  display: flex; flex-direction: column; gap: 0.35rem;
-  padding: 1.25rem 1.4rem 1.5rem;
-  background: var(--md-default-bg-color);
-  overflow: hidden;
-}
-.hp-arch-step__num {
-  position: absolute; bottom: -0.15rem; right: 0.6rem;
-  font-size: 3.5rem; font-weight: 900; line-height: 1;
-  letter-spacing: -0.05em;
-  color: var(--md-primary-fg-color);
-  opacity: 0.12;
-  pointer-events: none; user-select: none;
-}
-.hp-arch-step__kw {
-  font-size: 0.92rem; font-weight: 800;
-  color: var(--md-primary-fg-color);
-  letter-spacing: -0.01em;
-}
-.hp-arch-step__desc {
-  font-size: 0.8rem; line-height: 1.6; opacity: 0.58;
-}
-.hp-arch-step__desc code {
-  font-size: 0.75rem; opacity: 0.85;
-}
-@media (max-width: 900px) {
-  .hp-arch-steps { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 500px) {
-  .hp-arch-steps { grid-template-columns: 1fr; }
-}
-
-/* ── Pattern cards ─────────────────────────────────────────────────────────── */
-.hp-pat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
-  gap: 0.85rem;
-  margin-top: 0.35rem;
-}
-.hp-pat-card {
-  display: flex; flex-direction: column;
-  padding: 1.2rem 1.3rem 1.35rem;
-  border-radius: 10px;
-  border: 1px solid rgba(128,128,128,0.14);
-  text-decoration: none !important;
-  color: var(--md-default-fg-color) !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-.hp-pat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-  border-color: rgba(128,128,128,0.34);
-}
-.hp-pat-card__icon { font-size: 1.3rem; margin-bottom: 0.6rem; line-height: 1; }
-.hp-pat-card__name { font-weight: 700; font-size: 0.92rem; margin-bottom: 0.4rem; line-height: 1.25; }
-.hp-pat-card__desc { font-size: 0.78rem; opacity: 0.6; line-height: 1.55; }
-
-/* ── Where to start ────────────────────────────────────────────────────────── */
-.hp-paths {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem; margin-top: 1.5rem;
-}
-
-.hp-path {
-  border-radius: 12px; overflow: hidden;
-  border: 1px solid rgba(128,128,128,0.12);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: flex; flex-direction: column;
-}
-[data-md-color-scheme="default"] .hp-path { background: rgba(0,0,0,0.02); }
-[data-md-color-scheme="slate"]   .hp-path { background: rgba(255,255,255,0.025); }
-.hp-path:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.16); }
-
-/* Coloured top bar per card */
-.hp-path::before {
-  content: ""; display: block; height: 3px;
-  background: var(--path-col, #6366f1);
-}
-.hp-path:nth-child(1) { --path-col: #7C3AED; --path-tint: rgba(124,58,237,0.1); }
-.hp-path:nth-child(2) { --path-col: #2563EB; --path-tint: rgba(37,99,235,0.1); }
-.hp-path:nth-child(3) { --path-col: #059669; --path-tint: rgba(5,150,105,0.1); }
-
-.hp-path__inner {
-  padding: 1.4rem 1.5rem;
-  display: flex; flex-direction: column; flex: 1;
-}
-.hp-path__meta {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1rem;
-}
-.hp-path__icon {
-  font-size: 1.35rem;
-  width: 2.5rem; height: 2.5rem;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 8px;
-  background: var(--path-tint, rgba(99,102,241,0.1));
-}
-.hp-path__num {
-  font-size: 0.62rem; font-weight: 800;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--path-col); opacity: 0.7;
-}
-.hp-path h3 { font-size: 0.97rem; font-weight: 700; margin: 0 0 0.6rem; line-height: 1.4; }
-.hp-path p  { font-size: 0.86rem; opacity: 0.6; margin: 0 0 1.25rem; line-height: 1.65; }
-
-.hp .hp-path__links {
-  list-style: none !important; margin: 1.25rem 0 0 !important; padding: 0 !important;
-  border-top: 1px solid rgba(128,128,128,0.1);
-  padding-top: 1rem !important;
-  display: flex; flex-direction: column; gap: 0.1rem;
-}
-.hp .hp-path__links li {
-  list-style: none !important;
-  margin: 0 !important;
-}
-.hp .hp-path__links li::marker { font-size: 0; color: transparent; content: ""; }
-.hp .hp-path__links li a {
-  display: flex !important; align-items: center; gap: 0.5rem;
-  padding: 0.45rem 0.5rem; border-radius: 6px;
-  font-size: 0.855rem; line-height: 1.4;
-  color: var(--md-default-fg-color) !important;
-  opacity: 0.75; text-decoration: none !important;
-  transition: background 0.15s, opacity 0.15s;
-}
-.hp .hp-path__links li a::before {
-  content: "→";
-  font-size: 0.75rem; flex-shrink: 0;
-  color: var(--path-col); opacity: 0.7;
-  transition: transform 0.15s;
-}
-.hp .hp-path__links li a:hover {
-  background: rgba(128,128,128,0.07);
-  opacity: 1;
-}
-.hp .hp-path__links li a:hover::before { transform: translateX(2px); }
-.hp-path__tag {
-  display: inline-block; vertical-align: middle;
-  margin-left: 0.35rem;
-  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em;
-  padding: 0.1rem 0.4rem; border-radius: 4px;
-  background: rgba(99,102,241,0.13); color: var(--md-primary-fg-color);
-  opacity: 0.8; white-space: nowrap;
-}
-
-
-/* ── Scroll reveal ─────────────────────────────────────────────────────────── */
-.hp-reveal-l, .hp-reveal-r {
-  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.65s ease;
-  will-change: transform, opacity;
-}
-.hp-reveal-l { transform: translateX(-60px); opacity: 0; }
-.hp-reveal-r { transform: translateX(60px); opacity: 0; }
-.hp-reveal-l.on, .hp-reveal-r.on { transform: translateX(0) !important; opacity: 1 !important; }
-
-/* ── Responsive ────────────────────────────────────────────────────────────── */
-@media (max-width: 960px) {
-  #hp-pillars-track { height: auto; }
-  #hp-pillars-stage {
-    position: relative; top: auto;
-    height: auto; overflow: visible;
-  }
-  .hp-pcard {
-    position: relative;
-    transform: none !important; filter: none !important;
-    height: auto; min-height: 100svh;
-    padding: 4rem 1.5rem;
-  }
-  .hp-pcard__inner { grid-template-columns: 1fr !important; gap: 2rem; }
-  .hp-paths { grid-template-columns: 1fr; }
-  .hp-hero { height: 100svh; min-height: 500px; padding: clamp(3rem, 6vh, 5rem) 1.5rem clamp(1.5rem, 3vh, 3rem); }
-  .hp-pat-grid { grid-template-columns: 1fr 1fr; }
-  .hp-cmp { grid-template-columns: 1.5fr 1.2fr 1fr; }
-  .hp-cmp__cell:nth-child(5n+4),
-  .hp-cmp__cell:nth-child(5n+5) { display: none; }
-}
+.md-main .md-grid { max-width: 100% !important; }
+.md-main__inner { display: block; padding-top: 0 !important; margin-top: 0 !important; }
+.md-content__inner { margin: 0; }
+.md-content__inner::before { display: none; }
+.md-footer-meta { display: none; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="hp">
 
-<!-- ── HERO ───────────────────────────────────────────────────────────────── -->
+<!-- ── Hero: the compile visualization is the signature element ────────── -->
 <section class="hp-hero">
-
-  <!-- Parallax background (blobs + mesh) -->
-  <div class="hp-hero__bg" id="hero-bg">
-    <div class="hp-hero__blob hp-hero__blob--1"></div>
-    <div class="hp-hero__blob hp-hero__blob--2"></div>
-    <div class="hp-hero__blob hp-hero__blob--3"></div>
-    <div class="hp-hero__mesh"></div>
-  </div>
-
-  <!-- Content -->
-  <div class="hp-hero__content">
-    <div class="hp-hero__eyebrow">
-      <span class="hp-hero__dot"></span>
-      Open source &nbsp;·&nbsp; Python 3.11+ &nbsp;·&nbsp; MIT License
-    </div>
-    <h1><span class="hp-grad">Spec-Driven Architecture</span><br>for Orchestrating Multi-Agent Systems</h1>
-    <p class="lead">Declare, execute, remember, and observe — think Kubernetes for agent orchestration. Four architecture pillars that take you from a YAML blueprint to production-grade observability and distributed tracing for multi-agent systems.</p>
+  <div class="hp-wrap">
+    <div class="hp-eyebrow">Spec-driven multi-agent architecture</div>
+    <h1>Declare it once.<br>Run it anywhere.</h1>
+    <p class="hp-hero__lead">
+      A <code>pyagent-blueprint</code> YAML manifest compiles unmodified onto five structurally
+      different runtime engines — validated, diffed, and contract-tested before a single LLM call.
+    </p>
     <div class="hp-ctas">
-      <a href="getting-started/" class="hp-btn hp-btn--primary">Get Started →</a>
+      <a href="getting-started/" class="hp-btn hp-btn--primary">Get started →</a>
       <a href="https://github.com/pyagent-core/pyagent" class="hp-btn hp-btn--outline">GitHub</a>
       <span class="hp-install"><code>pip install pyagent-all</code></span>
     </div>
 
-    <!-- Terminal-loop asset: real pyagent CLI output, typed and looped -->
-    <div class="hp-terminal" aria-hidden="true">
-      <div class="hp-terminal__bar">
-        <span class="hp-terminal__dot hp-terminal__dot--r"></span>
-        <span class="hp-terminal__dot hp-terminal__dot--y"></span>
-        <span class="hp-terminal__dot hp-terminal__dot--g"></span>
-        <span class="hp-terminal__title">pyagent — customer-support.yaml</span>
+    <div class="hp-compile hp-reveal">
+      <div class="hp-source">
+        <div class="hp-source__bar">customer-support.yaml</div>
+        <pre><code class="language-yaml">agents:
+  classifier: {provider: fast}
+  billing:    {provider: primary}
+  tech:       {provider: primary}
+workflows:
+  support:
+    pattern: supervisor
+    agents:
+      classifier: classifier
+      routes: {billing: billing, tech: tech}</code></pre>
       </div>
-      <pre class="hp-terminal__body" id="hp-term-body"></pre>
+
+      <div class="hp-compile__arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        compile
+      </div>
+
+      <div class="hp-targets">
+        <div class="hp-target">
+          <span class="hp-target__name">pyagent</span><span></span>
+          <span class="hp-target__code">Supervisor(classifier, routes={...}).run(input_)</span>
+        </div>
+        <div class="hp-target">
+          <span class="hp-target__name">langgraph</span><span></span>
+          <span class="hp-target__code">StateGraph(...).add_node(...).add_edge(...)</span>
+        </div>
+        <div class="hp-target">
+          <span class="hp-target__name">crewai</span><span></span>
+          <span class="hp-target__code">Agent(...) / Task(...) / Crew.kickoff_async()</span>
+        </div>
+        <div class="hp-target">
+          <span class="hp-target__name">openai_agents</span><span></span>
+          <span class="hp-target__code">Agent(...) + Runner.run()</span>
+        </div>
+        <div class="hp-target">
+          <span class="hp-target__name">semantic_kernel</span><span></span>
+          <span class="hp-target__code">Kernel() + ChatCompletionAgent.get_response()</span>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- Scroll indicator -->
-  <div class="hp-hero__scroll">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="6 9 12 15 18 9"></polyline>
-    </svg>
-  </div>
-
 </section>
 
-<!-- ── PILLAR STACKING STAGE ──────────────────────────────────────────────── -->
-<div id="hp-pillars-track">
-<div id="hp-pillars-stage">
-
-<!-- Card 1: Blueprint -->
-<div class="hp-pcard hp-pcard--bp">
-    <span class="hp-pcard__num">1</span>
-    <div class="hp-pcard__inner">
-      <div class="hp-pcard__text">
-        <div class="hp-pcard__label">Pillar 1 · Blueprint</div>
-        <h2 class="hp-pcard__h2">Declare your system in YAML</h2>
-        <p>Define agents, workflows, providers and contracts in one file. <code>BlueprintCompiler</code> validates, compiles, diffs, and tests the spec with no boilerplate Python required.</p>
-        <div class="hp-pcard__pkgs">
-          <code>pyagent-blueprint</code>
-        </div>
-        <a href="packages/blueprint/" class="hp-btn hp-btn--ghost">Blueprint docs →</a>
+<!-- ── Pipeline: four pillars as verbs, not a false 1-2-3-4 sequence ────── -->
+<section class="hp-section">
+  <div class="hp-wrap">
+    <p class="hp-section__kicker">Four independent pillars</p>
+    <h2>Each one stands alone. None of them requires another.</h2>
+    <div class="hp-pipeline">
+      <div class="hp-pipe">
+        <div class="hp-pipe__verb">Declare</div>
+        <h3>Blueprint</h3>
+        <p>Agents, workflows, providers, and governance in one reviewable YAML file — validate, diff, and test before running anything.</p>
+        <span class="hp-pipe__pkg">pyagent-blueprint</span>
+        <a href="architecture/blueprint/">Read more →</a>
       </div>
-      <div class="hp-pcard__code">
-<pre><code class="language-yaml"># customer-support.yaml
-api_version: pyagent/v1
-metadata: { name: customer-support, version: "1.0.0" }
-providers:
-  fast:   { provider: anthropic, model: claude-haiku-3-5-20241022 }
-  expert: { provider: anthropic, model: claude-sonnet-4-20250514 }
-agents:
-  classifier: { provider: fast,   prompt: "Classify the request." }
-  specialist: { provider: expert, prompt: "Handle professionally." }
-workflows:
-  main:
-    pattern: supervisor
-    agents: { classifier: classifier, routes: { billing: specialist } }</code></pre>
-<pre style="margin-top:0.75rem"><code class="language-bash">pyagent validate customer-support.yaml
-pyagent diff     v1.yaml v2.yaml</code></pre>
+      <div class="hp-pipe">
+        <div class="hp-pipe__verb">Execute</div>
+        <h3>Execution &amp; Routing</h3>
+        <p>18 named orchestration patterns, difficulty-aware model routing, multi-provider fallback, and token budgets.</p>
+        <span class="hp-pipe__pkg">pyagent-patterns · router · providers · compress</span>
+        <a href="architecture/#execution-routing">Read more →</a>
       </div>
-    </div>
-</div>
-
-<!-- Card 2: Execution -->
-<div class="hp-pcard hp-pcard--ex">
-    <span class="hp-pcard__num">2</span>
-    <div class="hp-pcard__inner">
-      <div class="hp-pcard__code">
-<pre><code class="language-python">from pyagent_patterns.orchestration import Pipeline
-from pyagent_patterns.base import Agent
-from pyagent_providers import AnthropicLLM
-from pyagent_router.middleware import RouterMiddleware
-
-router = RouterMiddleware(model_registry={
-    "claude-haiku":  AnthropicLLM("claude-haiku-3-5-20241022"),
-    "claude-sonnet": AnthropicLLM("claude-sonnet-4-20250514"),
-})
-pipeline = Pipeline(stages=[
-    router.wrap(Agent("extractor",  AnthropicLLM("claude-sonnet-4-20250514"))),
-    router.wrap(Agent("summarizer", AnthropicLLM("claude-sonnet-4-20250514"))),
-])
-result = asyncio.run(pipeline.run("Summarise the quarterly report..."))</code></pre>
+      <div class="hp-pipe">
+        <div class="hp-pipe__verb">Remember</div>
+        <h3>Context &amp; Memory</h3>
+        <p>Three-tier memory with a trust-aware context ledger and PII redaction between agents.</p>
+        <span class="hp-pipe__pkg">pyagent-context</span>
+        <a href="architecture/#context-memory">Read more →</a>
       </div>
-      <div class="hp-pcard__text">
-        <div class="hp-pcard__label">Pillar 2 · Execution</div>
-        <h2 class="hp-pcard__h2">18 patterns, one consistent API</h2>
-        <p>A library of design patterns for multi-agent systems — Pipeline, Supervisor, Debate, Fan-Out, ReAct and 13 more. Not sure which to use? Each page explains when to reach for it, so you can pick the right design pattern for your multi-agent workflow. Difficulty-based routing picks the right model per task, and compression middleware enforces token budgets across the pipeline.</p>
-        <div class="hp-pcard__pkgs">
-          <code>pyagent-patterns</code>
-          <code>pyagent-providers</code>
-          <code>pyagent-router</code>
-          <code>pyagent-compress</code>
-        </div>
-        <a href="packages/patterns/" class="hp-btn hp-btn--ghost">Patterns docs →</a>
-      </div>
-    </div>
-</div>
-
-<!-- Card 3: Context & Memory -->
-<div class="hp-pcard hp-pcard--cx">
-    <span class="hp-pcard__num">3</span>
-    <div class="hp-pcard__inner">
-      <div class="hp-pcard__text">
-        <div class="hp-pcard__label">Pillar 3 · Context &amp; Memory</div>
-        <h2 class="hp-pcard__h2">Three-tier memory, trust-aware</h2>
-        <p>Working memory for the current task, session memory across turns, semantic memory for long-term retrieval. Every item carries a trust level, sensitivity tier and expiry, with PII redaction built in.</p>
-        <div class="hp-pcard__pkgs">
-          <code>pyagent-context</code>
-        </div>
-        <a href="packages/context/" class="hp-btn hp-btn--ghost">Context docs →</a>
-      </div>
-      <div class="hp-pcard__code">
-<pre><code class="language-python">from pyagent_context import ContextLedger, ContextItem, TrustLevel, Sensitivity
-
-ledger = ContextLedger()
-ledger.append(ContextItem(
-    content="Customer ID: C-10482, tier: premium, since 2022",
-    source="crm",
-    trust=TrustLevel.VERIFIED,
-    sensitivity=Sensitivity.INTERNAL,
-))
-
-graph.wire_context(ledger)  # shared across all agents</code></pre>
-      </div>
-    </div>
-</div>
-
-<!-- Card 4: Observability -->
-<div class="hp-pcard hp-pcard--ob">
-    <span class="hp-pcard__num">4</span>
-    <div class="hp-pcard__inner">
-      <div class="hp-pcard__code">
-<pre><code class="language-python">from pyagent_trace.events import TraceEventBus
-
-bus = TraceEventBus()
-graph.wire_trace(bus)  # attaches to every agent in the compiled graph</code></pre>
-<pre style="margin-top:0.75rem"><code class="language-bash">pyagent apply     customer-support.yaml
-pyagent simulate  customer-support.yaml main "I need a refund"
-pyagent dashboard
-# → http://localhost:8080  (traces · costs · governance)</code></pre>
-      </div>
-      <div class="hp-pcard__text">
-        <div class="hp-pcard__label">Pillar 4 · Observability</div>
-        <h2 class="hp-pcard__h2">Every call traced, every cost tracked</h2>
-        <p>Full observability in multi-agent systems: distributed tracing across every agent, pattern, and provider. OTel spans, Langfuse export, record/replay for debugging, and a web dashboard with trace explorer, cost analytics, governance scoring, and provider health monitoring.</p>
-        <div class="hp-pcard__pkgs">
-          <code>pyagent-trace</code>
-          <code>pyagent-studio</code>
-        </div>
-        <a href="packages/trace/" class="hp-btn hp-btn--ghost">Trace docs →</a>
-      </div>
-    </div>
-</div>
-
-</div><!-- /#hp-pillars-stage -->
-</div><!-- /#hp-pillars-track -->
-
-<!-- ── COMPARISON ─────────────────────────────────────────────────────────── -->
-<hr class="hp-divider">
-<div class="hp-compare">
-  <div class="hp-compare__hdr">
-    <span class="hp-section-tag">Comparison</span>
-    <h2>Why PyAgent?</h2>
-    <p class="hp-compare__sub">The only framework purpose-built across all four production pillars.</p>
-  </div>
-
-  <div class="hp-cmp">
-    <!-- Header -->
-    <div class="hp-cmp__cell hp-cmp__head hp-cmp__feat">Feature</div>
-    <div class="hp-cmp__cell hp-cmp__head hp-cmp__pycol"><span class="hp-cmp__badge">★ PyAgent</span></div>
-    <div class="hp-cmp__cell hp-cmp__head">LangChain</div>
-    <div class="hp-cmp__cell hp-cmp__head">CrewAI</div>
-    <div class="hp-cmp__cell hp-cmp__head">AutoGen</div>
-
-    <!-- Row 1 -->
-    <div class="hp-cmp__cell hp-cmp__feat">Named pattern library</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__count">18</div>
-    <div class="hp-cmp__cell hp-cmp__par">~6</div>
-    <div class="hp-cmp__cell hp-cmp__par">3</div>
-    <div class="hp-cmp__cell hp-cmp__par">~4</div>
-
-    <!-- Row 2 -->
-    <div class="hp-cmp__cell hp-cmp__feat">Pattern composition</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__yes"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-
-    <!-- Row 3 -->
-    <div class="hp-cmp__cell hp-cmp__feat">Type-safe YAML blueprints</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__yes"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__par">partial</div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-
-    <!-- Row 4 -->
-    <div class="hp-cmp__cell hp-cmp__feat">Difficulty-aware model routing</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__yes"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-
-    <!-- Row 5 -->
-    <div class="hp-cmp__cell hp-cmp__feat">Inter-agent token compression</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__yes"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-
-    <!-- Row 6 -->
-    <div class="hp-cmp__cell hp-cmp__feat">Structured memory (3-tier)</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__yes"></div>
-    <div class="hp-cmp__cell hp-cmp__par">partial</div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__par">partial</div>
-
-    <!-- Row 7 -->
-    <div class="hp-cmp__cell hp-cmp__feat">First-class async</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__yes"></div>
-    <div class="hp-cmp__cell hp-cmp__par">partial</div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__yes"></div>
-
-    <!-- Row 8 -->
-    <div class="hp-cmp__cell hp-cmp__feat">Native OTel tracing</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__yes"></div>
-    <div class="hp-cmp__cell hp-cmp__par">partial</div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__par">partial</div>
-
-    <!-- Row 9 -->
-    <div class="hp-cmp__cell hp-cmp__feat">Integrated web dashboard</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__yes"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-    <div class="hp-cmp__cell hp-cmp__no"></div>
-
-    <!-- Row 10 (last) -->
-    <div class="hp-cmp__cell hp-cmp__feat hp-cmp__last">Zero mandatory dependencies</div>
-    <div class="hp-cmp__cell hp-cmp__pycol hp-cmp__yes hp-cmp__last"></div>
-    <div class="hp-cmp__cell hp-cmp__no hp-cmp__last"></div>
-    <div class="hp-cmp__cell hp-cmp__no hp-cmp__last"></div>
-    <div class="hp-cmp__cell hp-cmp__no hp-cmp__last"></div>
-  </div>
-</div>
-
-<!-- ── QUICK START ────────────────────────────────────────────────────────── -->
-<hr class="hp-divider">
-<div class="hp-section">
-  <span class="hp-section-tag">Get Going</span>
-  <h2>Quick Start</h2>
-  <div class="hp-tabs" id="qs-tabs">
-    <div class="hp-tabs__nav">
-      <button class="hp-tabs__btn active" data-tab="qs-bp">📋 Blueprint</button>
-      <button class="hp-tabs__btn" data-tab="qs-ex">⚡ Execution</button>
-      <button class="hp-tabs__btn" data-tab="qs-full">Full stack</button>
-    </div>
-    <div class="hp-tabs__panel active" id="qs-bp">
-<pre><code class="language-bash">pip install pyagent-blueprint</code></pre>
-<pre><code class="language-yaml"># pipeline.yaml
-api_version: pyagent/v1
-metadata: { name: doc-pipeline, version: "1.0.0" }
-agents:
-  extractor:  { prompt: "Extract the key facts as bullet points." }
-  summarizer: { prompt: "Summarise the input in 3 sentences." }
-workflows:
-  main:
-    pattern: pipeline
-    agents: { stages: [extractor, summarizer] }</code></pre>
-<pre><code class="language-python">import asyncio
-from pyagent_blueprint import load_blueprint, BlueprintCompiler
-
-graph  = BlueprintCompiler().compile(load_blueprint("pipeline.yaml"))
-result = asyncio.run(graph.run("main", "Process this document"))
-print(result.output)</code></pre>
-    </div>
-    <div class="hp-tabs__panel" id="qs-ex">
-<pre><code class="language-bash">pip install pyagent-patterns</code></pre>
-<pre><code class="language-python">import asyncio
-from pyagent_patterns.base import Agent, MockLLM
-from pyagent_patterns.orchestration import Pipeline
-
-llm = MockLLM(responses=["Extracted: key facts", "Summary: concise version"])
-pipeline = Pipeline(stages=[
-    Agent("extractor",  llm),
-    Agent("summarizer", llm),
-])
-result = asyncio.run(pipeline.run("Process this document"))
-print(result.output)  # "Summary: concise version"</code></pre>
-    </div>
-    <div class="hp-tabs__panel" id="qs-full">
-<pre><code class="language-bash">pip install pyagent-all</code></pre>
-<pre><code class="language-python">import asyncio
-from pyagent_blueprint import load_blueprint, BlueprintCompiler
-from pyagent_trace.events import TraceEventBus
-
-bus   = TraceEventBus()
-graph = BlueprintCompiler().compile(load_blueprint("blueprint.yaml"))
-graph.wire_trace(bus)
-
-result = asyncio.run(graph.run("main", "Analyse Q3 revenue trends"))
-# Then: pyagent dashboard --trace traces/runs.jsonl</code></pre>
-    </div>
-  </div>
-</div>
-
-<!-- ── ARCHITECTURE ───────────────────────────────────────────────────────── -->
-<hr class="hp-divider">
-<div class="hp-arch-wrap">
-  <div class="hp-arch-hdr">
-    <span class="hp-section-tag">System Design</span>
-    <h2>Four pillars, one coherent stack</h2>
-    <p>Blueprint compiles to RuntimeGraph, which orchestrates execution, manages context, and streams every event to the observability layer.</p>
-  </div>
-  <div class="hp-arch-card">
-    <img src="assets/pyagent-architecture.png" alt="PyAgent Architecture — Blueprint compiles to RuntimeGraph, which orchestrates Execution patterns against Providers, wired to Context &amp; Memory and Observability">
-  </div>
-  <div class="hp-arch-steps">
-    <div class="hp-arch-step"><span class="hp-arch-step__kw">Specify</span><span class="hp-arch-step__desc">Declare agents, workflows, providers, and contracts in a YAML blueprint</span><span class="hp-arch-step__num">1</span></div>
-    <div class="hp-arch-step"><span class="hp-arch-step__kw">Compile</span><span class="hp-arch-step__desc"><code>BlueprintCompiler</code> transforms the spec into a runnable <code>RuntimeGraph</code></span><span class="hp-arch-step__num">2</span></div>
-    <div class="hp-arch-step"><span class="hp-arch-step__kw">Orchestrate</span><span class="hp-arch-step__desc">Patterns coordinate agent collaboration across Pipeline, Supervisor, and Debate flows</span><span class="hp-arch-step__num">3</span></div>
-    <div class="hp-arch-step"><span class="hp-arch-step__kw">Provide</span><span class="hp-arch-step__desc">Provider registry handles fallback chains, cost routing, and capability negotiation</span><span class="hp-arch-step__num">4</span></div>
-    <div class="hp-arch-step"><span class="hp-arch-step__kw">Remember</span><span class="hp-arch-step__desc"><code>ContextLedger</code> maintains three-tier memory across agents and turns</span><span class="hp-arch-step__num">5</span></div>
-    <div class="hp-arch-step"><span class="hp-arch-step__kw">Compress</span><span class="hp-arch-step__desc"><code>CompressMiddleware</code> trims inter-agent token transfer and enforces budgets</span><span class="hp-arch-step__num">6</span></div>
-    <div class="hp-arch-step"><span class="hp-arch-step__kw">Trace</span><span class="hp-arch-step__desc"><code>TraceEventBus</code> collects events from agents, patterns, and providers</span><span class="hp-arch-step__num">7</span></div>
-    <div class="hp-arch-step"><span class="hp-arch-step__kw">Observe</span><span class="hp-arch-step__desc">Studio visualises traces, costs, compliance, and provider health in real time</span><span class="hp-arch-step__num">8</span></div>
-  </div>
-</div>
-
-<!-- ── 18 PATTERNS ───────────────────────────────────────────────────────── -->
-<hr class="hp-divider">
-<div class="hp-section">
-  <span class="hp-section-tag">Pattern Library</span>
-  <h2>18 Patterns</h2>
-  <div class="hp-tabs" id="pat-tabs">
-    <div class="hp-tabs__nav">
-      <button class="hp-tabs__btn active" data-tab="pat-orch">Orchestration</button>
-      <button class="hp-tabs__btn" data-tab="pat-res">Resolution</button>
-      <button class="hp-tabs__btn" data-tab="pat-str">Structural</button>
-      <button class="hp-tabs__btn" data-tab="pat-adv">Advanced</button>
-    </div>
-    <div class="hp-tabs__panel active" id="pat-orch">
-      <div class="hp-pat-grid">
-        <a href="packages/patterns/orchestration/supervisor/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🎯</span>
-          <div class="hp-pat-card__name">Supervisor</div>
-          <div class="hp-pat-card__desc">Classify input → route to specialist → collect result</div>
-        </a>
-        <a href="packages/patterns/orchestration/pipeline/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">⛓️</span>
-          <div class="hp-pat-card__name">Pipeline</div>
-          <div class="hp-pat-card__desc">Sequential stage chain: each agent processes the previous output</div>
-        </a>
-        <a href="packages/patterns/orchestration/fan-out-fan-in/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🌐</span>
-          <div class="hp-pat-card__name">Fan-Out / Fan-In</div>
-          <div class="hp-pat-card__desc">Run agents in parallel, aggregate into one result</div>
-        </a>
-        <a href="packages/patterns/orchestration/hierarchical/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🏛️</span>
-          <div class="hp-pat-card__name">Hierarchical</div>
-          <div class="hp-pat-card__desc">Manager delegates to team leads who delegate to workers</div>
-        </a>
-        <a href="packages/patterns/orchestration/orchestrator-workers/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">⚙️</span>
-          <div class="hp-pat-card__name">Orchestrator-Workers</div>
-          <div class="hp-pat-card__desc">Dynamic task delegation based on capability</div>
-        </a>
-      </div>
-    </div>
-    <div class="hp-tabs__panel" id="pat-res">
-      <div class="hp-pat-grid">
-        <a href="packages/patterns/resolution/self-reflection/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🪞</span>
-          <div class="hp-pat-card__name">Self-Reflection</div>
-          <div class="hp-pat-card__desc">Agent critiques and refines its own output iteratively</div>
-        </a>
-        <a href="packages/patterns/resolution/cross-reflection/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🔍</span>
-          <div class="hp-pat-card__name">Cross-Reflection</div>
-          <div class="hp-pat-card__desc">Second agent reviews the first agent's output</div>
-        </a>
-        <a href="packages/patterns/resolution/debate/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">⚖️</span>
-          <div class="hp-pat-card__name">Debate</div>
-          <div class="hp-pat-card__desc">Agents argue opposing positions, a judge decides</div>
-        </a>
-        <a href="packages/patterns/resolution/voting/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🗳️</span>
-          <div class="hp-pat-card__name">Voting</div>
-          <div class="hp-pat-card__desc">Multiple agents vote, majority or consensus wins</div>
-        </a>
-        <a href="packages/patterns/resolution/evaluator-optimizer/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">📈</span>
-          <div class="hp-pat-card__name">Evaluator-Optimizer</div>
-          <div class="hp-pat-card__desc">Score against criteria, iterate until threshold is met</div>
-        </a>
-      </div>
-    </div>
-    <div class="hp-tabs__panel" id="pat-str">
-      <div class="hp-pat-grid">
-        <a href="packages/patterns/structural/role-based/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">👥</span>
-          <div class="hp-pat-card__name">Role-Based</div>
-          <div class="hp-pat-card__desc">Assign specialist roles: analyst, writer, reviewer</div>
-        </a>
-        <a href="packages/patterns/structural/layered/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">📚</span>
-          <div class="hp-pat-card__name">Layered</div>
-          <div class="hp-pat-card__desc">Abstraction layers: each processes at a different granularity</div>
-        </a>
-        <a href="packages/patterns/structural/topology/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🕸️</span>
-          <div class="hp-pat-card__name">Topology</div>
-          <div class="hp-pat-card__desc">Fixed topology: chain, star, or full mesh</div>
-        </a>
-        <a href="packages/patterns/structural/blackboard/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">📋</span>
-          <div class="hp-pat-card__name">Blackboard</div>
-          <div class="hp-pat-card__desc">Shared mutable state; agents read/write asynchronously</div>
-        </a>
-      </div>
-    </div>
-    <div class="hp-tabs__panel" id="pat-adv">
-      <div class="hp-pat-grid">
-        <a href="packages/patterns/advanced/talker-reasoner/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">💭</span>
-          <div class="hp-pat-card__name">Talker-Reasoner</div>
-          <div class="hp-pat-card__desc">Fast System 1 responds, slow System 2 verifies</div>
-        </a>
-        <a href="packages/patterns/advanced/swarm/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🐝</span>
-          <div class="hp-pat-card__name">Swarm</div>
-          <div class="hp-pat-card__desc">Agents self-organize; emergent behavior from local rules</div>
-        </a>
-        <a href="packages/patterns/advanced/human-in-the-loop/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🤝</span>
-          <div class="hp-pat-card__name">Human-in-the-Loop</div>
-          <div class="hp-pat-card__desc">Pause workflow for human approval at defined checkpoints</div>
-        </a>
-        <a href="packages/patterns/advanced/react/" class="hp-pat-card">
-          <span class="hp-pat-card__icon">🔄</span>
-          <div class="hp-pat-card__name">ReAct</div>
-          <div class="hp-pat-card__desc">Reason → act → observe loop with tool calls</div>
-        </a>
+      <div class="hp-pipe">
+        <div class="hp-pipe__verb">Observe</div>
+        <h3>Observability</h3>
+        <p>OpenTelemetry tracing, cost tracking, and a dashboard for replaying exactly what a run did.</p>
+        <span class="hp-pipe__pkg">pyagent-trace · pyagent-studio</span>
+        <a href="architecture/observability/">Read more →</a>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- ── WHERE TO START ────────────────────────────────────────────────────── -->
-<hr class="hp-divider">
-<div class="hp-section">
-  <span class="hp-section-tag">Learning Path</span>
-  <h2>Where to start</h2>
-  <div class="hp-paths">
-    <div class="hp-path">
-      <div class="hp-path__inner">
-        <div class="hp-path__meta">
-          <div class="hp-path__icon">🎓</div>
-          <span class="hp-path__num">Path 01</span>
-        </div>
-        <h3>New to multi-agent systems?</h3>
-        <p>Start with the tutorial, then explore the pattern library one pattern at a time.</p>
-        <ul class="hp-path__links">
-          <li><a href="getting-started/">Getting Started</a></li>
-          <li><a href="guides/blueprint/">Blueprint guide</a></li>
-          <li><a href="packages/patterns/orchestration/pipeline/">Pipeline pattern</a></li>
-          <li><a href="guides/composition/">Composition guide</a></li>
-        </ul>
+<!-- ── What you get ──────────────────────────────────────────────────────── -->
+<section class="hp-section">
+  <div class="hp-wrap">
+    <p class="hp-section__kicker">Why not hand-write the orchestration instead</p>
+    <h2>What a blueprint gets you that a script doesn't</h2>
+    <div class="hp-grid2">
+      <div class="hp-feature">
+        <h4>Diff and review like infrastructure</h4>
+        <p><code>pyagent-blueprint diff old.yaml new.yaml</code> produces a semantic diff over the IR — not a text diff of hand-wired Python — so a reviewer sees exactly which agent, route, or SLA changed.</p>
       </div>
-    </div>
-    <div class="hp-path">
-      <div class="hp-path__inner">
-        <div class="hp-path__meta">
-          <div class="hp-path__icon">🔧</div>
-          <span class="hp-path__num">Path 02</span>
-        </div>
-        <h3>Adding to an existing codebase?</h3>
-        <p>Drop patterns in alongside your existing LLM setup, then layer in routing and context.</p>
-        <ul class="hp-path__links">
-          <li><a href="guides/hooks/">Hooks guide</a></li>
-          <li><a href="guides/providers/">Providers guide</a></li>
-          <li><a href="guides/router/">Router guide</a></li>
-          <li><a href="guides/context/">Context guide</a></li>
-        </ul>
+      <div class="hp-feature">
+        <h4>Governance is never silently dropped</h4>
+        <p>Budgets, SLAs, memory tiers, and recovery policies are either honored by the runtime or surfaced as a stable diagnostic code like <code>BUDGET_UNSUPPORTED</code> — never silently ignored.</p>
       </div>
-    </div>
-    <div class="hp-path">
-      <div class="hp-path__inner">
-        <div class="hp-path__meta">
-          <div class="hp-path__icon">🚀</div>
-          <span class="hp-path__num">Path 03</span>
-        </div>
-        <h3>Building for production?</h3>
-        <p>Use all four pillars: Blueprint for versioning and CI, then Observability for monitoring.</p>
-        <ul class="hp-path__links">
-          <li><a href="guides/blueprint/">Blueprint guide</a></li>
-          <li><a href="guides/tracing/">Tracing guide</a></li>
-          <li><a href="guides/studio/">Studio guide</a></li>
-          <li><a href="guides/recovery/">Recovery guide</a></li>
-        </ul>
+      <div class="hp-feature">
+        <h4>Validate before you run anything</h4>
+        <p>Static analysis catches dangling references and schema violations before an LLM call is ever made.</p>
+      </div>
+      <div class="hp-feature">
+        <h4>Test without live API calls</h4>
+        <p><code>pyagent-blueprint test</code> checks contract conformance against a <code>MockLLM</code>, so CI validates a system's shape before spending a token.</p>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-</div><!-- /.hp -->
+<!-- ── Quick start ───────────────────────────────────────────────────────── -->
+<section class="hp-section hp-quickstart">
+  <div class="hp-wrap">
+    <p class="hp-section__kicker">Zero to running</p>
+    <h2>Your first pattern, in Python — no YAML required</h2>
+    <pre><code class="language-python">from pyagent_patterns.base import Agent, MockLLM
+from pyagent_patterns.resolution import SelfReflection
+
+pattern = SelfReflection(agent=Agent("coder", llm), max_rounds=3)
+result = await pattern.run("Write an efficient Fibonacci function")</code></pre>
+  </div>
+</section>
+
+<!-- ── Where to start ────────────────────────────────────────────────────── -->
+<section class="hp-section" style="border-bottom:none;">
+  <div class="hp-wrap">
+    <p class="hp-section__kicker">Where to start</p>
+    <h2>Three doors in, depending on what you're doing</h2>
+    <div class="hp-paths">
+      <a href="getting-started/" class="hp-path">
+        <div class="hp-path__label">New to multi-agent systems</div>
+        <h4>Start with Quickstart</h4>
+        <p>Install, run your first pattern, then browse the 18-pattern catalog.</p>
+      </a>
+      <a href="cookbook/" class="hp-path">
+        <div class="hp-path__label">Have a real use case</div>
+        <h4>Browse the Cookbook</h4>
+        <p>37 complete, runnable recipes across 21 domains.</p>
+      </a>
+      <a href="api/adapters/" class="hp-path">
+        <div class="hp-path__label">Evaluating against another framework</div>
+        <h4>See the Adapters</h4>
+        <p>The same manifest compiled onto LangGraph, CrewAI, and three other runtimes.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+</div>
 
 <script>
-/* ── Hero height: fill exactly from its top edge to viewport bottom ─────── */
-(function() {
-  var hero = document.querySelector('.hp-hero');
-  if (!hero) return;
-  function fitHero() {
-    var top = Math.round(hero.getBoundingClientRect().top + window.scrollY);
-    hero.style.height = Math.max(500, window.innerHeight - top) + 'px';
-  }
-  fitHero();
-  window.addEventListener('resize', fitHero);
-})();
-
-/* ── Hero parallax ───────────────────────────────────────────────────────── */
-(function() {
-  var bg = document.getElementById('hero-bg');
-  if (!bg) return;
-  function parallax() {
-    bg.style.transform = 'translateY(' + (window.scrollY * 0.38) + 'px)';
-  }
-  window.addEventListener('scroll', parallax, { passive: true });
-})();
-
-/* ── Terminal-loop asset ─────────────────────────────────────────────────
-   Real `pyagent` CLI output (validate/apply/diff/simulate/dashboard),
-   captured by actually running each command against
-   examples/fixtures/sample_blueprint.yaml — not fabricated. See
-   packages/pyagent-blueprint/IMPLEMENTATION-STATUS.md for how it was
-   verified. Typed out, held, then looped, Terraform-plan style.        */
-(function() {
-  var el = document.getElementById('hp-term-body');
-  if (!el) return;
-
-  var steps = [
-    {
-      cmd: 'pyagent validate customer-support.yaml',
-      out: [{ t: 'ok', s: 'Valid' }],
-    },
-    {
-      cmd: 'pyagent apply customer-support.yaml',
-      out: [{ t: 'ok', s: "✓ Blueprint 'customer-support' v1.2.0 loaded and valid." }],
-    },
-    {
-      cmd: 'pyagent diff customer-support.yaml customer-support.v2.yaml',
-      out: [
-        { t: 'out', s: 'INFO (1):' },
-        { t: 'out', s: '  [modified] workflows.customer-support.recovery.timeout_seconds' },
-      ],
-    },
-    {
-      cmd: 'pyagent simulate customer-support.yaml customer-support "My invoice looks wrong"',
-      out: [
-        { t: 'out', s: 'Output: [claude-3-5-sonnet] Mock response' },
-        { t: 'out', s: 'Elapsed: 0.0ms' },
-      ],
-    },
-    {
-      cmd: 'pyagent dashboard',
-      out: [{ t: 'ok', s: 'Starting dashboard at http://127.0.0.1:8420' }],
-    },
-  ];
-
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var TYPE_MS = 32;       // per-character typing speed
-  var LINE_PAUSE_MS = 340; // pause after each output line appears
-  var HOLD_MS = 1500;     // hold fully-typed step before clearing
-  var CLEAR_PAUSE_MS = 400;
-
-  function esc(s) {
-    var d = document.createElement('div');
-    d.textContent = s;
-    return d.innerHTML;
-  }
-
-  function render(promptText, outLines) {
-    var html = '<span class="hp-term-prompt">$</span> ' + esc(promptText) +
-      '<span class="hp-term-cursor">▍</span>';
-    outLines.forEach(function(line) {
-      html += '\n<span class="hp-term-' + line.t + '">' + esc(line.s) + '</span>';
+(function () {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var el = document.querySelector(".hp-reveal");
+  if (!el || !("IntersectionObserver" in window)) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add("hp-in"); io.unobserve(e.target); }
     });
-    el.innerHTML = html;
-  }
-
-  var stepIndex = 0;
-  var timer = null;
-
-  function runStep() {
-    var step = steps[stepIndex % steps.length];
-    var charIndex = 0;
-
-    if (reduceMotion) {
-      render(step.cmd, step.out);
-      timer = setTimeout(nextStep, HOLD_MS);
-      return;
-    }
-
-    function typeChar() {
-      charIndex++;
-      render(step.cmd.slice(0, charIndex), []);
-      if (charIndex < step.cmd.length) {
-        timer = setTimeout(typeChar, TYPE_MS);
-      } else {
-        revealOutput(0);
-      }
-    }
-
-    function revealOutput(lineIndex) {
-      render(step.cmd, step.out.slice(0, lineIndex));
-      if (lineIndex < step.out.length) {
-        timer = setTimeout(function() { revealOutput(lineIndex + 1); }, LINE_PAUSE_MS);
-      } else {
-        timer = setTimeout(nextStep, HOLD_MS);
-      }
-    }
-
-    typeChar();
-  }
-
-  function nextStep() {
-    el.style.opacity = '0';
-    timer = setTimeout(function() {
-      stepIndex++;
-      el.style.opacity = '1';
-      runStep();
-    }, CLEAR_PAUSE_MS);
-  }
-
-  el.style.transition = 'opacity 0.25s ease';
-  runStep();
-
-  /* Pause the loop when the hero scrolls out of view. */
-  var hero = document.querySelector('.hp-hero');
-  if (hero && 'IntersectionObserver' in window) {
-    new IntersectionObserver(function(entries) {
-      entries.forEach(function(e) {
-        if (!e.isIntersecting && timer) {
-          clearTimeout(timer);
-          timer = null;
-        } else if (e.isIntersecting && !timer) {
-          runStep();
-        }
-      });
-    }, { threshold: 0.1 }).observe(hero);
-  }
+  }, { threshold: 0.2 });
+  io.observe(el);
 })();
-
-/* ── Tab switching ───────────────────────────────────────────────────────── */
-document.querySelectorAll('.hp-tabs').forEach(function(tabs) {
-  tabs.querySelectorAll('.hp-tabs__btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var id = this.getAttribute('data-tab');
-      tabs.querySelectorAll('.hp-tabs__btn').forEach(function(b) { b.classList.remove('active'); });
-      tabs.querySelectorAll('.hp-tabs__panel').forEach(function(p) { p.classList.remove('active'); });
-      this.classList.add('active');
-      document.getElementById(id).classList.add('active');
-    });
-  });
-});
-
-/* ── Pillar stacking scroll driver ───────────────────────────────────────── */
-(function() {
-  var track = document.getElementById('hp-pillars-track');
-  var stage = document.getElementById('hp-pillars-stage');
-  var cards = Array.prototype.slice.call(
-    document.querySelectorAll('#hp-pillars-stage .hp-pcard')
-  );
-  if (!track || !stage || !cards.length) return;
-
-  var N = cards.length;
-
-  function tick() {
-    var vh = window.innerHeight;
-    var T  = stage.getBoundingClientRect().top; /* distance from viewport top */
-
-    /* Once track has fully scrolled past, stop updating */
-    var trackBottom = track.getBoundingClientRect().bottom;
-    if (trackBottom <= 0) return;
-
-    /* How many px into the section we've scrolled (negative = not yet) */
-    var stageH  = vh - parseFloat(getComputedStyle(stage).top || 48);
-    var scrolled = -(track.getBoundingClientRect().top -
-                     parseFloat(getComputedStyle(stage).top || 48));
-    var total    = track.offsetHeight - stageH;
-    var perCard  = total / N;
-    var enterLen = perCard * 0.65; /* card slides in over 65% of its budget */
-
-    cards.forEach(function(card, i) {
-      var start    = i * perCard;
-      /* card 0 starts entering before the sticky point (offset by enterLen),
-         so it is fully in place the moment the section sticks */
-      var progress = i === 0
-        ? Math.max(0, Math.min(1, (scrolled + enterLen) / enterLen))
-        : Math.max(0, Math.min(1, (scrolled - start) / enterLen));
-
-      if (progress <= 0) {
-        card.style.transform = 'translateY(100%)';
-        card.style.filter    = '';
-        return;
-      }
-
-      /* Slide up: ease-out cubic */
-      var ease = 1 - Math.pow(1 - progress, 3);
-      var ty   = (1 - ease) * 100;
-
-      /* How buried is this card by later cards coming in? */
-      var maxCover = 0;
-      for (var j = i + 1; j < N; j++) {
-        var jp = Math.max(0, Math.min(1, (scrolled - j * perCard) / enterLen));
-        if (jp > maxCover) maxCover = jp;
-      }
-
-      var scale      = 1 - maxCover * 0.06;
-      var brightness = 1 - maxCover * 0.32;
-
-      card.style.transform = 'translateY(' + ty.toFixed(2) + '%) scale(' + scale.toFixed(4) + ')';
-      card.style.filter    = maxCover > 0.01
-        ? 'brightness(' + brightness.toFixed(3) + ')'
-        : '';
-    });
-  }
-
-  /* listen on both window and document for cross-browser compatibility */
-  window.addEventListener('scroll', tick, { passive: true });
-  document.addEventListener('scroll', tick, { passive: true });
-  window.addEventListener('resize', tick, { passive: true });
-  tick();
-
-  /* rAF fallback: poll while track is near viewport (covers custom scroll containers) */
-  var rafRunning = false;
-  var trackObserver = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting && !rafRunning) {
-        rafRunning = true;
-        (function loop() { if (!rafRunning) return; tick(); requestAnimationFrame(loop); })();
-      } else if (!e.isIntersecting) {
-        rafRunning = false;
-      }
-    });
-  }, { rootMargin: '100% 0px' });
-  trackObserver.observe(track);
-})();
-
-/* ── Scroll reveal ───────────────────────────────────────────────────────── */
-var observer = new IntersectionObserver(function(entries) {
-  entries.forEach(function(e) {
-    if (e.isIntersecting) {
-      e.target.classList.add('on');
-      observer.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.12 });
-
-document.querySelectorAll('.hp-reveal-l, .hp-reveal-r').forEach(function(el) {
-  observer.observe(el);
-});
-
-/* ── Syntax highlighting ─────────────────────────────────────────────────── */
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>
-if (typeof hljs !== 'undefined') {
-  document.querySelectorAll('.hp pre code').forEach(function(el) {
-    hljs.highlightElement(el);
-  });
-}
 </script>
 {% endblock %}
 

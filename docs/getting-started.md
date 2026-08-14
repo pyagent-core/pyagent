@@ -88,6 +88,8 @@ All hooks are `None` by default — existing code works identically without them
 
 ## Next Steps
 
+- [Browse the Cookbook](cookbook/index.md) — 37 complete, runnable multi-agent recipes across 21
+  domains, filterable by domain, design pattern, or package
 - [Pattern Selection Guide](packages/patterns/index.md) — decision tree + all 18 patterns
 - [Hooks Guide](guides/hooks.md) — tracing, context, compression, and cost hooks
 - [Router Guide](guides/router.md) — auto-select cheapest model
