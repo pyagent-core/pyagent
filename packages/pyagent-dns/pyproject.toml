@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyagent-dns"
+version = "0.1.0"
+description = "Separates naming from authorization for multi-agent systems with signed records and attenuated authority graphs."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "PyAgent Team", email = "team@pyagent.org"}]
+keywords = [
+    "agents",
+    "multi-agent",
+    "LLM",
+    "authorization",
+    "registry",
+    "discovery",
+    "agent identity",
+    "AXO",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pyagent-patterns>=0.1.0",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "cryptography>=42",
+]
+
+[project.urls]
+Homepage = "https://pyagent.org"
+Repository = "https://github.com/pyagent-core/pyagent"
+Documentation = "https://pyagent.org"
+"Design Patterns" = "https://pyagent.org/packages/patterns/"
+"Getting Started" = "https://pyagent.org/getting-started/"
+"Cookbook" = "https://pyagent.org/cookbook/"
+
+[project.optional-dependencies]
+trace = ["pyagent-trace>=0.1.0"]
+context = ["pyagent-context>=0.1.0"]
+blueprint = ["pyagent-blueprint>=0.1.0"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.5", "mypy>=1.10"]
+all = [
+    "pyagent-trace>=0.1.0",
+    "pyagent-context>=0.1.0",
+    "pyagent-blueprint>=0.1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pyagent_dns"]
+

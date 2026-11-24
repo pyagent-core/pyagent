@@ -1,0 +1,17 @@
+{
+  "name": "a2a_market_analyst",
+  "url": "https://agents.a2a.network/market-analyst",
+  "version": "2.0.1",
+  "description": "Agent card for automated market trend extraction",
+  "skills": [
+    {
+      "name": "fetch_market_snapshot",
+      "description": "Fetches stock index snapshots"
+    },
+    {
+      "name": "extract_sec_filings",
+      "description": "Extracts 10-K sections"
+    }
+  ]
+}
+

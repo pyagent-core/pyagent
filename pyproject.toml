@@ -17,6 +17,7 @@ members = [
     "packages/pyagent-blueprint",
     "packages/pyagent-studio",
     "packages/pyagent-all",
+    "packages/pyagent-dns",
 ]
 
 [tool.ruff]

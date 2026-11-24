@@ -10,7 +10,7 @@
   {
     "check": "every_real_package_covered",
     "status": "PASS",
-    "detail": "all 9 packages under packages/ are covered"
+    "detail": "all 10 packages under packages/ are covered"
   },
   {
     "check": "required_fields_present",

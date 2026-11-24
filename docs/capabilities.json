@@ -577,6 +577,59 @@
       }
     },
     {
+      "id": "pyagent-dns",
+      "pypi": "pyagent-dns",
+      "install": "pip install pyagent-dns",
+      "description": "Cryptographic name service and capability authorization graph for multi-agent systems, enforcing the strict separation of naming from authority.",
+      "docs": "https://pyagent.org/packages/dns/",
+      "capabilities": [
+        {
+          "id": "NameRegistry",
+          "summary": "Ed25519-signed agent and tool name registry with semver lookup.",
+          "use_when": [
+            "You need tamper-evident registration and lookup for agent tools and handoff targets"
+          ],
+          "avoid_when": [
+            "Tool names and agent endpoints are hardcoded and never change at runtime"
+          ],
+          "tradeoffs": "Requires managing and distributing public keys; adds record signing overhead at registration."
+        },
+        {
+          "id": "Resolver",
+          "summary": "TTL-cached resolver mapping capability names to verified NameRecords.",
+          "use_when": [
+            "Agents need fast sub-millisecond capability resolution with TTL freshness caching"
+          ],
+          "avoid_when": [
+            "You do not need dynamic name discovery or version negotiation"
+          ],
+          "tradeoffs": "Cached records may briefly lag revocation until cache invalidation or TTL expiry."
+        },
+        {
+          "id": "AuthorityGraph",
+          "summary": "Directional capability authorization graph with downward monotonic attenuation.",
+          "use_when": [
+            "You need fine-grained, delegable access control with limits, purposes, and data class boundaries"
+          ],
+          "avoid_when": [
+            "All agents in the system are fully trusted and share universal permissions"
+          ],
+          "tradeoffs": "Every call requires an evaluation against the authority graph before execution; adds ~0.1ms per decision."
+        },
+        {
+          "id": "DnsMiddleware",
+          "summary": "Guardrails middleware that intercepts agent tool calls and agent handoffs.",
+          "use_when": [
+            "Integrating DNS resolution and authority enforcement into ReAct tools or multi-agent supervisor routes"
+          ],
+          "avoid_when": [
+            "Security decisions are completely handled at an external network API gateway"
+          ],
+          "tradeoffs": "Unauthorized calls raise AuthorizationDeniedError or return structured observations to the model."
+        }
+      ]
+    },
+    {
       "id": "pyagent-all",
       "pypi": "pyagent-all",
       "install": "pip install pyagent-all",

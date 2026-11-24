@@ -1,0 +1,10 @@
+keys:
+- public_key: '-----BEGIN PUBLIC KEY-----
+
+    MCowBQYDK2VwAyEAtqnJjJmG/Gw96NT5njjmYY9BFTXej5AGd6R+k6hd4VA=
+
+    -----END PUBLIC KEY-----
+
+    '
+  public_key_fingerprint: sha256:f68666a264f92cbde7ea90cbb9cbe619e4e81bea06658bd6f75c17b84a6095cf
+  signer: platform_registry

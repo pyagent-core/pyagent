@@ -42,6 +42,9 @@ jobs:
       - name: Build pyagent-studio
         run: uv build --package pyagent-studio --out-dir dist/pyagent-studio
 
+      - name: Build pyagent-dns
+        run: uv build --package pyagent-dns --out-dir dist/pyagent-dns
+
       - name: Build pyagent-all
         run: uv build --package pyagent-all --out-dir dist/pyagent-all
 
@@ -98,6 +101,12 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/pyagent-context/
+          skip-existing: true
+
+      - name: Publish pyagent-dns
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/pyagent-dns/
           skip-existing: true
 
       # Tier 2 — depends on patterns + router
