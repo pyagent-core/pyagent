@@ -1,0 +1,21 @@
+api_version: pyagent/v1
+metadata:
+  name: research-assistant-standard
+  version: 1.0.0
+  description: Minimal valid blueprint without dns extension
+  owner: platform-team
+providers:
+  primary:
+    provider: mock
+    model: mock-llm
+agents:
+  research_agent:
+    prompt: "You are an analyst."
+    provider: primary
+    description: Primary research analyst agent
+workflows:
+  main:
+    pattern: sequential_chain
+    agents:
+      stages:
+        research: research_agent

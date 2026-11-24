@@ -1,0 +1,22 @@
+- grant_id: g_analyst_portfolio
+  principal: portfolio_analyst
+  action: call
+  capability: portfolio-data.reader
+  purpose: portfolio_audit
+  effect: allow
+  resource:
+    name_scope: portfolio-data.reader
+    data_classes:
+      - internal
+
+- grant_id: g_analyst_export
+  principal: portfolio_analyst
+  action: call
+  capability: compliance-exporter
+  purpose: portfolio_audit
+  effect: require_approval
+  approver_role: compliance_officer
+  resource:
+    name_scope: compliance-exporter
+    data_classes:
+      - internal

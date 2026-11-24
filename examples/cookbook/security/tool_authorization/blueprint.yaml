@@ -1,0 +1,28 @@
+api_version: pyagent/v1
+metadata:
+  name: tool-authorization-demo
+  version: 1.0.0
+  description: "Demonstrating two-plane name resolution and authorization with pyagent-dns"
+  owner: security-team
+providers:
+  primary:
+    provider: mock
+    model: mock-llm
+agents:
+  portfolio_analyst:
+    prompt: "You are a portfolio analyst who audits client portfolios."
+    provider: primary
+    description: Primary portfolio analyst agent
+workflows:
+  main:
+    pattern: sequential_chain
+    agents:
+      stages:
+        audit: portfolio_analyst
+x-pyagent:dns:
+  records_files:
+    - records.yaml
+  grants_files:
+    - grants.yaml
+  trusted_keys_file: trusted_keys.yaml
+  enforcement: required

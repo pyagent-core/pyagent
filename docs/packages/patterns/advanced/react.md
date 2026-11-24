@@ -284,6 +284,7 @@ Complete, runnable examples that use the **ReAct** pattern:
 | Recipe | Domain | What it does | Complexity |
 |--------|--------|--------------|------------|
 | [SQL Analyst](../../../cookbook/data-analytics/sql-analyst.md) | Data & Analytics | Reason-act loop that writes and runs SQL to answer questions | Intermediate |
+| [Tool Authorization](../../../cookbook/security/tool-authorization.md) | Security & Threat Intel | A portfolio analyst uses ReAct with guarded tools; unauthorized tools are denied before invocation. | Intermediate |
 | [Fraud Investigation Assistant](../../../cookbook/security/fraud-investigation.md) | Security & Threat Intel | A reason-act agent calls transaction, anomaly, and sanctions tools to build a case | Advanced |
 | [Research Assistant](../../../cookbook/research-analysis/research-assistant.md) | Research & Analysis | Gather sources, debate, synthesize, and cite | Advanced |
 <!-- gen:cookbooks:end -->

@@ -1,0 +1,17 @@
+- name: portfolio-data.reader
+  kind: tool
+  version: "3.2.1"
+  endpoint: https://internal.bank/tools/portfolio-reader
+  identity:
+    public_key_fingerprint: "sha256:8f0d755bae0790024dc1aefd5639351cbd9c7806a432c34ecc199ee36f817309"
+    signed_by: platform_registry
+  schema_hash: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  capabilities:
+    - read_positions
+    - read_holdings
+  data_classes:
+    - internal
+  owner: wealth_platform_team
+  status: active
+  ttl_seconds: 300
+

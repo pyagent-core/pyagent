@@ -1,0 +1,14 @@
+- grant_id: grant_fixture_001
+  principal: research_agent
+  action: call
+  capability: portfolio-data.reader
+  resource:
+    data_classes:
+      - internal
+  purpose: portfolio_review
+  limits:
+    max_records_per_call: 500
+    max_calls_per_session: 20
+  granted_by: wealth_platform_policy
+  policy_version: v14
+

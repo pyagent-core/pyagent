@@ -8,7 +8,7 @@ on:
     branches: [main]
 
 env:
-  PYTHONPATH: "${{ github.workspace }}/packages/pyagent-patterns/src:${{ github.workspace }}/packages/pyagent-compress/src:${{ github.workspace }}/packages/pyagent-router/src:${{ github.workspace }}/packages/pyagent-trace/src:${{ github.workspace }}/packages/pyagent-context/src:${{ github.workspace }}/packages/pyagent-providers/src:${{ github.workspace }}/packages/pyagent-blueprint/src:${{ github.workspace }}/packages/pyagent-studio/src"
+  PYTHONPATH: "${{ github.workspace }}/packages/pyagent-patterns/src:${{ github.workspace }}/packages/pyagent-compress/src:${{ github.workspace }}/packages/pyagent-router/src:${{ github.workspace }}/packages/pyagent-trace/src:${{ github.workspace }}/packages/pyagent-context/src:${{ github.workspace }}/packages/pyagent-providers/src:${{ github.workspace }}/packages/pyagent-blueprint/src:${{ github.workspace }}/packages/pyagent-studio/src:${{ github.workspace }}/packages/pyagent-dns/src"
 
 jobs:
 
@@ -48,6 +48,7 @@ jobs:
           pip install -e packages/pyagent-providers
           pip install -e "packages/pyagent-blueprint[dev,langgraph,crewai,openai-agents,semantic-kernel]"
           pip install -e "packages/pyagent-studio[dev]"
+          pip install -e packages/pyagent-dns
       - run: python -m pytest packages/ -v --tb=short
 
   # ── Stage 3a: Benchmark ──────────────────────────────────────────────────────
@@ -85,6 +86,7 @@ jobs:
           pip install -e packages/pyagent-providers
           pip install -e "packages/pyagent-blueprint[dev]"
           pip install -e "packages/pyagent-studio[dev]"
+          pip install -e packages/pyagent-dns
       # 0. Generated docs (benchmark tables, cookbook index) must be in sync
       #    with their data sources.
       - run: python scripts/gen_docs.py --check
@@ -130,6 +132,7 @@ jobs:
           pip install -e packages/pyagent-providers
           pip install -e "packages/pyagent-blueprint[dev]"
           pip install -e "packages/pyagent-studio[dev]"
+          pip install -e packages/pyagent-dns
       - run: DISABLE_MKDOCS_2_WARNING=true mkdocs build --strict
       - uses: actions/upload-pages-artifact@v3
         with:

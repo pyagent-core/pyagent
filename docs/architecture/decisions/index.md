@@ -13,3 +13,4 @@ Context/Decision/Consequences shape.
 - [Working vs. Session vs. Semantic memory](memory-tier-selection.md)
 - [When Blueprint is (and isn't) justified](when-blueprint-is-justified.md)
 - [Spec-first vs. code-first architecture](spec-first-vs-code-first.md)
+- [Naming is not authorization](naming-is-not-authorization.md)

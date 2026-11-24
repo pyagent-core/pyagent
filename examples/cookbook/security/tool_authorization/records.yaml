@@ -1,0 +1,60 @@
+- name: client-vault-reader
+  kind: tool
+  version: 1.0.0
+  endpoint: internal://tools/vault
+  identity:
+    public_key_fingerprint: sha256:f68666a264f92cbde7ea90cbb9cbe619e4e81bea06658bd6f75c17b84a6095cf
+    public_key: null
+    workload_id: null
+    signed_by: platform_registry
+  schema_hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  capabilities:
+  - read_vault
+  data_classes:
+  - confidential
+  owner: secops
+  status: active
+  expires: null
+  ttl_seconds: 3600
+  signature: b3fc+HWuQwIz1Jw2W0gdAQwvYWC2s9MIq+oHGa3WDrKFQoGZJy6Cxdh+eJJLNuUNNDRZCpbL/a5n5nHL2Te7AA==
+  signature_algorithm: ed25519
+- name: portfolio-data.reader
+  kind: tool
+  version: 1.0.0
+  endpoint: internal://tools/positions
+  identity:
+    public_key_fingerprint: sha256:f68666a264f92cbde7ea90cbb9cbe619e4e81bea06658bd6f75c17b84a6095cf
+    public_key: null
+    workload_id: null
+    signed_by: platform_registry
+  schema_hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  capabilities:
+  - read_positions
+  data_classes:
+  - internal
+  owner: wealth-desk
+  status: active
+  expires: null
+  ttl_seconds: 3600
+  signature: MeP/cur6LnmRdRjGWPSkh8yhRwQS2pQ0p8RNs1RwIkh0QO9yHDklTfbSZ3Yp9aWOArm1BrNznv7ByBxE6+1HAQ==
+  signature_algorithm: ed25519
+- name: compliance-exporter
+  kind: tool
+  version: 1.0.0
+  endpoint: internal://tools/export
+  identity:
+    public_key_fingerprint: sha256:f68666a264f92cbde7ea90cbb9cbe619e4e81bea06658bd6f75c17b84a6095cf
+    public_key: null
+    workload_id: null
+    signed_by: platform_registry
+  schema_hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  capabilities:
+  - export_report
+  data_classes:
+  - internal
+  owner: compliance
+  status: active
+  expires: null
+  ttl_seconds: 3600
+  signature: Pmi42IXubCLiBE9H+8EWiDJgQ/qAkDMkSkvULIMX2oR1rsd36xUvMkj/wzZfv+b9QskATAWAH2lvumarvpmzAw==
+  signature_algorithm: ed25519

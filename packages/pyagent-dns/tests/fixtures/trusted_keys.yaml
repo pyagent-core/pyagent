@@ -1,0 +1,8 @@
+# Trusted keys for the committed fixtures.
+# This is a real Ed25519 PUBLIC key whose private half was discarded when it was generated, so
+# nothing committed here can sign. Tests that need signed records generate their own keypair
+# in tmp_path (see conftest.py); no private key is ever committed.
+keys:
+  - signer: platform_registry
+    public_key_fingerprint: "sha256:8f0d755bae0790024dc1aefd5639351cbd9c7806a432c34ecc199ee36f817309"
+    public_key: "nxgsG2crMpaafbpjLZmWm2KnJswZ/W5x7ov5gXvINss="

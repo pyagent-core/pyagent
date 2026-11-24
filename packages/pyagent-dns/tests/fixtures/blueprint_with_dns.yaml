@@ -1,0 +1,28 @@
+api_version: pyagent/v1
+metadata:
+  name: research-assistant-with-dns
+  version: 1.0.0
+  description: Example research assistant declaring x-pyagent:dns extension
+  owner: platform-team
+providers:
+  primary:
+    provider: mock
+    model: mock-llm
+agents:
+  research_agent:
+    prompt: "You are a financial research analyst."
+    provider: primary
+    description: Primary research analyst agent
+workflows:
+  main:
+    pattern: sequential_chain
+    agents:
+      stages:
+        research: research_agent
+x-pyagent:dns:
+  records_files:
+    - records.yaml
+  grants_files:
+    - grants.yaml
+  trusted_keys_file: trusted_keys.yaml
+  enforcement: required

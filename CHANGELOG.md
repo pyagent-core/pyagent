@@ -3,11 +3,23 @@
 All notable changes to the PyAgent packages are documented here.
 
 ### Released versions
+## [0.1.0] – 2026-11-23 (pyagent-dns initial release)
 ## [0.3.1] – 2026-08-08 (pyagent-blueprint only)
 ## [0.3.0] – 2026-08-08
 ## [0.2.4] – 2026-06-19
 ## [0.2.0] – 2026-06-08
 ## [0.1.0] – 2026-06-07
+
+## [0.1.0] – 2026-11-23 (pyagent-dns)
+
+### Added
+- Initial release of `pyagent-dns`: cryptographic naming and capability authorization for multi-agent systems.
+- Naming Plane: Ed25519 canonical JSON record signing and verification (`signing.py`), tamper-evident `NameRecord` specifications (`records.py`), semver-aware `NameRegistry` (`registry.py`), and TTL-cached `Resolver` (`resolver.py`).
+- Authority Plane: Directional `AuthorityGraph` (`authority.py`) with strict 8-step authorization check order and monotonic downward attenuation across 8 dimensions.
+- `DnsMiddleware` (`middleware.py`) providing zero-overhead interception of ReAct tool calls (`guard_tools`) and supervisor agent handoffs (`wrap_agent`, `wrap_all`).
+- Optional extensions: `x-pyagent:dns` blueprint extension (`blueprint.py`), resolution and decision trace events (`events.py`), and compiler diagnostics (`diagnostics.py`).
+- Security cookbook recipe: `examples/cookbook/security/tool_authorization/` demonstrating declarative blueprint loading, FastAPI authorization endpoint, and guarded ReAct execution.
+- Architecture Decision Record: `Naming Is Not Authorization` (`architecture/decisions/naming-is-not-authorization.md`).
 
 ## [0.3.1] – 2026-08-08 (pyagent-blueprint only)
 
